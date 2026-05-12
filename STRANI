@@ -1,0 +1,63 @@
+STRANI:
+1. domov  začetna stran, splošne info, možnost za prijavo
+2. registracija  ime, priimek, telefon, gmail (uporabniško ime), geslo, ponovi geslo, gumb za reg.
+3. prijava  uporabniško ime, geslo, gumb za prijavo
+
+4. opis problemov zakaj je dobro da so prebivalci vključeni sem not, da povejo svoje mnenje… 
+
+5. predlogi občine (admin) plani za obstoječe probleme, za katere rabi občina mnenje, obvezne slike
+
+6. predlogi uporabnikov stran kjer uporabniki dajo svoje predloge, glasujejo, občina izbira potem iz najbolj priljubljenih, filtri (najbolj priljubljene, najmanj, novejše, starejše), lahko dodajo lokacijo na zemljevidu kje je ta problem če je take vrste problem
+7. vnosna stran admin/uporabnik
+8. moj račun uporabniksledilci, njegovi oddani predlogi, značke, slika profila
+9. stran za pogovore dostopna vsem, za pošiljanje sporočil mora uporabnik poslat prošnjo, razprave
+10. stran za obravnavane vloge vloge ko zberejo dovolj glasov/všečkov, se premaknejo na to stran, kjer ne gre več glasovat, imajo status, ter uporabnikom katere vloge so bile izbrane dobijo obvestilo da je njihova vloga bila izbrana in je v obravnavi, če je njihov predlog potrjen dobijo nagrado 4 brezplačne vožnje z avtobusom
+11. potrjene predloge te ki se bojo 100% izvedle
+
+SPLOŠNI IZGLED
+1. barvna shema  rdeče, belo, črno
+2. header  grb,  1 meni, IDE-JA! SKUPAJ ZA BOLJŠI MARIBOR (v sliki maribora)
+3. body  vsaka stran drugače
+
+INDEX ½.html
+1. zemljevid  kje je maribor
+
+
+
+IDE-JA
+Skupaj za boljši Maribor!
+Dobrodošli na platformi za boljšo občino
+Naša platforma povezuje prebivalce in občino z enim skupnim ciljem – ustvariti boljše, varnejše in prijaznejše okolje za življenje. Tukaj lahko občani oddajo svoje predloge, izrazijo mnenje o pomembnih projektih ter sodelujejo pri oblikovanju prihodnosti svojega kraja.
+S sodelovanjem prebivalcev občina lažje razume dejanske potrebe ljudi in sprejema odločitve, ki imajo pozitiven vpliv na skupnost. Vsak glas šteje in vsak predlog lahko pripomore k izboljšavam v lokalnem okolju.
+________________________________________
+O platformi
+Zakaj je sodelovanje občanov pomembno?
+Občina in prebivalci skupaj tvorijo skupnost. Veliko težav in idej opazijo ravno občani, saj so vsakodnevno prisotni v svojem okolju. Zato je pomembno, da imajo možnost izraziti svoje mnenje, opozoriti na težave ter predlagati izboljšave.
+Platforma omogoča enostavno komunikacijo med občino in prebivalci. Uporabniki lahko glasujejo za predloge drugih, komentirajo aktualne teme ter spremljajo napredek projektov, ki jih občina obravnava ali izvaja.
+________________________________________
+Kaj omogoča spletna stran?
+Oddaja predlogov
+Uporabniki lahko oddajo svoje predloge za izboljšave v občini, dodajo opis problema ter po potrebi označijo lokacijo na zemljevidu. Na ta način lahko občina hitreje prepozna težave in določi prioritete.
+Glasovanje in podpora predlogom
+Vsak registriran uporabnik lahko glasuje za predloge drugih občanov. Najbolj podprti predlogi imajo večjo možnost, da jih občina pregleda in uvrsti v obravnavo.
+Predlogi občine
+Občina lahko objavlja projekte, načrte in ideje, za katere želi pridobiti mnenje prebivalcev. Občani lahko sodelujejo pri razpravah in pomagajo pri sprejemanju pomembnih odločitev.
+Spremljanje statusa predlogov
+Ko predlog zbere dovolj podpore, se premakne med obravnavane vloge. Uporabniki lahko spremljajo status svojih predlogov – od pregleda do potrditve in izvedbe.
+Nagrade za aktivne uporabnike
+Uporabniki, katerih predlogi bodo izbrani in potrjeni, prejmejo nagrado v obliki štirih brezplačnih voženj z avtobusom kot zahvalo za sodelovanje pri izboljšanju občine.
+________________________________________
+Skupnost in razprave
+Prostor za mnenja in pogovore
+Platforma vključuje tudi prostor za razprave, kjer lahko uporabniki delijo mnenja, izkušnje in ideje. Namen razprav je spodbujanje sodelovanja, povezovanja občanov ter iskanje skupnih rešitev za probleme v lokalnem okolju.
+Za pošiljanje zasebnih sporočil mora uporabnik najprej poslati prošnjo za komunikacijo, kar zagotavlja večjo varnost in boljšo uporabniško izkušnjo.
+________________________________________
+Moj račun
+Osebni profil uporabnika
+Vsak uporabnik ima svoj profil, kjer lahko spremlja oddane predloge, pridobljene značke, sledilce ter ureja svojo profilno sliko. Profil omogoča pregled aktivnosti in sodelovanja uporabnika na platformi.
+________________________________________
+Zaključni poziv
+Postani del spremembe
+Pridruži se platformi in pomagaj soustvarjati boljšo prihodnost svoje občine. Tvoje ideje, mnenja in predlogi lahko prispevajo k resničnim spremembam v lokalnem okolju.
+Registriraj se, oddaj svoj predlog in sodeluj pri izboljšavah svoje skupnosti.
+
