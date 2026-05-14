@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="sl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Moje mesto - prijava</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+
+<header class="glava-strani">
+<div class="container-fluid vsebnik-po-meri">
+
+<nav class="navbar navbar-dark glavna-navigacija px-3 px-lg-4">
+            
+<div class="d-flex align-items-center">
+    <i class="far fa-lightbulb fa-2x" style="color:#000000;"></i>
+    <a class="navbar-brand naziv-znamke" href="index.html" style="padding-left: 10px;">IDE-JA</a>
+</div>
+
+<button class="navbar-toggler gumb-meni" type="button" data-bs-toggle="collapse" data-bs-target="#glavni_meni" aria-controls="glavni_meni" aria-expanded="false" aria-label="Preklopi navigacijo">
+<i class="fas fa-bars" style="color: #000000; font-size: 1.5rem;"></i>
+</button>
+
+<div class="collapse navbar-collapse" id="glavni_meni">
+  <ul class="navbar-nav ms-auto py-3">
+    <li class="nav-item"><a class="nav-link povezava-meni" href="index.html">Domov</a></li>
+    <li class="nav-item"><a class="nav-link povezava-meni" href="registracija.html">Registracija</a></li>
+    <li class="nav-item"><a class="nav-link povezava-meni" href="prijava.html">Prijava</a></li>
+    <li class="nav-item"><a class="nav-link povezava-meni" href="obcina.html">Predlogi občine</a></li>
+    <li class="nav-item"><a class="nav-link povezava-meni" href="predlogi.html">Predlogi uporabnikov</a></li>
+  </ul>
+</div>
+</nav>
+
+</div>
+</header>
+
+<div class="uvodna-slika"></div>
+
+<main>
+
+<div class="row justify-content-center">
+<div class="col-md-6 col-lg-5">
+<div class="card shadow border-0 rounded-4 p-4">
+
+    <div class="text-center mb-4">
+    <i class="fas fa-user-circle fa-4x mb-3" style="color: #cb2121;"></i>
+    <h2 class="fw-bold">Prijava uporabnika</h2>
+    <p class="text-muted">Prijavite se v svoj račun in sodelujte pri izboljšavah občine.</p>
+    </div>
+
+    <form id="loginForm" class="needs-validation" novalidate>
+
+        <div class="mb-3">
+        <label for="email" class="form-label">Uporabniško ime (E-mail)</label>
+
+        <input type="email" class="form-control" id="email" placeholder="ime@primer.si" required>
+        <div class="invalid-feedback">Vnesite veljaven e-mail naslov.</div>
+        </div>
+
+        <div class="mb-4">
+        <label for="geslo" class="form-label">Geslo</label>
+
+        <input type="password" class="form-control" id="geslo" placeholder="Vnesite geslo" required>
+        <div class="invalid-feedback">Vnesite geslo.</div>
+        </div>
+
+        <div class="d-grid mb-3">
+        <button type="submit" class="btn btn-danger text-white fw-bold py-2">Prijava</button>
+        </div>
+
+        <div class="text-center">
+        <small>Še nimate računa?
+        <a href="registracija.html" class="text-decoration-none fw-bold" style="color: #cb2121;">Registrirajte se</a>
+        </small>
+        </div>
+
+        </form>
+
+</div>
+</div>
+</div>
+
+</main>
+
+<footer class="glavna-noga">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4 mt-3">
+                <h5>IDE-JA</h5>
+                <p>SKUPAJ ZA BOLJŠI MARIBOR!</p>
+            </div>
+
+            <div class="col-md-4 mt-3">
+                <h5>Povezave</h5>
+                <p><a href="index.html">Domov</a></p>
+                <p><a href="obcina.html">Predlogi občine</a></p>
+                <p><a href="predlogi.html">Predlogi uporabnika</a></p>
+            </div>
+
+            <div class="col-md-4 mt-3">
+                <h5>Kontakt</h5>
+                <p>Maribor, Slovenija</p>
+                <p>info@ide-ja.si</p>
+                <p>+386 2 123 456</p>
+            </div>
+
+        </div>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/skripta.js"></script>
+</body>
+</html>
