@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="sl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IDE-JA - Zasebni Klepet</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link rel="stylesheet" href="css.css">
+  <style>
+    /* Prilagojeni stili za klepetalnico v rdeče-sivi estetiki */
+    .klepet-okno {
+      height: 600px;
+      background-color: #ffffff;
+      border-radius: 15px;
+      overflow: hidden;
+    }
+    
+    /* Seznam aktivnih klepetov (Leva stran) */
+    .seznam-uporabnikov {
+      background-color: #f8f9fa;
+      border-right: 2px solid #e0dfdf;
+      height: 100%;
+      overflow-y: auto;
+    }
+    
+    .uporabnik-kartica {
+      padding: 15px;
+      border-bottom: 1px solid #e0dfdf;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    
+    .uporabnik-kartica:hover {
+      background-color: #f1f3f5;
+    }
+    
+    .uporabnik-kartica.aktivna {
+      background-color: #f4f1f1;
+      border-left: 4px solid #8c1212;
+    }
+
+    .mini-avatar {
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      background-color: #cb2121;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 16px;
+    }
+
+    /* Glavno območje za sporočila (Desna stran) */
+    .prikaz-sporocil {
+      height: 470px;
+      overflow-y: auto;
+      background-color: #f4f1f1;
+      padding: 20px;
+    }
+
+    /* Mehurčki za sporočila */
+    .sporocilo {
+      margin-bottom: 15px;
+      max-width: 75%;
+      display: flex;
+    }
+
+    /* Moja poslana sporočila (Desno - Rdeča) */
+    .sporocilo.poslano {
+      margin-left: auto;
+      justify-content: flex-end;
+    }
+
+    .sporocilo.poslano .vsebina-mehurcka {
+      background-color: #8c1212;
+      color: white;
+      border-radius: 15px 15px 0px 15px;
+    }
+
+    /* Prejeta sporočila od drugih (Levo - Siva) */
+    .sporocilo.prejeto {
+      margin-right: auto;
+      justify-content: flex-start;
+    }
+
+    .sporocilo.prejeto .vsebina-mehurcka {
+      background-color: #ffffff;
+      color: #000000;
+      border: 1px solid #e0dfdf;
+      border-radius: 15px 15px 15px 0px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    .vsebina-mehurcka {
+      padding: 10px 15px;
+      font-size: 14px;
+    }
+
+    .cas-sporocila {
+      font-size: 10px;
+      display: block;
+      margin-top: 5px;
+      text-align: right;
+      opacity: 0.8;
+    }
+
+    /* Spodnji del za vnos teksta */
+    .vnos-sporocila-vsebnik {
+      background-color: #ffffff;
+      padding: 15px;
+      border-top: 2px solid #e0dfdf;
+    }
+
+    .vnos-polje:focus {
+      border-color: #cb2121;
+      box-shadow: 0 0 0 0.25rem rgba(203, 33, 33, 0.25);
+    }
+  </style>
+</head>
+<body>
+
+<header class="glava-strani">
+<div class="container-fluid vsebnik-po-meri">
+
+<nav class="navbar navbar-dark glavna-navigacija px-3 px-lg-4">
+            
+<div class="d-flex align-items-center">
+    <i class="far fa-lightbulb fa-2x" style="color:#ffffff;"></i>
+    <a class="navbar-brand naziv-znamke" href="index.html" style="padding-left: 10px;">IDE-JA</a>
+</div>
+
+<button class="navbar-toggler gumb-meni" type="button" data-bs-toggle="collapse" data-bs-target="#glavni_meni" aria-controls="glavni_meni" aria-expanded="false" aria-label="Preklopi navigacijo">
+<i class="fas fa-bars" style="color: #000000; font-size: 1.5rem;"></i>
+</button>
+
+<div class="collapse navbar-collapse" id="glavni_meni">
+  <ul class="navbar-nav ms-auto py-3">
+    <li class="nav-item"><a class="nav-link povezava-meni" href="index.html">Domov</a></li>
+    <li class="nav-item"><a class="nav-link povezava-meni" href="prijava.html">Prijava</a></li>
+    <li class="nav-item"><a class="nav-link povezava-meni" href="obcina.html">Predlogi občine</a></li>
+    <li class="nav-item"><a class="nav-link povezava-meni" href="predlogi.html">Predlogi uporabnikov</a></li>
+  </ul>
+</div>
+</nav>
+
+</div>
+</header>
+
+  <div class="container my-4">
+    <div class="row g-0 shadow klepet-okno">
+      
+      <div class="col-md-4 col-lg-3 seznam-uporabnikov d-none d-md-block">
+        <div class="p-3 bg-white border-bottom">
+          <h5 class="fw-bold m-0 text-dark" style="font-size: 18px;">Pogovori</h5>
+        </div>
+        
+        <div class="uporabnik-kartica aktivna d-flex align-items-center">
+          <div class="mini-avatar" style="background-color: #8c1212;">MO</div>
+          <div class="ms-3 overflow-hidden">
+            <h6 class="mb-0 fw-bold text-truncate" style="font-size: 14px;">Mestna občina Maribor</h6>
+            <small class="text-muted text-truncate d-block">Vaš predlog je bil predan v obravnavo...</small>
+          </div>
+        </div>
+
+        <div class="uporabnik-kartica d-flex align-items-center">
+          <div class="mini-avatar" style="background-color: #4a6fa5;">AM</div>
+          <div class="ms-3 overflow-hidden">
+            <h6 class="mb-0 fw-bold text-truncate" style="font-size: 14px;">Anže Mohorič</h6>
+            <small class="text-muted text-truncate d-block">Se strinjam glede tiste ceste v Melju!</small>
+          </div>
+        </div>
+
+        <div class="uporabnik-kartica d-flex align-items-center">
+          <div class="mini-avatar" style="background-color: #2e7d32;">TL</div>
+          <div class="ms-3 overflow-hidden">
+            <h6 class="mb-0 fw-bold text-truncate" style="font-size: 14px;">Tina Logar</h6>
+            <small class="text-muted text-truncate d-block">Živijo! Hvala za podporo mojemu predlogu.</small>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-8 col-lg-9 d-flex flex-column h-100 bg-white">
+        
+        <div class="p-3 border-bottom d-flex align-items-center bg-white justify-content-between">
+          <div class="d-flex align-items-center">
+            <div class="mini-avatar" style="background-color: #8c1212;">MO</div>
+            <div class="ms-3">
+              <h5 class="mb-0 fw-bold text-dark" style="font-size: 16px;">Mestna občina Maribor</h5>
+              <small class="text-success"><i class="fas fa-circle me-1" style="font-size: 9px;"></i> Uradni profil občine</small>
+            </div>
+          </div>
+          <button class="btn btn-sm btn-outline-secondary d-md-none"><i class="fas fa-arrow-left"></i> Nazaj</button>
+        </div>
+
+        <div class="prikaz-sporocil flex-grow-1">
+          
+          <div class="sporocilo prejeto">
+            <div class="vsebina-mehurcka">
+              Pozdravljeni! Prejeli smo vaš predlog glede sanacije poplavnega območja na Smetanovi ulici. Skupnost ga je zelo dobro podprla.
+              <span class="cas-sporocila text-muted">14:32</span>
+            </div>
+          </div>
+
+          <div class="sporocilo poslano">
+            <div class="vsebina-mehurcka">
+              Pozdravljeni. Me veseli! Ali mi lahko poveste, kdaj približno si bodo pristojne službe ogledale situacijo na terenu?
+              <span class="cas-sporocila text-light">14:35</span>
+            </div>
+          </div>
+
+          <div class="sporocilo prejeto">
+            <div class="vsebina-mehurcka">
+              Vaš predlog je bil predan v obravnavo Uradu za komunalo, promet in prostor. Ogled terena načrtujejo v prihodnjem tednu. O vseh spremembah statusa boste obveščeni na profilu.
+              <span class="cas-sporocila text-muted">14:40</span>
+            </div>
+          </div>
+
+          <div class="sporocilo poslano">
+            <div class="vsebina-mehurcka">
+              Odlično, hvala vam za hiter odgovor!
+              <span class="cas-sporocila text-light">14:42</span>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="vnos-sporocila-vsebnik">
+          <form onsubmit="return false;" class="d-flex gap-2">
+            <input type="text" class="form-control vnos-polje rounded-pill" placeholder="Napiši sporočilo...">
+            <button type="button" class="gumb-dodaj rounded-circle p-0 d-flex align-items-center justify-content-center" style="width: 45px; height: 45px; flex-shrink: 0;">
+              <i class="fas fa-paper-plane" style="font-size: 16px;"></i>
+            </button>
+          </form>
+        </div>
+
+      </div>
+      
+    </div>
+  </div>
+
+<footer class="glavna-noga">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4 mt-3">
+                <h5>IDE-JA</h5>
+                <p>SKUPAJ ZA BOLJŠI MARIBOR!</p>
+            </div>
+
+            <div class="col-md-4 mt-3">
+                <h5>Povezave</h5>
+                <p><a href="index.html">Domov</a></p>
+                <p><a href="obcina.html">Predlogi občine</a></p>
+                <p><a href="predlogi.html">Predlogi uporabnika</a></p>
+            </div>
+
+            <div class="col-md-4 mt-3">
+                <h5>Kontakt</h5>
+                <p>Maribor, Slovenija</p>
+                <p>info@ide-ja.si</p>
+                <p>+386 2 123 456</p>
+            </div>
+
+        </div>
+    </div>
+</footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
