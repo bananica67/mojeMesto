@@ -38,17 +38,15 @@ body{
 }
 
 .povezava-meni {
-  width: 30%;
-  float: right;
+  width: 100%;
   font-weight: bold;
-  background-color: #b8b8b8;
-  color: #000000 !important;
+  background-color: #8c1212;
+  color: #ffffff !important;
   padding: 10px 10px;
-  border: gray 1px solid;
 }
 
 .povezava-meni:hover {
-  color: #b0b0b0 !important;
+  color: #c4c4c4 !important;
 }
 
 /*uvodna slika */
@@ -192,13 +190,13 @@ h4{
 
 /*registracija in prijava */
 .form-check-input:checked {
-    background-color: #cb2121;
-    border-color: #cb2121;
+  background-color: #cb2121;
+  border-color: #cb2121;
 }
 
 .form-check-input:focus, .form-control:focus, .form-select:focus {
-    border-color: #cb2121;
-    box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
+  border-color: #cb2121;
+  box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
 }
 
 /*footer */
@@ -234,7 +232,7 @@ footer p, footer a, footer span, footer i {
   border-bottom-right-radius: 12px;
 
   color: black;
-  padding: 50px 0px 80px;
+  padding: 40px 0px 70px;
   text-align: center;
 }
 
@@ -244,7 +242,45 @@ footer p, footer a, footer span, footer i {
   border-bottom: 2px solid #941010;
   display: inline-block;
 }
-   
+  
+.uporabnik{
+  background:#e0dfdf;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+  width: 95%;
+  margin: auto;
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
+
+  color: black;
+  padding: 40px 0px;
+  text-align: center;
+}
+
+.uporabnik h1{
+  font-size: 36px;
+  color: black;
+  border-bottom: 2px solid #941010;
+  display: inline-block;
+}
+
+/* gumb za dodajanje */
+.gumb-dodaj {
+  display: inline-block;
+  padding: 10px 25px;
+
+  background-color: #cb2121;
+  color: #ffffff; 
+  font-weight: bold;
+  text-decoration: none;
+  border: 2px solid #cb2121; 
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.gumbi-dodaj {
+  margin-top: 30px;
+}
+
 /*admin, uporabnik - predlogi */
 .admin-panel{
   margin-top: -40px;
@@ -287,20 +323,21 @@ footer p, footer a, footer span, footer i {
 }
 
 .komentar-gumb {
-    background-color: #ffffff !important;
-    border: 2px solid #dc3545 !important;
-    color: #000000 !important;
-    border-radius: 10px;
-    padding: 8px 20px;
+  background-color: #ffffff !important;
+  border: 2px solid #dc3545 !important;
+  color: #000000 !important;
+  border-radius: 10px;
+  padding: 8px 20px;
 }
 
 .komentar-gumb:hover {
-    background-color: #ffffff !important;
-    border-color: #dc3545 !important;
-    color: #dc3545 !important;
-    text-decoration: none;
+  background-color: #ffffff !important;
+  border-color: #dc3545 !important;
+  color: #dc3545 !important;
+  text-decoration: none;
 }
 
-/* NOVO - UPORABNIK */
+/* media - telefon (KAJA) */
+
 
 
