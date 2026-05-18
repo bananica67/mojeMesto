@@ -337,7 +337,64 @@ footer p, footer a, footer span, footer i {
   text-decoration: none;
 }
 
-/* media - telefon (KAJA) */
+/* profil */
+.profil-podatki{
+  width: 85%;
+  background-color: #f8f8f8;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+  margin: auto;
+  padding-left: 60px;
+  border-radius: 12px;
+}
 
+.profil-nav ul {
+  list-style-type: none;
+  padding: 20px;
+  display: flex;
+  gap: 20px;
+}
+
+.profil-nav .nav-profil {
+  color: #4a4a4a;
+  text-decoration: none;
+  border-bottom: #cb2121 solid 2px;
+}
+
+.profil-nav .nav-profil:hover {
+  color: #cb2121;
+  border-bottom: solid 2px black;
+}
+
+/* media - telefon (KAJA) */
+@media (max-width: 768px) {
+  .glava-strani {grid-area: 1 / span 6;}
+  .info-besedilo {grid-area: 2 / span 1;}
+  .content {grid-area: 2 / span 4;}
+  .info-platforma, .info {
+  flex-direction: column;
+  align-items: stretch;
+}
+  .info-platforma img{
+    width: 80%;
+    object-fit: cover;
+    max-height: 250px;
+  }
+  .info img{
+    width: 350px;
+    padding: 20px;
+  }
+
+  .info-besedilo, .besedilo{
+    width: 100%;
+    padding: 20px;
+  }
+  .uvodna-slika{
+    height: 250px;
+  }
+  .gumb-prijava{
+    margin-top: 10px;
+  }
+  .footer {grid-area: 3 / span 6;}
+}
 
 
