@@ -422,9 +422,7 @@ footer p, footer a, footer span, footer i {
   }
   .gumb-prijava{
     margin-top: 10px;
-  }
-  .footer {grid-area: 3 / span 6;}
-<<<<<<< HEAD
+  }  .footer {grid-area: 3 / span 6;}
   .uvodna-slika {
     height: 250px;
   }
@@ -433,10 +431,4 @@ footer p, footer a, footer span, footer i {
   }
   .uvodna-vsebina p {
     font-size: 14px;
-  }
-}
-=======
-}
-
-
->>>>>>> 0a02fc6a7d600514914039406a6ed9a71557a565
+  }}
