@@ -79,34 +79,33 @@
       color: #ffffff;
     }
   </style>
-<header class="glava-strani">
-<div class="container-fluid vsebnik-po-meri">
-
-<nav class="navbar navbar-dark glavna-navigacija px-3 px-lg-4">
-            
-<div class="d-flex align-items-center">
-    <i class="far fa-lightbulb fa-2x" style="color:#ffffff;"></i>
-    <a class="navbar-brand naziv-znamke" href="index.html" style="padding-left: 10px;">IDE-JA</a>
-</div>
-
-<button class="navbar-toggler gumb-meni" type="button" data-bs-toggle="collapse" data-bs-target="#glavni_meni" aria-controls="glavni_meni" aria-expanded="false" aria-label="Preklopi navigacijo">
-<i class="fas fa-bars" style="color: #000000; font-size: 1.5rem;"></i>
-</button>
-
-<div class="collapse navbar-collapse" id="glavni_meni">
-  <ul class="navbar-nav ms-auto py-3">
-    <li class="nav-item"><a class="nav-link povezava-meni" href="index.html">Domov</a></li>
-    <li class="nav-item"><a class="nav-link povezava-meni" href="prijava.html">Prijava</a></li>
-    <li class="nav-item"><a class="nav-link povezava-meni" href="obcina.html">Predlogi občine</a></li>
-    <li class="nav-item"><a class="nav-link povezava-meni" href="predlogi.html">Predlogi uporabnikov</a></li>
-  </ul>
-</div>
-</nav>
-
-</div>
-</header>
 </head>
 <body>
+
+<header class="glava-strani">
+  <div class="container-fluid vsebnik-po-meri">
+    <nav class="navbar navbar-dark glavna-navigacija px-3 px-lg-4">
+      <div class="d-flex align-items-center">
+        <i class="far fa-lightbulb fa-2x" style="color:#ffffff;"></i>
+        <a class="navbar-brand naziv-znamke" href="index.html" style="padding-left: 10px;">IDE-JA</a>
+      </div>
+
+      <button class="navbar-toggler gumb-meni" type="button" data-bs-toggle="collapse" data-bs-target="#glavni_meni" aria-controls="glavni_meni" aria-expanded="false" aria-label="Preklopi navigacijo">
+        <i class="fas fa-bars" style="color: #000000; font-size: 1.5rem;"></i>
+      </button>
+
+      <div class="collapse navbar-collapse" id="glavni_meni">
+        <ul class="navbar-nav ms-auto py-3">
+          <li class="nav-item"><a class="nav-link povezava-meni" href="index.html">Domov</a></li>
+          <li class="nav-item"><a class="nav-link povezava-meni" href="prijava.html">Prijava</a></li>
+          <li class="nav-item"><a class="nav-link povezava-meni" href="obcina.html">Predlogi občine</a></li>
+          <li class="nav-item"><a class="nav-link povezava-meni" href="predlogi.html">Predlogi uporabnikov</a></li>
+        </ul>
+      </div>
+    </nav>
+  </div>
+</header>
+
   <div class="container my-5">
     <div class="row g-4">
       
@@ -118,11 +117,12 @@
           
           <div class="Izbira-barve mb-4">
             <span class="text-muted d-block small mb-2">Izberi barvo profila:</span>
-            <div class="barva-krog aktivna" style="background-color: #923c83;" onclick="spremeniBarvo(this, '#923c83')"></div>
-            <div class="barva-krog" style="background-color: #8c1212;" onclick="spremeniBarvo(this, '#8c1212')"></div>
-            <div class="barva-krog" style="background-color: #2b2b2b;" onclick="spremeniBarvo(this, '#2b2b2b')"></div>
-            <div class="barva-krog" style="background-color: #4a6fa5;" onclick="spremeniBarvo(this, '#4a6fa5')"></div>
-            <div class="barva-krog" style="background-color: #2e7d32;" onclick="spremeniBarvo(this, '#2e7d32')"></div>
+            <!-- POPRAVEK: Prvi krog sedaj pravilno kliče funkcijo profilna z argumenti -->
+            <div class="barva-krog aktivna" style="background-color: #923c83;" onclick="profilna(this, '#923c83')"></div>
+            <div class="barva-krog" style="background-color: #8c1212;" onclick="profilna(this, '#8c1212')"></div>
+            <div class="barva-krog" style="background-color: #2b2b2b;" onclick="profilna(this, '#2b2b2b')"></div>
+            <div class="barva-krog" style="background-color: #4a6fa5;" onclick="profilna(this, '#4a6fa5')"></div>
+            <div class="barva-krog" style="background-color: #2e7d32;" onclick="profilna(this, '#2e7d32')"></div>
           </div>
 
           <h3 class="mb-1 border-0" id="prikazanoIme">Kaja Bohorč</h3>
@@ -255,30 +255,72 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    // Funkcija za menjavo barve profilne slike
+    // Ko se celotna stran naloži, takoj osvežimo podatke iz LocalStorage
+    document.addEventListener("DOMContentLoaded", function() {
+      prikaziPodatke();
+    });
+
+    // Funkcija za vizualno menjavo barve in dodajanje obrobe izbranemu krogu
     function spremeniBarvo(element, barva) {
-      // Odstrani aktivni krog iz vseh barv
       document.querySelectorAll('.barva-krog').forEach(krog => {
         krog.classList.remove('aktivna');
       });
-      // Dodaj aktivni krog izbranemu
-      element.classList.add('aktivna');
-      // Spremeni ozadje avatarja
+      if (element) {
+        element.classList.add('aktivna');
+      }
       document.getElementById('uporabnikAvatar').style.backgroundColor = barva;
     }
 
-    // Funkcija za posodobitev imena na profilu
+    // Združena funkcija za spremembo barve in takojšnje shranjevanje v LocalStorage
+    function profilna(element, barva) {
+      spremeniBarvo(element, barva);
+      localStorage.setItem('profilnaBarva', barva);
+    }
+
+    // Funkcija za posodobitev imena na profilu in shranjevanje
     function shraniIme() {
       const vnesenoIme = document.getElementById('vnosIme').value;
       if(vnesenoIme.trim() !== "") {
         document.getElementById('prikazanoIme').textContent = vnesenoIme;
+        
+        // Shranimo v localStorage
+        localStorage.setItem('profilnoIme', vnesenoIme);
+
         // Zapri modalno okno
         const modalElement = document.getElementById('modalIme');
         const modalInstance = bootstrap.Modal.getInstance(modalElement);
         modalInstance.hide();
       }
     }
+
+    // Funkcija, ki ob preklopu ali osvežitvi strani naloži podatke nazaj na zaslon
+    function prikaziPodatke() {
+      // 1. Nalaganje in izris shranjenega imena
+      const shranjenoIme = localStorage.getItem('profilnoIme');
+      if (shranjenoIme) {
+        document.getElementById('prikazanoIme').textContent = shranjenoIme;
+        document.getElementById('vnosIme').value = shranjenoIme; // Nastavi vrednost tudi znotraj modala
+      }
+
+      // 2. Nalaganje in izris shranjene barve avatarja
+      const shranjenaBarva = localStorage.getItem('profilnaBarva');
+      if (shranjenaBarva) {
+        // Spremenimo ozadje avatarja
+        document.getElementById('uporabnikAvatar').style.backgroundColor = shranjenaBarva;
+        
+        // Najdemo krog s to barvo in ga označimo kot aktivnega
+        document.querySelectorAll('.barva-krog').forEach(krog => {
+          krog.classList.remove('aktivna');
+          // Ker RGB vrednosti v slogih včasih povzročajo težave pri primerjavi nizov, 
+          // primerjamo neposredno preko sloga (style.backgroundColor)
+          if (krog.style.backgroundColor === shranjenaBarva || krog.getAttribute('onclick').includes(shranjenaBarva)) {
+            krog.classList.add('aktivna');
+          }
+        });
+      }
+    }
   </script>
+
   <footer class="glavna-noga">
     <div class="container">
         <div class="row">
@@ -300,9 +342,8 @@
                 <p>info@ide-ja.si</p>
                 <p>+386 2 123 456</p>
             </div>
-
         </div>
     </div>
-</footer>
+  </footer>
 </body>
 </html>
