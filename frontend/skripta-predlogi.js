@@ -137,8 +137,8 @@ if (gumbObjavi) {
     let slikaUrl = "slike/zacetna.jpg"; 
 
     //ustvarimo začasni Blob URL za sliko, ki jo objavimo
-    if (slikaInput && slikaInput.files && slikaInput.files[0]) {
-      const izbranaDatoteka = slikaInput.files[0];
+    if (slikaInputObcina && slikaInputObcina.files && slikaInputObcina.files[0]) {
+      const izbranaDatoteka = slikaInputObcina.files[0];
       slikaUrl = URL.createObjectURL(izbranaDatoteka);
     }
 
@@ -308,6 +308,7 @@ if (gumbObjaviObcina) {
   gumbObjaviObcina.addEventListener('click', function() {
     const naslov = document.getElementById('naslov-obcina').value;
     const opis = document.getElementById('opis-obcina').value;
+    const slikaInputObcina = document.getElementById('slika-obcina');
 
     //preveri če sta izpolnjena naslov in opis
     if (!naslov || !opis) {
