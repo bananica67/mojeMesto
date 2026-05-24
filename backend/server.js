@@ -91,6 +91,14 @@ app.get("/api/odjava", (req, res) => {
   res.redirect("/prijava.html");
 });
 
+
+
+//7. dodajanje predlogov za uporabnika
+
+
+
+
+
 app.listen(3000, () => {
   console.log("Strežnik deluje na http://localhost:3000");
 });

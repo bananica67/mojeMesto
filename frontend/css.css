@@ -67,10 +67,10 @@ body{
 .uvodna-vsebina {
   color: white;
   padding: 30px, 50px;
-  background-color: rgba(0, 0, 0, 0.5);
-  border-radius: 15px;
+  background-color: rgba(0, 0, 0, 0.6);
+  border-radius: 20px;
   /* Blaga temna senca v ozadju teksta, da je napis berljiv na vseh slikah */
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
   max-width: 90%;
 }
 .uvodna-vsebina h1 {
@@ -83,10 +83,9 @@ body{
 .uvodna-vsebina p {
   font-size: 24px;
   letter-spacing: 2px;
-  margin-top: 10px;
   font-weight: 300;
+  padding: 10px;
 }
-
 
 /*main */
 main{
@@ -228,6 +227,310 @@ h4{
   box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
 }
 
+/*profil uporabnika*/
+/* Prilagojeni dodatki */
+.avatar-prikaz {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+  color: white;
+  margin: 0 auto 15px;
+  transition: background-color 0.3s ease;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+.barva-krog {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: inline-block;
+  margin: 0 5px;
+  border: 2px solid transparent;
+  transition: transform 0.2s;
+}
+
+.barva-krog:hover {
+  transform: scale(1.1);
+}
+
+.barva-krog.aktivna {
+  border-color: #000;
+}
+
+/* Stil za zavihke */
+.nav-tabs .nav-link {
+  color: #000000;
+  font-weight: bold;
+  border: none;
+  border-bottom: 3px solid transparent;
+}
+
+.nav-tabs .nav-link.active {
+  color: #cb2121 !important;
+  border-bottom: 3px solid #cb2121 !important;
+  background-color: transparent !important;
+}
+
+.znacka-kartica {
+  background: #f1f3f5;
+  border-radius: 15px;
+  padding: 15px;
+  text-align: center;
+  transition: transform 0.2s;
+}
+
+.znacka-kartica:hover {
+  transform: translateY(-5px);
+}
+
+.znacka-ikona {
+  font-size: 35px;
+  color: #cb2121;
+  margin-bottom: 8px;
+}
+
+.gumb-odjava {
+  background-color: transparent;
+  color: #cb2121;
+  border: 2px solid #cb2121;
+  font-weight: bold;
+  padding: 8px 20px;
+  border-radius: 5px;
+  transition: all 0.3s;
+}
+
+.gumb-odjava:hover {
+  background-color: #cb2121;
+  color: #ffffff;
+}
+
+/*profil obcine*/
+.admin-avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background-color: #8c1212;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+  color: white;
+  margin: 0 auto 20px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+/* Gumb za brisanje */
+.gumb-brisi {
+  background-color: transparent;
+  color: #dc3545;
+  border: 2px solid #dc3545;
+  border-radius: 5px;
+  padding: 5px 10px;
+  font-weight: bold;
+  transition: all 0.3s;
+}
+
+.gumb-brisi:hover {
+  background-color: #dc3545;
+  color: white;
+}
+
+/* Dropdown stil za statuse */
+.status-select {
+  font-weight: bold;
+  border: 2px solid #ced4da;
+}
+  
+.status-select:focus {
+  border-color: #cb2121;
+  box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
+}
+
+.gumb-odjava {
+  background-color: transparent;
+  color: #cb2121;
+  border: 2px solid #cb2121;
+  font-weight: bold;
+  padding: 8px 20px;
+  border-radius: 5px;
+  transition: all 0.3s;
+}
+
+.gumb-odjava:hover {
+  background-color: #cb2121;
+  color: #ffffff;
+}
+
+/*zasebni klepet*/
+.klepet-okno {
+  height: 600px;
+  background-color: #ffffff;
+  border-radius: 15px;
+  overflow: hidden;
+}
+    
+/* Seznam aktivnih klepetov */
+.seznam-uporabnikov {
+  background-color: #f8f9fa;
+  border-right: 2px solid #e0dfdf;
+  height: 100%;
+  overflow-y: auto;
+}
+    
+.uporabnik-kartica {
+  padding: 15px;
+  border-bottom: 1px solid #e0dfdf;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+    
+.uporabnik-kartica:hover {
+  background-color: #f1f3f5;
+}
+    
+.uporabnik-kartica.aktivna {
+  background-color: #f4f1f1;
+  border-left: 4px solid #8c1212;
+}
+
+.mini-avatar {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  background-color: #cb2121;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+/* območje za sporočila */
+.prikaz-sporocil {
+  height: 470px;
+  overflow-y: auto;
+  background-color: #f4f1f1;
+  padding: 20px;
+}
+
+/* Mehurčki za sporočila */
+.sporocilo {
+  margin-bottom: 15px;
+  max-width: 75%;
+  display: flex;
+}
+
+/* poslana sporočila */
+.sporocilo.poslano {
+  margin-left: auto;
+  justify-content: flex-end;
+}
+
+.sporocilo.poslano .vsebina-mehurcka {
+  background-color: #8c1212;
+  color: white;
+  border-radius: 15px 15px 0px 15px;
+}
+
+/* Prejeta sporočila */
+.sporocilo.prejeto {
+  margin-right: auto;
+  justify-content: flex-start;
+}
+
+.sporocilo.prejeto .vsebina-mehurcka {
+  background-color: #ffffff;
+  color: #000000;
+  border: 1px solid #e0dfdf;
+  border-radius: 15px 15px 15px 0px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.vsebina-mehurcka {
+  padding: 10px 15px;
+  font-size: 14px;
+}
+
+.cas-sporocila {
+  font-size: 10px;
+  display: block;
+  margin-top: 5px;
+  text-align: right;
+  opacity: 0.8;
+}
+
+/* Spodnji del za vnos teksta */
+.vnos-sporocila-vsebnik {
+  background-color: #ffffff;
+  padding: 15px;
+  border-top: 2px solid #e0dfdf;
+}
+
+.vnos-polje:focus {
+  border-color: #cb2121;
+  box-shadow: 0 0 0 0.25rem rgba(203, 33, 33, 0.25);
+}
+
+/*obcina in uporabnik info*/
+.info-predlogi{
+  width: 85%;
+  background:#e0dfdf;
+  margin: auto;
+  margin-top: 30px;
+  padding: 15px;
+
+  display:flex;
+  text-align:center;
+  gap:20px;
+
+  border-radius:10px;
+  box-shadow:0 4px 10px rgba(0,0,0,0.1);
+}
+
+.besedilo-predlogi{
+  padding: 20px;
+}
+
+/* gumb za dodajanje */
+.gumb-dodaj {
+  display: inline-block;
+  padding: 10px 15px;
+
+  background-color: #cb2121;
+  color: #ffffff; 
+  font-weight: bold;
+  text-decoration: none;
+  border: 2px solid #cb2121; 
+  border-radius: 5px;
+}
+
+a.gumb-dodaj:hover{
+  background-color: #e92828;
+  border: 2px solid #cb2121; 
+  cursor: pointer;
+}
+
+.gumbi-dodaj {
+  margin-top: 30px;
+}
+
+/*admin dodajanje predlogov */
+.admin-panel{
+  margin-top: 20px;
+}
+
+.admin-card{
+  border: #941010 solid 2px;
+  border-radius: 20px;
+  background-color: #f9f9f9;
+}
+
 /*footer */
 footer {
   background-color: #f8f8f8;
@@ -251,77 +554,50 @@ footer p, footer a, footer span, footer i {
   font-size: 15px;
 }
 
-/*obcina/uporabnik */
-.admin{
-  background:#e0dfdf;
-  box-shadow: 0 8px 25px rgba(0,0,0,0.2);
-  width: 95%;
-  margin: auto;
-  border-bottom-left-radius: 12px;
-  border-bottom-right-radius: 12px;
-
-  color: black;
-  padding: 40px 0px 70px;
-  text-align: center;
+/* media - telefon (KAJA) */
+@media (max-width: 768px) {
+  .glava-strani {grid-area: 1 / span 6;}
+  .info-besedilo {grid-area: 2 / span 1;}
+  .content {grid-area: 2 / span 4;}
+  .info-platforma, .info {
+  flex-direction: column;
+  align-items: stretch;
 }
+  .info-platforma img{
+    width: 80%;
+    object-fit: cover;
+    max-height: 250px;
+  }
+  .info img{
+    width: 350px;
+    padding: 20px;
+  }
 
-.admin h1{
-  font-size: 36px;
-  color: black;
-  border-bottom: 2px solid #941010;
-  display: inline-block;
-}
-  
-.uporabnik{
-  background:#e0dfdf;
-  box-shadow: 0 8px 25px rgba(0,0,0,0.2);
-  width: 95%;
-  margin: auto;
-  border-bottom-left-radius: 12px;
-  border-bottom-right-radius: 12px;
+  .info-besedilo, .besedilo{
+    width: 100%;
+    padding: 20px;
+  }
+  .uvodna-slika{
+    height: 250px;
+  }
+  .gumb-prijava{
+    margin-top: 10px;
+  }  .footer {grid-area: 3 / span 6;}
+  .uvodna-slika {
+    height: 250px;
+  }
+  .uvodna-vsebina h1 {
+    font-size: 36px;
+  }
+  .uvodna-vsebina p {
+    font-size: 14px;
+  }}
 
-  color: black;
-  padding: 40px 0px;
-  text-align: center;
-}
 
-.uporabnik h1{
-  font-size: 36px;
-  color: black;
-  border-bottom: 2px solid #941010;
-  display: inline-block;
-}
 
-/* gumb za dodajanje */
-.gumb-dodaj {
-  display: inline-block;
-  padding: 10px 25px;
 
-  background-color: #cb2121;
-  color: #ffffff; 
-  font-weight: bold;
-  text-decoration: none;
-  border: 2px solid #cb2121; 
-  border-radius: 5px;
-  cursor: pointer;
-}
 
-.gumbi-dodaj {
-  margin-top: 30px;
-}
-
-/*admin, uporabnik - predlogi */
-.admin-panel{
-  margin-top: -40px;
-}
-
-.admin-card{
-  border: #941010 solid 2px;
-  border-radius: 20px;
-  background-color: #f9f9f9;
-}
-
-/*predlogi občine */
+/*css za kartice predlogov */
 .predlog-card{
   border: none;
   border-radius: 20px;
@@ -366,69 +642,3 @@ footer p, footer a, footer span, footer i {
   text-decoration: none;
 }
 
-/* profil */
-.profil-podatki{
-  width: 85%;
-  background-color: #f8f8f8;
-  box-shadow: 0 8px 25px rgba(0,0,0,0.2);
-  margin: auto;
-  padding-left: 60px;
-  border-radius: 12px;
-}
-
-.profil-nav ul {
-  list-style-type: none;
-  padding: 20px;
-  display: flex;
-  gap: 20px;
-}
-
-.profil-nav .nav-profil {
-  color: #4a4a4a;
-  text-decoration: none;
-  border-bottom: #cb2121 solid 2px;
-}
-
-.profil-nav .nav-profil:hover {
-  color: #cb2121;
-  border-bottom: solid 2px black;
-}
-
-/* media - telefon (KAJA) */
-@media (max-width: 768px) {
-  .glava-strani {grid-area: 1 / span 6;}
-  .info-besedilo {grid-area: 2 / span 1;}
-  .content {grid-area: 2 / span 4;}
-  .info-platforma, .info {
-  flex-direction: column;
-  align-items: stretch;
-}
-  .info-platforma img{
-    width: 80%;
-    object-fit: cover;
-    max-height: 250px;
-  }
-  .info img{
-    width: 350px;
-    padding: 20px;
-  }
-
-  .info-besedilo, .besedilo{
-    width: 100%;
-    padding: 20px;
-  }
-  .uvodna-slika{
-    height: 250px;
-  }
-  .gumb-prijava{
-    margin-top: 10px;
-  }  .footer {grid-area: 3 / span 6;}
-  .uvodna-slika {
-    height: 250px;
-  }
-  .uvodna-vsebina h1 {
-    font-size: 36px;
-  }
-  .uvodna-vsebina p {
-    font-size: 14px;
-  }}

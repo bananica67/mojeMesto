@@ -1,3 +1,4 @@
+// SKRIPT ZA PRIJAVO
 document.addEventListener("DOMContentLoaded", () => {
     const loginForm = document.getElementById("loginForm");
 
@@ -57,3 +58,85 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 }); 
+
+
+
+// SKRIPT ZA PROFIL
+// Ko se celotna stran naloži, takoj osvežimo podatke iz LocalStorage
+document.addEventListener("DOMContentLoaded", function() {
+    prikaziPodatke();
+});
+
+// Funkcija za vizualno menjavo barve in dodajanje obrobe izbranemu krogu
+    function spremeniBarvo(element, barva) {
+      document.querySelectorAll('.barva-krog').forEach(krog => {
+        krog.classList.remove('aktivna');
+      });
+      if (element) {
+        element.classList.add('aktivna');
+      }
+      document.getElementById('uporabnikAvatar').style.backgroundColor = barva;
+    }
+
+// Združena funkcija za spremembo barve in takojšnje shranjevanje v LocalStorage
+    function profilna(element, barva) {
+      spremeniBarvo(element, barva);
+      localStorage.setItem('profilnaBarva', barva);
+    }
+
+// Funkcija za posodobitev imena na profilu in shranjevanje
+    function shraniIme() {
+      const vnesenoIme = document.getElementById('vnosIme').value;
+      if(vnesenoIme.trim() !== "") {
+        document.getElementById('prikazanoIme').textContent = vnesenoIme;
+        
+        // Shranimo v localStorage
+        localStorage.setItem('profilnoIme', vnesenoIme);
+
+        // Zapri modalno okno
+        const modalElement = document.getElementById('modalIme');
+        const modalInstance = bootstrap.Modal.getInstance(modalElement);
+        modalInstance.hide();
+      }
+    }
+
+// Funkcija, ki ob preklopu ali osvežitvi strani naloži podatke nazaj na zaslon
+    function prikaziPodatke() {
+      // 1. Nalaganje in izris shranjenega imena
+      const shranjenoIme = localStorage.getItem('profilnoIme');
+      if (shranjenoIme) {
+        document.getElementById('prikazanoIme').textContent = shranjenoIme;
+        document.getElementById('vnosIme').value = shranjenoIme; // Nastavi vrednost tudi znotraj modala
+      }
+
+      // 2. Nalaganje in izris shranjene barve avatarja
+      const shranjenaBarva = localStorage.getItem('profilnaBarva');
+      if (shranjenaBarva) {
+        // Spremenimo ozadje avatarja
+        document.getElementById('uporabnikAvatar').style.backgroundColor = shranjenaBarva;
+        
+        // Najdemo krog s to barvo in ga označimo kot aktivnega
+        document.querySelectorAll('.barva-krog').forEach(krog => {
+          krog.classList.remove('aktivna');
+          // Ker RGB vrednosti v slogih včasih povzročajo težave pri primerjavi nizov, 
+          // primerjamo neposredno preko sloga (style.backgroundColor)
+          if (krog.style.backgroundColor === shranjenaBarva || krog.getAttribute('onclick').includes(shranjenaBarva)) {
+            krog.classList.add('aktivna');
+          }
+        });
+      }
+    }
+  
+
+
+// SKRIP ZA ZEMLJEVID - status predlogov
+const mapElement = document.getElementById('map');
+
+if (mapElement) {
+  const map = L.map('map').setView([46.5547, 15.6459], 13);
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(map);
+}
