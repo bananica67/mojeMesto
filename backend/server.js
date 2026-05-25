@@ -4,7 +4,7 @@ const pool = new Pool({
   user: 'postgres',           // Tvoj PostgreSQL uporabnik (ponavadi 'postgres')
   host: 'localhost',          // Ker baza teče na tvojem računalniku
   database: 'mojeMesto',      // Točno ime baze, ki si jo ustvarila v pgAdminu
-  password: 'tvoje_geslo_za_pgadmin', // Geslo, ki ga vpišeš ob zagonu pgAdmina
+  password: 'superVarnoGeslo', // Geslo, ki ga vpišeš ob zagonu pgAdmina
   port: 5432,                 // Standardni port za Postgres
 });
 
