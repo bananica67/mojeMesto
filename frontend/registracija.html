@@ -44,74 +44,87 @@
 <div class="card shadow border-0 rounded-4 p-4">
 <h2 class="text-center fw-bold mb-4">Registracija uporabnika</h2>
                 
-    <form class="needs-validation" novalidate>
-                    
-        <div class="mb-3">
+
+      <form class="needs-validation" action="http://localhost:3000/registracija" method="POST" novalidate>
+                
+    <div class="mb-3">
         <label for="naziv" class="form-label">Spol</label>
-        <select class="form-select" id="naziv" required>
+        <select class="form-select" id="naziv" name="spol" required>
             <option value="" disabled selected>Izberite spol</option>
             <option value="g.">Moški</option>
             <option value="ga.">Ženska</option>
-            </select>
+        </select>
         <div class="invalid-feedback">Prosimo, izberite spol.</div>
-        </div>
+    </div>
 
-        <div class="mb-3">
-        <label for="imePriimek" class="form-label">Ime in priimek</label>
-        <input type="text" class="form-control" id="imePriimek" placeholder="Ime Priimek" required>
-        <div class="invalid-feedback">Vnesite ime in priimek.</div>
-        </div>
+    <div class="mb-3">
+        <label for="ime" class="form-label">Ime</label>
+        <input type="text" class="form-control" id="ime" name="ime" placeholder="Vnesite ime" required>
+        <div class="invalid-feedback">Vnesite ime.</div>
+    </div>
 
-        <div class="mb-3">
+    <div class="mb-3">
+        <label for="priimek" class="form-label">Priimek</label>
+        <input type="text" class="form-control" id="priimek" name="priimek" placeholder="Vnesite priimek" required>
+        <div class="invalid-feedback">Vnesite priimek.</div>
+    </div>
+
+    <div class="mb-3">
         <label for="email" class="form-label">E-mail naslov</label>
-        <input type="email" class="form-control" id="email" placeholder="ime@primer.si" required>
+        <input type="email" class="form-control" id="email" name="email" placeholder="ime@primer.si" required>
         <div class="invalid-feedback">Vnesite veljaven e-naslov.</div>
-        </div>
+    </div>
 
-        <div class="row">
+    <div class="mb-3">
+        <label for="geslo" class="form-label">Geslo</label>
+        <input type="password" class="form-control" id="geslo" name="geslo" placeholder="Vnesite geslo" required>
+        <div class="invalid-feedback">Vnesite geslo.</div>
+    </div>
+
+    <div class="mb-3">
+        <label for="telefon" class="form-label">Telefon</label>
+        <input type="text" class="form-control" id="telefon" name="telefon" placeholder="041XXXXXX">
+    </div>
+
+    <div class="row">
         <div class="col-md-8 mb-3">
-        <label for="naslov" class="form-label">Naslov</label>
-        <input type="text" class="form-control" id="naslov" required>
-        <div class="invalid-feedback">Vnesite naslov.</div>             
+            <label for="naslov" class="form-label">Naslov</label>
+            <input type="text" class="form-control" id="naslov" name="naslov"> 
         </div>
-
         <div class="col-md-4 mb-3">
-        <label for="hisna_st" class="form-label">Hišna št.</label>
-        <input type="number" class="form-control" id="hisna_st" required> 
-        <div class="invalid-feedback">Št?</div>
+            <label for="hisna_st" class="form-label">Hišna št.</label>
+            <input type="number" class="form-control" id="hisna_st" name="hisna_st"> 
         </div>
-        
-        </div>
+    </div>
 
-        <div class="mb-3">
+    <div class="mb-3">
         <label for="posta_kraj" class="form-label">Poštna številka in kraj</label>
-        <input type="text" class="form-control" id="posta_kraj" required>
-        <div class="invalid-feedback">Vnesite pošto in kraj.</div>
-        </div>
+        <input type="text" class="form-control" id="posta_kraj" name="posta_kraj">
+    </div>
 
-        <div class="mb-3">
+    <div class="mb-3">
         <label for="datum_rojstva" class="form-label">Datum rojstva</label>
-        <input type="date" class="form-control" id="datum_rojstva" required>
-        <div class="invalid-feedback">Izberite datum rojstva.</div>
-        </div>
+        <input type="date" class="form-control" id="datum_rojstva" name="datum_rojstva">
+    </div>
 
-        <div class="mb-3">
+    <div class="mb-3">
         <label for="opombe" class="form-label">Opombe (max 300 znakov)</label>
-        <textarea class="form-control" id="opombe" rows="3" maxlength="300"></textarea>
-        </div>
+        <textarea class="form-control" id="opombe" name="opombe" rows="3" maxlength="300"></textarea>
+    </div>
 
-        <div class="mb-4 form-check">
+    <div class="mb-4 form-check">
         <input type="checkbox" class="form-check-input" id="strinjanje" required>
         <label class="form-check-label" for="strinjanje">Strinjam se s pogoji uporabe</label>
         <div class="invalid-feedback">Za nadaljevanje se morate strinjati.</div>
-        </div>
+    </div>
 
-        <div class="d-flex gap-1">
+    <div class="d-flex gap-1">
         <button type="submit" class="btn btn-danger text-white fw-bold px-4">Registriraj</button>
-        <button type="reset"  class="btn btn-secondary px-4">Ponastavi</button>
-        </div>
+        <button type="reset" class="btn btn-secondary px-4">Ponastavi</button>
+    </div>
 
-    </form>
+</form>              
+       
 
 </div>
 </div>
