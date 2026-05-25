@@ -32,7 +32,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             try {
                 // 4. Pošljemo podatke na Node.js strežnik (Natančna pot s portom 3000!)
-                const response = await fetch("http://localhost:3000/api/prijava", {
+                const response = await fetch("http://localhost:3000/prijava", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json"
@@ -45,6 +45,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 if (rezultat.uspeh) {
                     // Če je prijava uspešna, preusmerimo na profil
+                    localStorage.setItem('profilnoIme', rezultat.ime + " " + rezultat.priimek);
+                    localStorage.setItem('profilniEmail', rezultat.email);
                     window.location.href = "profil.html";
                 } else {
                     // Izpiše napako ("Uporabnik ne obstaja!" ali "Napačno geslo")
@@ -101,34 +103,35 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
 // Funkcija, ki ob preklopu ali osvežitvi strani naloži podatke nazaj na zaslon
-    function prikaziPodatke() {
-      // 1. Nalaganje in izris shranjenega imena
-      const shranjenoIme = localStorage.getItem('profilnoIme');
-      if (shranjenoIme) {
+ function prikaziPodatke() {
+    // 1. Nalaganje in izris shranjenega imena
+    const shranjenoIme = localStorage.getItem('profilnoIme');
+    if (shranjenoIme) {
         document.getElementById('prikazanoIme').textContent = shranjenoIme;
-        document.getElementById('vnosIme').value = shranjenoIme; // Nastavi vrednost tudi znotraj modala
-      }
+        document.getElementById('vnosIme').value = shranjenoIme; // Nastavi vrednost znotraj modala
+    }
 
-      // 2. Nalaganje in izris shranjene barve avatarja
-      const shranjenaBarva = localStorage.getItem('profilnaBarva');
-      if (shranjenaBarva) {
-        // Spremenimo ozadje avatarja
+    // DODANO: Izris shranjenega e-maila
+    const shranjenEmail = localStorage.getItem('profilniEmail');
+    const emailElement = document.getElementById('prikazanEmail');
+    if (shranjenEmail && emailElement) {
+        emailElement.textContent = shranjenEmail;
+    }
+
+    // 2. Nalaganje in izris shranjene barve avatarja
+    const shranjenaBarva = localStorage.getItem('profilnaBarva');
+    if (shranjenaBarva) {
         document.getElementById('uporabnikAvatar').style.backgroundColor = shranjenaBarva;
         
-        // Najdemo krog s to barvo in ga označimo kot aktivnega
         document.querySelectorAll('.barva-krog').forEach(krog => {
           krog.classList.remove('aktivna');
-          // Ker RGB vrednosti v slogih včasih povzročajo težave pri primerjavi nizov, 
-          // primerjamo neposredno preko sloga (style.backgroundColor)
           if (krog.style.backgroundColor === shranjenaBarva || krog.getAttribute('onclick').includes(shranjenaBarva)) {
             krog.classList.add('aktivna');
           }
         });
-      }
     }
+}
   
-
-
 // SKRIP ZA ZEMLJEVID - status predlogov
 const mapElement = document.getElementById('map');
 
@@ -139,4 +142,10 @@ if (mapElement) {
     maxZoom: 19,
     attribution: '&copy; OpenStreetMap contributors'
   }).addTo(map);
+}
+
+function odjaviUporabnika() {
+    localStorage.clear(); // To izbriše Kajo Bohorč in vse stare podatke!
+    alert('Odjava uspešna.');
+    window.location.href = 'prijava.html'; // Te vrže nazaj na prijavo
 }

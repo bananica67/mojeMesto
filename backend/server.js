@@ -12,7 +12,7 @@ const pool = new Pool({
   port: 5432,
 });
 
-// Nujno za registracijo 
+
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
@@ -40,7 +40,7 @@ app.post('/registracija', async (req, res) => {
         res.send(`
             <script>
                 alert('Registracija uspešna! Zdaj se lahko prijavite.');
-                window.location.href = 'http://127.0.0.1:5500/frontend/prijava.html';
+                window.location.href = 'http://localhost:3000/prijava.html';
             </script>
         `);
 //napaka v bazi //
@@ -53,4 +53,39 @@ app.post('/registracija', async (req, res) => {
 
 app.listen(3000, () => {
   console.log("Strežnik deluje na http://localhost:3000");
+});
+
+//prijava
+// --- POT ZA PRIJAVO ---
+app.post('/prijava', async (req, res) => {
+    const { email, geslo } = req.body;
+
+    try {
+        
+        const userCheck = await pool.query('SELECT * FROM Uporabnik WHERE email = $1', [email]);
+
+        if (userCheck.rows.length === 0) {
+            // Vrnemo JSON z uspeh: false, da ga skripta prebere
+            return res.json({ uspeh: false, sporocilo: 'Uporabnik s tem e-mailom ne obstaja!' });
+        }
+
+        const uporabnik = userCheck.rows[0];
+
+        
+        if (uporabnik.geslo !== geslo) {
+            return res.json({ uspeh: false, sporocilo: 'Napačno geslo!' });
+        }
+
+        
+        return res.json({ 
+    uspeh: true, 
+    ime: uporabnik.ime, 
+    priimek: uporabnik.priimek, 
+    email: uporabnik.email 
+});
+        
+    } catch (err) {
+        console.error("Napaka pri prijavi na strežniku:", err);
+        return res.json({ uspeh: false, sporocilo: 'Prišlo je do napake na strežniku pri povezavi z bazo.' });
+    }
 });
