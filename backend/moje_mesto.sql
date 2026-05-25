@@ -1,10 +1,11 @@
 DROP TABLE IF EXISTS Uporabnik_Znacka CASCADE;
-DROP TABLE IF EXISTS Znacka CASCADE;
+DROP TABLE IF EXISTS Značka CASCADE;
 DROP TABLE IF EXISTS Komentar CASCADE;
 DROP TABLE IF EXISTS Podpora CASCADE;
 DROP TABLE IF EXISTS Objava CASCADE;
 DROP TABLE IF EXISTS Status_pobud CASCADE;
-DROP TABLE IF EXISTS Tip_odlocanja CASCADE; 
+DROP TABLE IF EXISTS Tip_odlocanja CASCADE;
+DROP TABLE IF EXISTS Tip_objave CASCADE;
 DROP TABLE IF EXISTS Uporabnik CASCADE;
 
 CREATE TABLE Uporabnik (
@@ -17,18 +18,22 @@ CREATE TABLE Uporabnik (
     datum_registracije date NOT NULL
 );
 
+CREATE TABLE Tip_objave (
+    id_tip_objave bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    naziv varchar(255) NOT NULL
+);
 
 CREATE TABLE Tip_odlocanja (
     id_tip_odlocanja bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     naziv varchar(255) NOT NULL
-); 
+);
 
 CREATE TABLE Status_pobud (
     id_status_pobud bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     naziv varchar(255) NOT NULL
 );
 
-CREATE TABLE Znacka (
+CREATE TABLE Značka (
     id_znacka bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     naziv varchar(255) NOT NULL,
     opis varchar(255) NOT NULL
@@ -41,7 +46,6 @@ CREATE TABLE Objava (
     lokacija varchar(255) NOT NULL,
     fotografija varchar(255),
     datum_objave date NOT NULL,
-	tip_objave varchar(255) NOT NULL,
     TK_Uporabnikid_uporabnik integer NOT NULL REFERENCES Uporabnik (id_uporabnik),
     TK_Tip_objaveid_tip_objave integer NOT NULL REFERENCES Tip_objave (id_tip_objave),
     TK_Tip_odlocanjaid_tip_odlocanja integer NOT NULL REFERENCES Tip_odlocanja (id_tip_odlocanja),
@@ -70,10 +74,7 @@ CREATE TABLE Uporabnik_Znacka (
     TK_Značkaid_znacka integer NOT NULL REFERENCES Značka (id_znacka)
 );
 
----pravice--
-DROP ROLE IF EXISTS admin_vloga;
-DROP ROLE IF EXISTS uporabnik_vloga;
-
+--- 1. ODVZEM VSEH PRAVIC NA BAZI IN SHEMI (Čiščenje)
 REVOKE ALL PRIVILEGES ON DATABASE moje_mesto FROM admin_vloga;
 REVOKE ALL PRIVILEGES ON DATABASE moje_mesto FROM uporabnik_vloga;
 
@@ -85,11 +86,24 @@ REVOKE ALL PRIVILEGES ON ALL TABLES IN SCHEMA public FROM uporabnik_vloga;
 REVOKE ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public FROM uporabnik_vloga;
 REVOKE ALL PRIVILEGES ON SCHEMA public FROM uporabnik_vloga;
 
+--novi dodatek21.5 
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'admin_vloga') THEN
+        CREATE ROLE admin_vloga WITH LOGIN PASSWORD 'mesto_admin_9';
+    ELSE
+        ALTER ROLE admin_vloga WITH LOGIN PASSWORD 'mesto_admin_9';
+    END IF;
 
-CREATE ROLE admin_vloga WITH LOGIN PASSWORD 'mesto_admin_9';
-CREATE ROLE uporabnik_vloga WITH LOGIN PASSWORD 'obcan_bralec_1';
+    IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'uporabnik_vloga') THEN
+        CREATE ROLE uporabnik_vloga WITH LOGIN PASSWORD 'obcan_bralec_1';
+    ELSE
+        ALTER ROLE uporabnik_vloga WITH LOGIN PASSWORD 'obcan_bralec_1';
+    END IF;
+END
+$$;
 
-
+--- 4. POVEZAVA NA BAZO
 GRANT CONNECT ON DATABASE moje_mesto TO admin_vloga;
 GRANT CONNECT ON DATABASE moje_mesto TO uporabnik_vloga;
 
@@ -102,12 +116,13 @@ GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO admin_vloga;
 GRANT USAGE ON SCHEMA public TO uporabnik_vloga;
 GRANT SELECT ON ALL TABLES IN SCHEMA public TO uporabnik_vloga;
 
-GRANT INSERT, UPDATE ON TABLE "Objava" TO uporabnik_vloga;
-GRANT INSERT, UPDATE ON TABLE "Uporabnik" TO uporabnik_vloga;
+GRANT INSERT, UPDATE ON TABLE Objava TO uporabnik_vloga;
+GRANT INSERT, UPDATE ON TABLE Komentar TO uporabnik_vloga;
+GRANT INSERT, UPDATE ON TABLE Podpora TO uporabnik_vloga;
+GRANT INSERT, UPDATE ON TABLE Uporabnik TO uporabnik_vloga;
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO uporabnik_vloga;
 
 
 SELECT rolname AS uporabnik, rolcanlogin, rolsuper
 FROM pg_roles
 WHERE rolname IN ('admin_vloga', 'uporabnik_vloga');
----tip objave ---predlogi ---admin in uporabnik svoji

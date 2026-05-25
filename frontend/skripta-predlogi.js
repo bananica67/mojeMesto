@@ -7,7 +7,6 @@ const zacetniPredlogi = [
     opis: "A ste videli te luknje v Melju? Vsak dan se vozim tam v službo in samo čakam, kdaj mi bo odletela guma. Ko dežuje, se sploh ne vidi, kako globoke so.",
     slika: "slike/predlog_1.jpg",
     vsecki: 0,
-    datum: 1717000000000,
     komentarji: [
       { avtor: "Janja", besedilo: "Katastrofa je tam, res. Vsak dan cik-cak vozim." },
       { avtor: "Marko", besedilo: "Se strinjam." }
@@ -19,7 +18,6 @@ const zacetniPredlogi = [
     opis: "Vsakič, ko malo bolj dežuje, se na Smetanovi pri FERI-ju naredi pravo jezero. Voda sploh ne odteka in stoji tam cel dan. Pešci ne moremo čez cesto.",
     slika: "slike/predlog_2.jpg",
     vsecki: 0,
-    datum: 1716000000000,
     komentarji: [
       { avtor: "Nik", besedilo: "Vem prav grozno je." },
       { avtor: "Ana", besedilo: "Pa vozit se je tam mimo tudi obupno, ko je tako." }
@@ -27,9 +25,9 @@ const zacetniPredlogi = [
   }
 ];
 
-//to shrani vse predloge v session storage, tude tote ki so ze dolocene
-if (!sessionStorage.getItem('vsiPredlogi')) {
-  sessionStorage.setItem('vsiPredlogi', JSON.stringify(zacetniPredlogi));
+//shranjevanje v localStorage
+if (!localStorage.getItem('vsiPredlogi')) {
+  localStorage.setItem('vsiPredlogi', JSON.stringify(zacetniPredlogi));
 }
 
 //PRIKAZ PREDLOGOV
@@ -37,17 +35,22 @@ if (!sessionStorage.getItem('vsiPredlogi')) {
 const vsebnikPredlogov = document.getElementById('predlog-uporabnik');
 
 if (vsebnikPredlogov) {
-  const predlogi = JSON.parse(sessionStorage.getItem('vsiPredlogi'));
-
+  const predlogi = JSON.parse(localStorage.getItem('vsiPredlogi'));
+  
   vsebnikPredlogov.innerHTML = '';
 
+  //generiramo predloge za html
   predlogi.forEach(predlog => {
-
+    
+    //komentarji
     let komentarjiHTML = '';
-
     predlog.komentarji.forEach(kom => {
       komentarjiHTML += `<div class="komentar"><strong>${kom.avtor}:</strong> ${kom.besedilo}</div>`;
     });
+
+    //Pred izrisom HTML-ja preberemo trenutno shranjeno število glasov iz localStorage
+    const trenutniVsecki = localStorage.getItem(`glas_${predlog.id}_vsecki`) || 0;
+    const trenutniNeradi = localStorage.getItem(`glas_${predlog.id}_neradi`) || 0;
 
     const karticaHTML = `
       <div class="col-lg-6">
@@ -56,32 +59,32 @@ if (vsebnikPredlogov) {
           <div class="card-body p-4">
             <h3 class="fw-bold mb-3">${predlog.naslov}</h3>
             <p class="text-muted">${predlog.opis}</p>
+            
+          <div class="d-flex gap-3 my-4">
+            <button class="btn btn-success glas-btn" onclick="glasuj(${predlog.id}, 'vsecki')">
+            <i class="fas fa-thumbs-up"></i> <span id="span_${predlog.id}_vsecki">${trenutniVsecki}</span>
+            </button>
 
-            <div class="d-flex gap-3 my-4">
-              <button class="btn btn-success glas-btn">
-                <i class="fas fa-thumbs-up"></i>
-              </button>
-              <button class="btn btn-danger glas-btn">
-                <i class="fas fa-thumbs-down"></i>
-              </button>
-            </div>
-
-            <hr>
-
-            <h5 class="fw-bold mb-3">Komentarji</h5>
-
-            <div class="mb-3">
-              ${komentarjiHTML}
-            </div>
-
-            <textarea class="form-control comment-box mb-3" rows="3" placeholder="Dodaj komentar..."></textarea>
-            <button class="btn komentar-gumb fw-bold">Objavi komentar</button>
-
+            <button class="btn btn-danger glas-btn" onclick="glasuj(${predlog.id}, 'neradi')">
+            <i class="fas fa-thumbs-down"></i> <span id="span_${predlog.id}_neradi">${trenutniNeradi}</span>
+            </button>
+          </div>
+            
+          <hr>
+            
+          <h5 class="fw-bold mb-3">Komentarji</h5>
+          <div class="mb-3">
+            ${komentarjiHTML}
+          </div>
+                            
+          <textarea class="form-control comment-box mb-3" rows="3" placeholder="Dodaj komentar..."></textarea>
+          <button class="btn komentar-gumb fw-bold">Objavi komentar</button>
           </div>
         </div>
       </div>
     `;
 
+    //predlog se s tem izpise v html
     vsebnikPredlogov.innerHTML += karticaHTML;
   });
 }
@@ -89,6 +92,7 @@ if (vsebnikPredlogov) {
 
 //DODAJANJE PREDLOGOV - ZA UPORABNIKA
 
+//zemljevid naredi marker in shrani lokacijo v localStorage
 const mapElement = document.getElementById('map');
 
 if (mapElement) {
@@ -112,46 +116,62 @@ if (mapElement) {
   });
 }
 
+// to je za objavo na stran predlogi.html
 const gumbObjavi = document.getElementById('gumb-objavi');
 
 if (gumbObjavi) {
   gumbObjavi.addEventListener('click', function() {
-
     const naslov = document.getElementById('naslov').value;
     const opis = document.getElementById('opis').value;
     const slikaInput = document.getElementById('slika');
 
+    // preveri če sta izpolnjena naslov in opis
     if (!naslov || !opis) {
       alert("Prosim, izpolnite naslov in opis problema.");
       return;
     }
 
-    const vsiPredlogi = JSON.parse(sessionStorage.getItem('vsiPredlogi')) || [];
-    const novId = vsiPredlogi.length + 1;
+    // Funkcija, ki dejansko shrani predlog
+    function shraniInPreusmeri(koncnaSlikaUrl) {
+      //iskanje starih predlogov v localStorage namesto sessionStorage
+      const vsiPredlogi = JSON.parse(localStorage.getItem('vsiPredlogi')) || [];
+      const novId = vsiPredlogi.length + 1;
 
-    let slikaUrl = "slike/zacetna.jpg";
+      const novPredlog = {
+        id: novId,
+        naslov: naslov,
+        opis: opis,
+        slika: koncnaSlikaUrl, 
+        vsecki: 0,
+        komentarji: [],
+        lat: typeof izbraneKoordinate !== 'undefined' && izbraneKoordinate ? izbraneKoordinate.lat : null,
+        lng: typeof izbraneKoordinate !== 'undefined' && izbraneKoordinate ? izbraneKoordinate.lng : null
+      };
 
-    if (slikaInput && slikaInput.files && slikaInput.files[0]) {
-      const izbranaDatoteka = slikaInput.files[0];
-      slikaUrl = URL.createObjectURL(izbranaDatoteka);
+      vsiPredlogi.push(novPredlog);
+      //Shranjevanje v localStorage 
+      localStorage.setItem('vsiPredlogi', JSON.stringify(vsiPredlogi));
+
+      // ko kliknemo gumb nas da nazaj na stran predlogi.html
+      window.location.href = "predlogi.html";
     }
 
-    const novPredlog = {
-      id: novId,
-      naslov: naslov,
-      opis: opis,
-      datum: Date.now(),
-      slika: slikaUrl,
-      vsecki: 0,
-      komentarji: [],
-      lat: typeof izbraneKoordinate !== 'undefined' && izbraneKoordinate ? izbraneKoordinate.lat : null,
-      lng: typeof izbraneKoordinate !== 'undefined' && izbraneKoordinate ? izbraneKoordinate.lng : null
-    };
+    // Preverjanje slike in pretvorba v Base64
+    if (slikaInput && slikaInput.files && slikaInput.files[0]) {
+      const izbranaDatoteka = slikaInput.files[0];
+      const reader = new FileReader();
 
-    vsiPredlogi.push(novPredlog);
-    sessionStorage.setItem('vsiPredlogi', JSON.stringify(vsiPredlogi));
+      // Ko reader konča z branjem, dobimo Base64 string v reader.result
+      reader.onloadend = function() {
+        shraniInPreusmeri(reader.result);
+      };
 
-    window.location.href = "predlogi.html";
+      // Zaženemo branje datoteke kot Data URL (Base64)
+      reader.readAsDataURL(izbranaDatoteka);
+    } else {
+      // Če ni izbrane slike, uporabimo privzeto
+      shraniInPreusmeri("slike/zacetna.jpg");
+    }
   });
 }
 
@@ -165,7 +185,6 @@ const zacetniPredlogiObcine = [
     opis: "Občina načrtuje izgradnjo nove kolesarske poti med centrom mesta in mestnim parkom za večjo varnost kolesarjev.",
     slika: "slike/kolo.jpg",
     vsecki: 0,
-    datum: 1715000000000,
     komentarji: [
       { avtor: "Mitja", besedilo: "To bi zelo izboljšalo promet v centru." },
       { avtor: "Nina", besedilo: "Super ideja za bolj varno vožnjo s kolesom." }
@@ -177,7 +196,6 @@ const zacetniPredlogiObcine = [
     opis: "Predlagana je prenova avtobusnih postaj z novimi nadstreški, osvetlitvijo in digitalnimi prikazovalniki prihodov.",
     slika: "slike/avtobus.jpg",
     vsecki: 0,
-    datum: 1714000000000,
     komentarji: [
       { avtor: "Miha", besedilo: "Končno nekaj koristnega za javni prevoz." },
       { avtor: "Petra", besedilo: "Upam da pride tudi več avtobusov." }
@@ -186,10 +204,9 @@ const zacetniPredlogiObcine = [
   {
     id: 3,
     naslov: "Boljša osvetlitev pešpoti",
-    opis: "Uporabniki opozarjajo na slabo osvetljene poti ob robu mesta, kar zmanjšuje občutek varnosti v večernih urah.",
+    opis: "Uporabniki opozarjajo na slabo osvetljene poti ob robu mesta, kaj zmanjšuje občutek varnosti v večernih urah.",
     slika: "slike/osvetlitev.jpg",
     vsecki: 0,
-    datum: 1713000000000,
     komentarji: [
       { avtor: "Janez", besedilo: "Poti ob gozdu so res popolnoma v temi, nujno rabimo luči." },
       { avtor: "Maja", besedilo: "Se strinjam, pozimi je tam zelo neprijetno hoditi." }
@@ -201,7 +218,6 @@ const zacetniPredlogiObcine = [
     opis: "Potrebno bi bilo rednejše vzdrževanje klopi in namestitev dodatnih košev za odpadke v osrednjem parku.",
     slika: "slike/park.jpeg",
     vsecki: 0,
-    datum: 1712000000000,
     komentarji: [
       { avtor: "Luka", besedilo: "Koši so čez vikend vedno polni, potrebujemo pogostejši odvoz." },
       { avtor: "Anja", besedilo: "Park je nujno potreben prenove, sploh klopi." }
@@ -209,27 +225,31 @@ const zacetniPredlogiObcine = [
   }
 ];
 
-if (!sessionStorage.getItem('vsiPredlogiObcine')) {
-  sessionStorage.setItem('vsiPredlogiObcine', JSON.stringify(zacetniPredlogiObcine));
+if (!localStorage.getItem('vsiPredlogiObcine')) {
+  localStorage.setItem('vsiPredlogiObcine', JSON.stringify(zacetniPredlogiObcine));
 }
-
 
 //PRIKAZ PREDLOGOV OBCINE
 
 const vsebnikObcina = document.getElementById('predlogi-obcina');
 
 if (vsebnikObcina) {
-  const predlogi = JSON.parse(sessionStorage.getItem('vsiPredlogiObcine'));
-
+  const predlogi = JSON.parse(localStorage.getItem('vsiPredlogiObcine'));
+  
   vsebnikObcina.innerHTML = '';
 
+  //generiramo predloge za html
   predlogi.forEach(predlog => {
-
+    
+    //komentarji    
     let komentarjiHTML = '';
-
     predlog.komentarji.forEach(kom => {
       komentarjiHTML += `<div class="komentar"><strong>${kom.avtor}:</strong> ${kom.besedilo}</div>`;
     });
+
+    //preberemo shranjene glasove za občinske kartice pred izrisom HTML-ja
+    const trenutniVseckiObcina = localStorage.getItem(`glas_${predlog.id}_vsecki`) || 0;
+    const trenutniNeradiObcina = localStorage.getItem(`glas_${predlog.id}_neradi`) || 0;
 
     const karticaHTML = `
       <div class="col-lg-6">
@@ -238,39 +258,39 @@ if (vsebnikObcina) {
           <div class="card-body p-4">
             <h3 class="fw-bold mb-3">${predlog.naslov}</h3>
             <p class="text-muted">${predlog.opis}</p>
-
+            
             <div class="d-flex gap-3 my-4">
-              <button class="btn btn-success glas-btn">
-                <i class="fas fa-thumbs-up"></i>
+              <button class="btn btn-success glas-btn" onclick="glasuj(${predlog.id}, 'vsecki')">
+              <i class="fas fa-thumbs-up"></i> <span id="span_${predlog.id}_vsecki">${trenutniVseckiObcina}</span>
               </button>
-              <button class="btn btn-danger glas-btn">
-                <i class="fas fa-thumbs-down"></i>
+
+              <button class="btn btn-danger glas-btn" onclick="glasuj(${predlog.id}, 'neradi')">
+              <i class="fas fa-thumbs-down"></i> <span id="span_${predlog.id}_neradi">${trenutniNeradiObcina}</span>
               </button>
             </div>
-
+            
             <hr>
-
+            
             <h5 class="fw-bold mb-3">Komentarji</h5>
-
             <div class="mb-3">
               ${komentarjiHTML}
             </div>
-
+                            
             <textarea class="form-control comment-box mb-3" rows="3" placeholder="Dodaj komentar..."></textarea>
             <button class="btn komentar-gumb fw-bold">Objavi komentar</button>
-
           </div>
         </div>
       </div>
     `;
 
+    //predlog se s tem izpise v html
     vsebnikObcina.innerHTML += karticaHTML;
   });
 }
 
-
 //DODAJANJE PREDLOGOV - ZA OBCINO
 
+//zemljevid naredi marker in shrani lokacijo v localStorage
 const mapElementObcina = document.getElementById('map-obcina');
 let izbraneKoordinateObcina = null;
 
@@ -282,57 +302,83 @@ if (mapElementObcina) {
     attribution: '&copy; OpenStreetMap contributors'
   }).addTo(mapObcina);
 
-  let trenutniMarkerObcina = null;
+  let trenchesMarkerObcina = null;
 
   mapObcina.on('click', function(e) {
     izbraneKoordinateObcina = e.latlng;
-    if (trenutniMarkerObcina) {
-      trenutniMarkerObcina.setLatLng(izbraneKoordinateObcina);
+    if (trenchesMarkerObcina) {
+      trenchesMarkerObcina.setLatLng(izbraneKoordinateObcina);
     } else {
-      trenutniMarkerObcina = L.marker(izbraneKoordinateObcina).addTo(mapObcina);
+      trenchesMarkerObcina = L.marker(izbraneKoordinateObcina).addTo(mapObcina);
     }
   });
 }
 
+// to je za objavo na stran obcina.html
 const gumbObjaviObcina = document.getElementById('gumb-objavi-obcina');
 
 if (gumbObjaviObcina) {
   gumbObjaviObcina.addEventListener('click', function() {
-
     const naslov = document.getElementById('naslov-obcina').value;
     const opis = document.getElementById('opis-obcina').value;
-    const slikaInputObcina = document.getElementById('slika-obcina');
+    const slikaInputObcina = document.getElementById('slika-obcina'); 
 
+    // preveri če sta izpolnjena naslov in opis
     if (!naslov || !opis) {
       alert("Prosim, izpolnite naslov in opis problema.");
       return;
     }
 
-    const vsiPredlogiObcine = JSON.parse(sessionStorage.getItem('vsiPredlogiObcine')) || [];
-    const novId = vsiPredlogiObcine.length + 1;
+    // Funkcija za shranjevanje občinskega predloga
+    function shraniInOsveziObcino(koncnaSlikaUrl) {
+      const vsiPredlogiObcine = JSON.parse(localStorage.getItem('vsiPredlogiObcine')) || [];
+      const novId = vsiPredlogiObcine.length + 1;
 
-    let slikaUrl = "slike/zacetna.jpg";
+      const novPredlogObcine = {
+        id: novId,
+        naslov: naslov,
+        opis: opis,
+        slika: koncnaSlikaUrl, 
+        vsecki: 0,
+        komentarji: [],
+        lat: izbraneKoordinateObcina ? izbraneKoordinateObcina.lat : null,
+        lng: izbraneKoordinateObcina ? izbraneKoordinateObcina.lng : null
+      };
 
-    if (slikaInputObcina && slikaInputObcina.files && slikaInputObcina.files[0]) {
-      const izbranaDatoteka = slikaInputObcina.files[0];
-      slikaUrl = URL.createObjectURL(izbranaDatoteka);
+      vsiPredlogiObcine.push(novPredlogObcine);
+      localStorage.setItem('vsiPredlogiObcine', JSON.stringify(vsiPredlogiObcine));
+
+      // ko kliknemo gumb nas osveži stran
+      window.location.reload();
     }
 
-    const novPredlogObcine = {
-      id: novId,
-      naslov: naslov,
-      opis: opis,
-      datum: Date.now(),
-      slika: slikaUrl,
-      vsecki: 0,
-      komentarji: [],
-      lat: izbraneKoordinateObcina ? izbraneKoordinateObcina.lat : null,
-      lng: izbraneKoordinateObcina ? izbraneKoordinateObcina.lng : null
-    };
+    // Preverjanje slike in pretvorba v Base64 za občino
+    if (slikaInputObcina && slikaInputObcina.files && slikaInputObcina.files[0]) {
+      const izbranaDatoteka = slikaInputObcina.files[0];
+      const reader = new FileReader();
 
-    vsiPredlogiObcine.push(novPredlogObcine);
-    sessionStorage.setItem('vsiPredlogiObcine', JSON.stringify(vsiPredlogiObcine));
+      reader.onloadend = function() {
+        shraniInOsveziObcino(reader.result);
+      };
 
-    window.location.reload();
+      reader.readAsDataURL(izbranaDatoteka);
+    } else {
+      shraniInOsveziObcino("slike/zacetna.jpg");
+    }
   });
 }
+
+
+//vsecki
+window.glasuj = function(id, tip) {
+    const kljuc = `glas_${id}_${tip}`;
+    
+    // SPREMEMBA: Dodana varovalka `|| 0`, če ključ v localStorage še sploh ne obstaja, da ne dobimo napake NaN
+    let trenutnoGlasov = parseInt(localStorage.getItem(kljuc) || 0) + 1;
+    localStorage.setItem(kljuc, trenutnoGlasov);
+    
+    const span = document.getElementById(`span_${id}_${tip}`);
+    if (span) {
+        span.textContent = trenutnoGlasov;
+    }
+};
