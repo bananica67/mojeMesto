@@ -93,6 +93,16 @@
 </div>
 </section>
 
+<div class="filter-vsebnik">
+  <label for="filter-obcina" class="filter-label">Razvrsti po:</label>
+
+  <select id="filter-obcina" class="filter-select">
+    <option value="najnovejsi">Najnovejše</option>
+    <option value="najstarejsi">Najstarejše</option>
+    <option value="vsecki">Največ všečkov</option>
+  </select>
+</div>
+
 <main>   
   <!-- JavaScript tu samodejno zgenerira predloge -->
   <div class="row g-4" id="predlogi-obcina"></div>
@@ -127,5 +137,6 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <script src="skripta-predlogi.js"></script>
+<script src="filtri.js"></script>
 </body>
 </html>

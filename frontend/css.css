@@ -642,3 +642,33 @@ footer p, footer a, footer span, footer i {
   text-decoration: none;
 }
 
+/* FILTERI */
+
+.filter-vsebnik{
+  width: 85%;
+  margin: 20px auto 0 auto;
+
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+}
+
+.filter-label{
+  font-weight: bold;
+  font-size: 15px;
+}
+
+.filter-select{
+  padding: 10px 15px;
+  border-radius: 8px;
+  border: 2px solid #cb2121;
+  background-color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.filter-select:focus{
+  outline: none;
+  border-color: #8c1212;
+}
