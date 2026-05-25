@@ -1,13 +1,64 @@
 <!DOCTYPE html>
 <html lang="sl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>IDE-JA - Profil Občine</title>
-
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="css.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IDE-JA - Profil Občine</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link rel="stylesheet" href="css.css">
+  <style>
+    /* Prilagoditev za admin profil, ki sledi tvojemu razredu .admin */
+    .admin-avatar {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background-color: #8c1212; /* Temnejša občinska rdeča */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+      color: white;
+      margin: 0 auto 20px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    }
+    /* Gumb za brisanje (Smetnjak) */
+    .gumb-brisi {
+      background-color: transparent;
+      color: #dc3545;
+      border: 2px solid #dc3545;
+      border-radius: 5px;
+      padding: 5px 10px;
+      font-weight: bold;
+      transition: all 0.3s;
+    }
+    .gumb-brisi:hover {
+      background-color: #dc3545;
+      color: white;
+    }
+    /* Dropdown stil za statuse, ki paše k tvojemu fokusu v CSS */
+    .status-select {
+      font-weight: bold;
+      border: 2px solid #ced4da;
+    }
+    .status-select:focus {
+      border-color: #cb2121;
+      box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
+    }
+    .gumb-odjava {
+      background-color: transparent;
+      color: #cb2121;
+      border: 2px solid #cb2121;
+      font-weight: bold;
+      padding: 8px 20px;
+      border-radius: 5px;
+      transition: all 0.3s;
+    }
+    .gumb-odjava:hover {
+      background-color: #cb2121;
+      color: #ffffff;
+    }
+  </style>
 </head>
 
 <body>
@@ -45,6 +96,7 @@
 <div class="container my-5">
   <div class="row g-4">
       
+      <!-- Levi del: Profil občine -->
       <div class="col-lg-3">
         <div class="admin shadow border-0 text-center rounded-3 bg-white p-4">
           <div class="admin-avatar">
@@ -68,95 +120,208 @@
         </div>
       </div>
 
+      <!-- Desni del: Nadzorna plošča z zavihki -->
       <div class="col-lg-9">
         <div class="card border-0 shadow rounded-3 p-4 bg-white" style="min-height: 500px;">
           
-          <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
-            <h2 class="m-0 border-0 text-dark" style="font-size: 24px; font-weight: bold;">Upravljanje predlogov občanov</h2>
-            <span class="badge bg-danger p-2" id="stetjePredlogov">Skupno predlogov: 2</span>
+          <!-- Menjava zavihkov (Predlogi / Uporabniki) -->
+          <ul class="nav nav-tabs mb-4" id="adminTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+              <button class="nav-link active" id="predlogi-tab" data-bs-toggle="tab" data-bs-target="#zavihek-predlogi" type="button" role="tab">
+                <i class="fas fa-lightbulb me-2"></i>Upravljanje predlogov
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="uporabniki-tab" data-bs-toggle="tab" data-bs-target="#zavihek-uporabniki" type="button" role="tab">
+                <i class="fas fa-users me-2"></i>Registrirani uporabniki
+              </button>
+            </li>
+          </ul>
+
+          <!-- Vsebina zavihkov -->
+          <div class="tab-content" id="adminTabsContent">
+            
+            <!-- ZAVIHEK 1: PREDLOGI OBČANOV -->
+            <div class="tab-pane fade show active" id="zavihek-predlogi" role="tabpanel">
+              <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4 class="m-0 fw-bold text-dark" style="font-size: 20px;">Predlogi občanov</h4>
+                <span class="badge bg-danger p-2" id="stetjePredlogov">Skupno predlogov: 2</span>
+              </div>
+
+              <div class="table-responsive" id="tabelaPredlogovKontejner">
+                <table class="table table-hover align-middle">
+                  <thead class="table-light">
+                    <tr>
+                      <th style="width: 15%;">Slika</th>
+                      <th style="width: 35%;">Naslov in opis</th>
+                      <th style="width: 10%;">Glasovi</th>
+                      <th style="width: 25%;">Status (Uredi)</th>
+                      <th style="width: 15%; text-align: center;">Akcija</th>
+                    </tr>
+                  </thead>
+                  <tbody id="seznamPredlogov">
+                    <tr id="predlog-row-1">
+                      <td>
+                        <img src="slike/zacetna.jpg" class="img-fluid rounded-3 shadow-sm" style="height: 60px; width: 80px; object-fit: cover;" alt="Poplava" onerror="this.src='https://images.unsplash.com/photo-1541888946425-d81bb19240f5?q=80&w=150&auto=format&fit=cover'">
+                      </td>
+                      <td>
+                        <h6 class="fw-bold mb-1 text-uppercase" style="font-size: 14px;">Poplava na Smetanovi</h6>
+                        <p class="text-muted small mb-0 text-truncate" style="max-width: 250px;">Vsakič, ko malo bolj dežuje, se pri FERI-ju naredi jezero...</p>
+                      </td>
+                      <td>
+                        <span class="badge bg-success"><i class="fas fa-thumbs-up me-1"></i> 42</span>
+                      </td>
+                      <td>
+                        <select class="form-select form-select-sm status-select" onchange="osveziStatus(1, this.value)">
+                          <option value="Oddano">Oddano</option>
+                          <option value="Odobreno" selected>Odobreno</option>
+                          <option value="V obdelavi">V obdelavi</option>
+                          <option value="Končano">Končano</option>
+                          <option value="Zavrnjeno">Zavrnjeno</option>
+                        </select>
+                      </td>
+                      <td style="text-align: center;">
+                        <button class="gumb-brisi btn-sm" onclick="izbrisiPredlog(1)" title="Izbriši predlog">
+                          <i class="fas fa-trash-alt"></i>
+                        </button>
+                      </td>
+                    </tr>
+                    <tr id="predlog-row-2">
+                      <td>
+                        <img src="slike/zacetna.jpg" class="img-fluid rounded-3 shadow-sm" style="height: 60px; width: 80px; object-fit: cover;" alt="Cesta" onerror="this.src='https://images.unsplash.com/photo-1515162305285-0293e4767cc2?q=80&w=150&auto=format&fit=cover'">
+                      </td>
+                      <td>
+                        <h6 class="fw-bold mb-1 text-uppercase" style="font-size: 14px;">Obupna cesta v Melju</h6>
+                        <p class="text-muted small mb-0 text-truncate" style="max-width: 250px;">A ste videli te luknje v Melju? Vsak dan se vozim tam...</p>
+                      </td>
+                      <td>
+                        <span class="badge bg-success"><i class="fas fa-thumbs-up me-1"></i> 18</span>
+                      </td>
+                      <td>
+                        <select class="form-select form-select-sm status-select" onchange="osveziStatus(2, this.value)">
+                          <option value="Oddano" selected>Oddano</option>
+                          <option value="Odobreno">Odobreno</option>
+                          <option value="V obdelavi">V obdelavi</option>
+                          <option value="Končano">Končano</option>
+                          <option value="Zavrnjeno">Zavrnjeno</option>
+                        </select>
+                      </td>
+                      <td style="text-align: center;">
+                        <button class="gumb-brisi btn-sm" onclick="izbrisiPredlog(2)" title="Izbriši predlog">
+                          <i class="fas fa-trash-alt"></i>
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div id="praznoObvestiloPredlogi" class="text-center py-5 d-none">
+                <i class="fas fa-folder-open text-muted mb-3" style="font-size: 48px;"></i>
+                <h5 class="text-muted">Trenutno ni nobenih predlogov za pregled.</h5>
+              </div>
+            </div>
+
+            <!-- ZAVIHEK 2: UPRAVLJANJE UPORABNIKOV (NOVO!) -->
+            <div class="tab-pane fade" id="zavihek-uporabniki" role="tabpanel">
+              <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4 class="m-0 fw-bold text-dark" style="font-size: 20px;">Seznam registriranih uporabnikov</h4>
+                <span class="badge bg-danger p-2" id="stetjeUporabnikov">Skupno uporabnikov: 3</span>
+              </div>
+
+              <div class="table-responsive" id="tabelaUporabnikovKontejner">
+                <table class="table table-hover align-middle">
+                  <thead class="table-light">
+                    <tr>
+                      <th style="width: 10%;">ID</th>
+                      <th style="width: 30%;">Uporabniško ime / Ime</th>
+                      <th style="width: 30%;">E-pošta</th>
+                      <th style="width: 15%;">Vloga (Status)</th>
+                      <th style="width: 15%; text-align: center;">Akcija</th>
+                    </tr>
+                  </thead>
+                  <tbody id="seznamUporabnikov">
+                    <tr id="uporabnik-row-1">
+                      <td class="fw-bold text-muted">#1</td>
+                      <td>
+                        <div class="d-flex align-items-center">
+                          <div class="rounded-circle me-2 d-flex align-items-center justify-content-center text-white" style="width: 32px; height: 32px; background-color: #923c83; font-size: 12px;">KB</div>
+                          <span class="fw-bold">Kaja Bohorč</span>
+                        </div>
+                      </td>
+                      <td class="text-muted">kaja@student.um.si</td>
+                      <td>
+                        <select class="form-select form-select-sm status-select" onchange="posodobiVlogo(1, this.value)">
+                          <option value="obcan" selected>Občan</option>
+                          <option value="obcina">Predstavnik občine</option>
+                          <option value="admin">Administrator</option>
+                        </select>
+                      </td>
+                      <td style="text-align: center;">
+                        <button class="gumb-brisi btn-sm" onclick="izbrisiUporabnika(1, 'Kaja Bohorč')" title="Izbriši uporabnika">
+                          <i class="fas fa-user-minus"></i>
+                        </button>
+                      </td>
+                    </tr>
+                    <tr id="uporabnik-row-2">
+                      <td class="fw-bold text-muted">#2</td>
+                      <td>
+                        <div class="d-flex align-items-center">
+                          <div class="rounded-circle me-2 d-flex align-items-center justify-content-center text-white" style="width: 32px; height: 32px; background-color: #4a6fa5; font-size: 12px;">JN</div>
+                          <span class="fw-bold">Janez Novak</span>
+                        </div>
+                      </td>
+                      <td class="text-muted">janez.novak@gmail.com</td>
+                      <td>
+                        <select class="form-select form-select-sm status-select" onchange="posodobiVlogo(2, this.value)">
+                          <option value="obcan" selected>Občan</option>
+                          <option value="obcina">Predstavnik občine</option>
+                          <option value="admin">Administrator</option>
+                        </select>
+                      </td>
+                      <td style="text-align: center;">
+                        <button class="gumb-brisi btn-sm" onclick="izbrisiUporabnika(2, 'Janez Novak')" title="Izbriši uporabnika">
+                          <i class="fas fa-user-minus"></i>
+                        </button>
+                      </td>
+                    </tr>
+                    <tr id="uporabnik-row-3">
+                      <td class="fw-bold text-muted">#3</td>
+                      <td>
+                        <div class="d-flex align-items-center">
+                          <div class="rounded-circle me-2 d-flex align-items-center justify-content-center text-white" style="width: 32px; height: 32px; background-color: #2e7d32; font-size: 12px;">MK</div>
+                          <span class="fw-bold">Miran Horvat</span>
+                        </div>
+                      </td>
+                      <td class="text-muted">miran.obcina@maribor.si</td>
+                      <td>
+                        <select class="form-select form-select-sm status-select" onchange="posodobiVlogo(3, this.value)">
+                          <option value="obcan">Občan</option>
+                          <option value="obcina" selected>Predstavnik občine</option>
+                          <option value="admin">Administrator</option>
+                        </select>
+                      </td>
+                      <td style="text-align: center;">
+                        <button class="gumb-brisi btn-sm" onclick="izbrisiUporabnika(3, 'Miran Horvat')" title="Izbriši uporabnika">
+                          <i class="fas fa-user-minus"></i>
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div id="praznoObvestiloUporabniki" class="text-center py-5 d-none">
+                <i class="fas fa-users-slash text-muted mb-3" style="font-size: 48px;"></i>
+                <h5 class="text-muted">V bazi ni registriranih uporabnikov.</h5>
+              </div>
+            </div>
+
           </div>
-
-          <div class="table-responsive">
-            <table class="table table-hover align-middle">
-              <thead class="table-light">
-                <tr>
-                  <th style="width: 15%;">Slika</th>
-                  <th style="width: 35%;">Naslov in opis</th>
-                  <th style="width: 10%;">Glasovi</th>
-                  <th style="width: 25%;">Status (Uredi)</th>
-                  <th style="width: 15%; text-align: center;">Akcija</th>
-                </tr>
-              </thead>
-              <tbody id="seznamPredlogov">
-                
-                <tr id="predlog-row-1">
-                  <td>
-                    <img src="slike/zacetna.jpg" class="img-fluid rounded-3 shadow-sm" style="height: 60px; width: 80px; object-fit: cover;" alt="Poplava" onerror="this.src='https://images.unsplash.com/photo-1541888946425-d81bb19240f5?q=80&w=150&auto=format&fit=cover'">
-                  </td>
-                  <td>
-                    <h6 class="fw-bold mb-1 text-uppercase" style="font-size: 14px;">Poplava na Smetanovi</h6>
-                    <p class="text-muted small mb-0 text-truncate" style="max-width: 250px;">Vsakič, ko malo bolj dežuje, se pri FERI-ju naredi jezero...</p>
-                  </td>
-                  <td>
-                    <span class="badge bg-success"><i class="fas fa-thumbs-up me-1"></i> 42</span>
-                  </td>
-                  <td>
-                    <select class="form-select form-select-sm status-select" onchange="osveziStatus(1, this.value)">
-                      <option value="Oddano">Oddano</option>
-                      <option value="Odobreno" selected>Odobreno</option>
-                      <option value="V obdelavi">V obdelavi</option>
-                      <option value="Končano">Končano</option>
-                      <option value="Zavrnjeno">Zavrnjeno</option>
-                    </select>
-                  </td>
-                  <td style="text-align: center;">
-                    <button class="gumb-brisi btn-sm" onclick="izbrisiPredlog(1)" title="Izbriši predlog">
-                      <i class="fas fa-trash-alt"></i>
-                    </button>
-                  </td>
-                </tr>
-
-                <tr id="predlog-row-2">
-                  <td>
-                    <img src="slike/zacetna.jpg" class="img-fluid rounded-3 shadow-sm" style="height: 60px; width: 80px; object-fit: cover;" alt="Cesta" onerror="this.src='https://images.unsplash.com/photo-1515162305285-0293e4767cc2?q=80&w=150&auto=format&fit=cover'">
-                  </td>
-                  <td>
-                    <h6 class="fw-bold mb-1 text-uppercase" style="font-size: 14px;">Obupna cesta v Melju</h6>
-                    <p class="text-muted small mb-0 text-truncate" style="max-width: 250px;">A ste videli te luknje v Melju? Vsak dan se vozim tam...</p>
-                  </td>
-                  <td>
-                    <span class="badge bg-success"><i class="fas fa-thumbs-up me-1"></i> 18</span>
-                  </td>
-                  <td>
-                    <select class="form-select form-select-sm status-select" onchange="osveziStatus(2, this.value)">
-                      <option value="Oddano" selected>Oddano</option>
-                      <option value="Odobreno">Odobreno</option>
-                      <option value="V obdelavi">V obdelavi</option>
-                      <option value="Končano">Končano</option>
-                      <option value="Zavrnjeno">Zavrnjeno</option>
-                    </select>
-                  </td>
-                  <td style="text-align: center;">
-                    <button class="gumb-brisi btn-sm" onclick="izbrisiPredlog(2)" title="Izbriši predlog">
-                      <i class="fas fa-trash-alt"></i>
-                    </button>
-                  </td>
-                </tr>
-
-              </tbody>
-            </table>
-          </div>
-
-          <div id="praznoObvestilo" class="text-center py-5 d-none">
-            <i class="fas fa-folder-open text-muted mb-3" style="font-size: 48px;"></i>
-            <h5 class="text-muted">Trenutno ni nobenih predlogov za pregled.</h5>
-          </div>
-
         </div>
       </div>
 
-  </div>
-</div>
+
 
 <footer class="glavna-noga">
     <div class="container">
@@ -179,12 +344,64 @@
                 <p>info@ide-ja.si</p>
                 <p>+386 2 123 456</p>
             </div>
-
         </div>
     </div>
 </footer>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="skripta.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Dinamične spremenljivke za simulacijo štetja elementov
+    let steviloPredlogov = 2;
+    let steviloUporabnikov = 3;
+
+    // --- LOGIKA ZA PREDLOGE ---
+    function osveziStatus(id, novStatus) {
+      console.log(`Predlog z ID ${id} ima nov status: ${novStatus}`);
+      // Ko bosta povezali backend, tukaj pride: fetch('/api/predlogi/status', { method: 'POST', ... })
+    }
+
+    function izbrisiPredlog(id) {
+      if (confirm("Ali ste prepričani, da želite dokončno izbrisati ta predlog?")) {
+        const vrstica = document.getElementById(`predlog-row-${id}`);
+        if (vrstica) {
+          vrstica.remove();
+          steviloPredlogov--;
+          
+          document.getElementById("stetjePredlogov").textContent = `Skupno predlogov: ${steviloPredlogov}`;
+          
+          if (steviloPredlogov === 0) {
+            document.getElementById("tabelaPredlogovKontejner").classList.add("d-none");
+            document.getElementById("praznoObvestiloPredlogi").classList.remove("d-none");
+          }
+        }
+      }
+    }
+
+    // --- LOGIKA ZA UPORABNIKE (NOVO!) ---
+    // Funkcija, ki simulira posodobitev vloge uporabnika v bazi
+    function posodobiVlogo(id, novaVloga) {
+      console.log(`Uporabnik z ID ${id} ima sedaj vlogo: ${novaVloga}`);
+      // Tukaj bosta poslali UPDATE zahtevek kolegici na backend
+    }
+
+    // Funkcija za brisanje uporabnika iz tabele
+    function izbrisiUporabnika(id, ime) {
+      if (confirm(`Ali ste prepričani, da želite izbrisati uporabnika "${ime}"? S tem boste odstranili njegov dostop do platforme.`)) {
+        const vrstica = document.getElementById(`uporabnik-row-${id}`);
+        if (vrstica) {
+          vrstica.remove();
+          steviloUporabnikov--;
+          
+          // Posodobi števec nad tabelo uporabnikov
+          document.getElementById("stetjeUporabnikov").textContent = `Skupno uporabnikov: ${steviloUporabnikov}`;
+
+          if (steviloUporabnikov === 0) {
+            document.getElementById("tabelaUporabnikovKontejner").classList.add("d-none");
+            document.getElementById("praznoObvestiloUporabniki").classList.remove("d-none");
+          }
+        }
+      }
+    }
+  </script>
 </body>
 </html>
