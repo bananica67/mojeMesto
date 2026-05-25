@@ -1,13 +1,3 @@
-const { Pool } = require("pg");
-
-const pool = new Pool({
-  user: 'postgres',           // Tvoj PostgreSQL uporabnik (ponavadi 'postgres')
-  host: 'localhost',          // Ker baza teče na tvojem računalniku
-  database: 'mojeMesto',      // Točno ime baze, ki si jo ustvarila v pgAdminu
-  password: 'superVarnoGeslo', // Geslo, ki ga vpišeš ob zagonu pgAdmina
-  port: 5432,                 // Standardni port za Postgres
-});
-
 const express = require("express");
 const { Pool } = require("pg");
 const session = require("express-session");
@@ -27,7 +17,7 @@ app.use(session({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// 3. Povezava na PostgreSQL bazo (podatki iz tvoje skripte moje_mesto.sql)
+// 3. Povezava na PostgreSQL bazo (Uporabljena konfiguracija za 'moje_mesto')
 const pool = new Pool({
   user: 'uporabnik_vloga',         // Vloga iz tvoje SQL skripte
   host: 'localhost',
@@ -85,18 +75,15 @@ app.get("/api/trenutni-uporabnik", (req, res) => {
   });
 });
 
-// 6. API pot za odjavo
+// 6. API pot za odjava
 app.get("/api/odjava", (req, res) => {
   req.session.destroy();
   res.redirect("/prijava.html");
 });
 
 
-
-//7. dodajanje predlogov za uporabnika
-
-
-
+// 7. dodajanje predlogov za uporabnika
+// (Tukaj lahko kasneje dopišeš app.post("/api/predlogi", ...))
 
 
 app.listen(3000, () => {
