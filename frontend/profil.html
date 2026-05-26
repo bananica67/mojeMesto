@@ -62,7 +62,7 @@
           </div>
 
           <h3 class="mb-1 border-0" id="prikazanoIme">Kaja Bohorč</h3>
-          <p class="text-muted small">kaja@student.um.si</p>
+          <p class="text-muted small" id="prikazanEmail">kaja@student.um.si</p>
           
           <div class="d-grid gap-2 col-10 mx-auto mt-3">
             <button class="gumb-dodaj w-100" data-bs-toggle="modal" data-bs-target="#modalIme">
@@ -72,9 +72,9 @@
               <i class="fas fa-comments me-2"></i>Zasebni klepet
             </button>
             <hr class="my-3">
-            <button class="gumb-odjava w-100" onclick="alert('Odjava uspešna.')">
-              <i class="fas fa-sign-out-alt me-2"></i>Odjava
-            </button>
+            <button class="gumb-odjava w-100" onclick="odjaviUporabnika()">
+  <i class="fas fa-sign-out-alt me-2"></i>Odjava
+</button>
           </div>
         </div>
       </div>
@@ -132,31 +132,14 @@
             </div>
 
             <div class="tab-pane fade" id="znacke" role="tabpanel">
-              <div class="row g-3">
+              <div class="row g-3" id="seznamZnack">
                 
-                <div class="col-6 col-sm-4">
-                  <div class="znacka-kartica shadow-sm">
-                    <div class="znacka-ikona"><i class="fas fa-seedling"></i></div>
-                    <h6 class="fw-bold mb-1" style="font-size: 14px;">Iniciator</h6>
-                    <p class="text-muted small mb-0">Oddal prvi uspešen predlog v občini.</p>
-                  </div>
+                <div class="col-12 text-center py-4">
+                  <span class="text-muted small">Nalaganje vaših značk...</span>
                 </div>
 
-                <div class="col-6 col-sm-4">
-                  <div class="znacka-kartica shadow-sm">
-                    <div class="znacka-ikona"><i class="fas fa-fire"></i></div>
-                    <h6 class="fw-bold mb-1" style="font-size: 14px;">Aktiven občan</h6>
-                    <p class="text-muted small mb-0">Zbral več kot 15 glasov podpore.</p>
-                  </div>
-                </div>
-
-                <div class="col-6 col-sm-4">
-                  <div class="znacka-kartica shadow-sm">
-                    <div class="znacka-ikona"><i class="fas fa-comments"></i></div>
-                    <h6 class="fw-bold mb-1" style="font-size: 14px;">Debatni mojster</h6>
-                    <p class="text-muted small mb-0">Napisal 5 ali več konstruktivnih komentarjev.</p>
-                  </div>
-                </div>
+              </div>
+            </div>
 
               </div>
             </div>

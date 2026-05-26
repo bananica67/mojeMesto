@@ -241,72 +241,6 @@
                     </tr>
                   </thead>
                   <tbody id="seznamUporabnikov">
-                    <tr id="uporabnik-row-1">
-                      <td class="fw-bold text-muted">#1</td>
-                      <td>
-                        <div class="d-flex align-items-center">
-                          <div class="rounded-circle me-2 d-flex align-items-center justify-content-center text-white" style="width: 32px; height: 32px; background-color: #923c83; font-size: 12px;">KB</div>
-                          <span class="fw-bold">Kaja Bohorč</span>
-                        </div>
-                      </td>
-                      <td class="text-muted">kaja@student.um.si</td>
-                      <td>
-                        <select class="form-select form-select-sm status-select" onchange="posodobiVlogo(1, this.value)">
-                          <option value="obcan" selected>Občan</option>
-                          <option value="obcina">Predstavnik občine</option>
-                          <option value="admin">Administrator</option>
-                        </select>
-                      </td>
-                      <td style="text-align: center;">
-                        <button class="gumb-brisi btn-sm" onclick="izbrisiUporabnika(1, 'Kaja Bohorč')" title="Izbriši uporabnika">
-                          <i class="fas fa-user-minus"></i>
-                        </button>
-                      </td>
-                    </tr>
-                    <tr id="uporabnik-row-2">
-                      <td class="fw-bold text-muted">#2</td>
-                      <td>
-                        <div class="d-flex align-items-center">
-                          <div class="rounded-circle me-2 d-flex align-items-center justify-content-center text-white" style="width: 32px; height: 32px; background-color: #4a6fa5; font-size: 12px;">JN</div>
-                          <span class="fw-bold">Janez Novak</span>
-                        </div>
-                      </td>
-                      <td class="text-muted">janez.novak@gmail.com</td>
-                      <td>
-                        <select class="form-select form-select-sm status-select" onchange="posodobiVlogo(2, this.value)">
-                          <option value="obcan" selected>Občan</option>
-                          <option value="obcina">Predstavnik občine</option>
-                          <option value="admin">Administrator</option>
-                        </select>
-                      </td>
-                      <td style="text-align: center;">
-                        <button class="gumb-brisi btn-sm" onclick="izbrisiUporabnika(2, 'Janez Novak')" title="Izbriši uporabnika">
-                          <i class="fas fa-user-minus"></i>
-                        </button>
-                      </td>
-                    </tr>
-                    <tr id="uporabnik-row-3">
-                      <td class="fw-bold text-muted">#3</td>
-                      <td>
-                        <div class="d-flex align-items-center">
-                          <div class="rounded-circle me-2 d-flex align-items-center justify-content-center text-white" style="width: 32px; height: 32px; background-color: #2e7d32; font-size: 12px;">MK</div>
-                          <span class="fw-bold">Miran Horvat</span>
-                        </div>
-                      </td>
-                      <td class="text-muted">miran.obcina@maribor.si</td>
-                      <td>
-                        <select class="form-select form-select-sm status-select" onchange="posodobiVlogo(3, this.value)">
-                          <option value="obcan">Občan</option>
-                          <option value="obcina" selected>Predstavnik občine</option>
-                          <option value="admin">Administrator</option>
-                        </select>
-                      </td>
-                      <td style="text-align: center;">
-                        <button class="gumb-brisi btn-sm" onclick="izbrisiUporabnika(3, 'Miran Horvat')" title="Izbriši uporabnika">
-                          <i class="fas fa-user-minus"></i>
-                        </button>
-                      </td>
-                    </tr>
                   </tbody>
                 </table>
               </div>
@@ -348,60 +282,8 @@
     </div>
 </footer>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <script>
-    // Dinamične spremenljivke za simulacijo štetja elementov
-    let steviloPredlogov = 2;
-    let steviloUporabnikov = 3;
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-    // --- LOGIKA ZA PREDLOGE ---
-    function osveziStatus(id, novStatus) {
-      console.log(`Predlog z ID ${id} ima nov status: ${novStatus}`);
-      // Ko bosta povezali backend, tukaj pride: fetch('/api/predlogi/status', { method: 'POST', ... })
-    }
-
-    function izbrisiPredlog(id) {
-      if (confirm("Ali ste prepričani, da želite dokončno izbrisati ta predlog?")) {
-        const vrstica = document.getElementById(`predlog-row-${id}`);
-        if (vrstica) {
-          vrstica.remove();
-          steviloPredlogov--;
-          
-          document.getElementById("stetjePredlogov").textContent = `Skupno predlogov: ${steviloPredlogov}`;
-          
-          if (steviloPredlogov === 0) {
-            document.getElementById("tabelaPredlogovKontejner").classList.add("d-none");
-            document.getElementById("praznoObvestiloPredlogi").classList.remove("d-none");
-          }
-        }
-      }
-    }
-
-    // --- LOGIKA ZA UPORABNIKE (NOVO!) ---
-    // Funkcija, ki simulira posodobitev vloge uporabnika v bazi
-    function posodobiVlogo(id, novaVloga) {
-      console.log(`Uporabnik z ID ${id} ima sedaj vlogo: ${novaVloga}`);
-      // Tukaj bosta poslali UPDATE zahtevek kolegici na backend
-    }
-
-    // Funkcija za brisanje uporabnika iz tabele
-    function izbrisiUporabnika(id, ime) {
-      if (confirm(`Ali ste prepričani, da želite izbrisati uporabnika "${ime}"? S tem boste odstranili njegov dostop do platforme.`)) {
-        const vrstica = document.getElementById(`uporabnik-row-${id}`);
-        if (vrstica) {
-          vrstica.remove();
-          steviloUporabnikov--;
-          
-          // Posodobi števec nad tabelo uporabnikov
-          document.getElementById("stetjeUporabnikov").textContent = `Skupno uporabnikov: ${steviloUporabnikov}`;
-
-          if (steviloUporabnikov === 0) {
-            document.getElementById("tabelaUporabnikovKontejner").classList.add("d-none");
-            document.getElementById("praznoObvestiloUporabniki").classList.remove("d-none");
-          }
-        }
-      }
-    }
-  </script>
+<script src="skripta.js"></script>
 </body>
 </html>
