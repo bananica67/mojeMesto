@@ -19,10 +19,10 @@ app.use(express.urlencoded({ extended: true }));
 
 // 3. Povezava na PostgreSQL bazo (Uporabljena konfiguracija za 'moje_mesto')
 const pool = new Pool({
-  user: 'uporabnik_vloga',         // Vloga iz tvoje SQL skripte
+  user: 'postgres',         
   host: 'localhost',
-  database: 'moje_mesto',          // Ime baze iz tvoje SQL skripte
-  password: 'obcan_bralec_1',      // Geslo iz tvoje SQL skripte
+  database: 'moje_mesto',          
+  password: 'superVarnoGeslo',      
   port: 5432,
 });
 
@@ -81,10 +81,40 @@ app.get("/api/odjava", (req, res) => {
   res.redirect("/prijava.html");
 });
 
+// API pot za registracijo uporabnika (Uskajeno s tvojo SQL skripto)
+app.post("/registracija", async (req, res) => {
+  // Iz obrazca poberemo vse podatke, ki jih pošlje HTML
+  const { ime, priimek, email, geslo, telefon } = req.body;
 
-// 7. dodajanje predlogov za uporabnika
-// (Tukaj lahko kasneje dopišeš app.post("/api/predlogi", ...))
+  try {
+    // 1. Preverimo, če uporabnik s tem e-mailom že obstaja
+    const obstajaUporabnik = await pool.query("SELECT * FROM Uporabnik WHERE email = $1", [email]);
+    if (obstajaUporabnik.rows.length > 0) {
+      return res.status(400).send("Uporabnik s tem e-mail naslovom je že registriran!");
+    }
 
+    // 2. Ustvarimo trenutni datum za polje 'datum_registracije' (zahtevano v SQL kot NOT NULL)
+    const trenutniDatum = new Date();
+
+    // 3. Vstavljanje v bazo - uporabimo točna imena stolpcev iz tvoje SQL skripte
+    const vstavljanjeQuery = `
+      INSERT INTO Uporabnik (ime, priimek, email, geslo, telefon, datum_registracije)
+      VALUES ($1, $2, $3, $4, $5, $6)
+    `;
+
+    // Če telefon ni bil vpisan, pošljemo null (saj si z ALTER TABLE umaknila NOT NULL)
+    const telVnos = telefon === "" ? null : telefon;
+
+    await pool.query(vstavljanjeQuery, [ime, priimek, email, geslo, telVnos, trenutniDatum]);
+
+    // 4. Po uspešni registraciji uporabnika preusmerimo na prijavno stran
+    res.redirect("/prijava.html");
+
+  } catch (napaka) {
+    console.error("Napaka pri registraciji:", napaka);
+    res.status(500).send("Prišlo je do napake na strežniku pri registraciji.");
+  }
+});
 
 app.listen(3000, () => {
   console.log("Strežnik deluje na http://localhost:3000");
