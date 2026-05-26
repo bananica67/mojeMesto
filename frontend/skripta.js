@@ -145,7 +145,101 @@ if (mapElement) {
 }
 
 function odjaviUporabnika() {
-    localStorage.clear(); // To izbriše Kajo Bohorč in vse stare podatke!
+    localStorage.clear(); 
     alert('Odjava uspešna.');
-    window.location.href = 'prijava.html'; // Te vrže nazaj na prijavo
+    window.location.href = 'prijava.html'; 
 }
+
+// Funkcija, ki naloži uporabnike iz localStorage in jih izriše v tabelo
+// Popolnoma prilagojena funkcija za tvojo SQL bazo
+function naloziUporabnikeZaAdmina() {
+    const seznamUporabnikovOznaka = document.getElementById('seznamUporabnikov');
+    const stetjeUporabnikovOznaka = document.getElementById('stetjeUporabnikov');
+    const praznoObvestilo = document.getElementById('praznoObvestiloUporabniki');
+    const tabelaKontejner = document.getElementById('tabelaUporabnikovKontejner');
+
+    if (!seznamUporabnikovOznaka) return;
+
+    // TUKAJ POKLIČEŠ SVOJ URL NA STREŽNIKU (npr. /api/uporabniki ali /get_users.php)
+    // Zamenjaj '/api/uporabniki' s tvojo točno potjo, ki jo imaš nastavljeno na backendu!
+    fetch('/api/vsi-uporabniki')
+        .then(response => response.json())
+        .then(vsiUporabniki => {
+            
+            // Posodobi števec (Skupno uporabnikov: X)
+            if (stetjeUporabnikovOznaka) {
+                stetjeUporabnikovOznaka.textContent = `Skupno uporabnikov: ${vsiUporabniki.length}`;
+            }
+
+            // Če je baza prazna
+            if (vsiUporabniki.length === 0) {
+                praznoObvestilo.classList.remove('d-none');
+                tabelaKontejner.classList.add('d-none');
+                return;
+            }
+
+            praznoObvestilo.classList.add('d-none');
+            tabelaKontejner.classList.remove('d-none');
+            seznamUporabnikovOznaka.innerHTML = '';
+
+            // Sprehodi se skozi uporabnike iz SQL baze
+            vsiUporabniki.forEach((uporabnik) => {
+                const vrstica = document.createElement('tr');
+                // Uporabiva tvoj id_uporabnik iz SQL baze za ID vrstice
+                vrstica.id = `uporabnik-row-${uporabnik.id_uporabnik}`;
+                
+                // Združiva ime in priimek točno tako, kot jih imaš v SQL tabeli
+                const polnoIme = `${uporabnik.ime} ${uporabnik.priimek}`;
+
+                vrstica.innerHTML = `
+                    <td class="fw-bold text-muted">#${uporabnik.id_uporabnik}</td>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <span class="fw-bold">${polnoIme}</span>
+                        </div>
+                    </td>
+                    <td class="text-muted">${uporabnik.email}</td>
+                    <td>
+                        <select class="form-select form-select-sm status-select" onchange="spemeniVlogoUporabnika(${uporabnik.id_uporabnik}, this.value)">
+                            <option value="obcan" selected>Občan</option>
+                            <option value="obcina">Predstavnik občine</option>
+                            <option value="admin">Administrator</option>
+                        </select>
+                    </td>
+                    <td style="text-align: center;">
+                        <button class="gumb-brisi btn-sm" onclick="izbrisiUporabnikaIzBaze(${uporabnik.id_uporabnik})" title="Izbriši uporabnika">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </td>
+                `;
+                seznamUporabnikovOznaka.appendChild(vrstica);
+            });
+        })
+        .catch(error => {
+            console.error('Napaka pri pridobivanju uporabnikov iz SQL baze:', error);
+        });
+}
+
+// Funkcija za brisanje, ki pošlje DELETE zahtevo na backend preko ID-ja
+function izbrisiUporabnikaIzBaze(idUporabnik) {
+    if (confirm('Ali ste prepričani, da želite izbrisati tega uporabnika?')) {
+        fetch(`/api/uporabniki/${idUporabnik}`, {
+            method: 'DELETE'
+        })
+        .then(response => {
+            if(response.ok) {
+                naloziUporabnikeZaAdmina(); // Ponovno osveži tabelo
+            } else {
+                alert('Napaka pri brisanju uporabnika.');
+            }
+        });
+    }
+}
+
+// DODANO: Avtomatski zagon funkcije, ko se naloži HTML stran
+document.addEventListener("DOMContentLoaded", () => {
+    // Preverimo, če smo sploh na strani, ki vsebuje tabelo za uporabnike
+    if (document.getElementById('seznamUporabnikov')) {
+        naloziUporabnikeZaAdmina();
+    }
+});
