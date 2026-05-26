@@ -1,121 +1,165 @@
+const path = require("path");
 const express = require("express");
 const { Pool } = require("pg");
-const session = require("express-session");
-const path = require("path");
-
 const app = express();
 
-// 1. Nastavitev seje (da si strežnik zapomni, kdo je prijavljen)
-app.use(session({
-  secret: 'skrivni-kljuc-moje-mesto',
-  resave: false,
-  saveUninitialized: false,
-  cookie: { maxAge: 24 * 60 * 60 * 1000 } // Seja velja 1 dan
-}));
-
-// 2. Podpora za branje podatkov iz obrazcev (JSON in URL-encoded)
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-// 3. Povezava na PostgreSQL bazo (Uporabljena konfiguracija za 'moje_mesto')
+// POVEZAVA Z BAZO
 const pool = new Pool({
-  user: 'postgres',         
-  host: 'localhost',
-  database: 'moje_mesto',          
-  password: 'superVarnoGeslo',      
+  user: "postgres",          
+  host: "localhost",
+  database: "moje_mesto",    
+  password: "superVarnoGeslo",  
   port: 5432,
 });
 
-// Statične datoteke (HTML, CSS, JS)
-app.use(express.static(path.join(__dirname, "../frontend")));
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 
-// 4. API pot za prijavo
-app.post("/api/prijava", async (req, res) => {
-  const { email, geslo } = req.body;
+app.use(express.static(path.resolve(__dirname, '../frontend')));
 
-  try {
-    // Iskanje uporabnika v bazi po e-mailu
-    const userQuery = await pool.query("SELECT * FROM Uporabnik WHERE email = $1", [email]);
-    if (userQuery.rows.length === 0) {
-      return res.status(404).json({ uspeh: false, sporocilo: "Uporabnik ne obstaja!" });
+// --- POT ZA REGISTRACIJO ---
+app.post('/registracija', async (req, res) => {
+    // Strežnik tukaj prebere VSE podatke, ki jih pošlje tvoj HTML obrazec
+    const { spol, ime, priimek, email, geslo, telefon, naslov, hisna_st, posta_kraj, datum_rojstva, opombe } = req.body;
+
+    const vnosTelefon = telefon ? telefon : null;
+
+    try {
+        const queryText = `
+            INSERT INTO Uporabnik (ime, priimek, geslo, telefon, email, datum_registracije)
+            VALUES ($1, $2, $3, $4, $5, CURRENT_DATE)
+        `;
+       
+        await pool.query(queryText, [ime, priimek, geslo, vnosTelefon, email]);
+
+        res.send(`
+            <script>
+                alert('Registracija uspešna! Zdaj se lahko prijavite.');
+                window.location.href = 'http://localhost:3000/prijava.html';
+            </script>
+        `);
+    //napaka v bazi //
+    } catch (err) {
+        console.error("Napaka pri registraciji:", err);
+        res.status(500).send("Prišlo je do napake pri shranjevanju v bazo.");
     }
+});
 
-    const uporabnik = userQuery.rows[0];
+// --- POT ZA PRIJAVO (Prestavljeno nad listen!) ---
+app.post('/prijava', async (req, res) => {
+    const { email, geslo } = req.body;
 
-    // Preverjanje gesla (direktna primerjava nizov, kot je v bazi)
-    if (uporabnik.geslo !== geslo) {
-      return res.status(401).json({ uspeh: false, sporocilo: "Napačno geslo!" });
+    try {
+        const userCheck = await pool.query('SELECT * FROM Uporabnik WHERE email = $1', [email]);
+
+        if (userCheck.rows.length === 0) {
+            // Vrnemo JSON z uspeh: false, da ga skripta prebere
+            return res.json({ uspeh: false, sporocilo: 'Uporabnik s tem e-mailom ne obstaja!' });
+        }
+
+        const uporabnik = userCheck.rows[0];
+
+        if (uporabnik.geslo !== geslo) {
+            return res.json({ uspeh: false, sporocilo: 'Napačno geslo!' });
+        }
+
+        // === SPREMEMBA ZA ZNAČKE: SAMO PRILEPI TOLE SPODAJ ===
+        const idUporabnika = uporabnik.id_uporabnik;
+
+        // 1. Preštejemo vse objave uporabnika iz tvoje tabele Objava
+        const preveriPredloge = await pool.query(
+            'SELECT COUNT(*) FROM Objava WHERE TK_Uporabnikid_uporabnik = $1',
+            [idUporabnika]
+        );
+        const steviloObjav = parseInt(preveriPredloge.rows[0].count);
+
+        // ZNAČKA ID 1: "Iniciator" (Uporabnik ima vsaj 1 objavo)
+        if (steviloObjav >= 1) {
+            const imaPrvo = await pool.query('SELECT * FROM Uporabnik_Znacka WHERE TK_Uporabnikid_član = $1 AND TK_Značkaid_znacka = 1', [idUporabnika]);
+            if (imaPrvo.rows.length === 0) {
+                await pool.query('INSERT INTO Uporabnik_Znacka (datum_prejetja, TK_Uporabnikid_član, TK_Značkaid_znacka) VALUES (CURRENT_DATE, $1, 1)', [idUporabnika]);
+            }
+        }
+
+        // ZNAČKA ID 2: "Aktiven občan" (Uporabnik ima vsaj 3 objave)
+        if (steviloObjav >= 3) {
+            const imaDrugo = await pool.query('SELECT * FROM Uporabnik_Znacka WHERE TK_Uporabnikid_član = $1 AND TK_Značkaid_znacka = 2', [idUporabnika]);
+            if (imaDrugo.rows.length === 0) {
+                await pool.query('INSERT INTO Uporabnik_Znacka (datum_prejetja, TK_Uporabnikid_član, TK_Značkaid_znacka) VALUES (CURRENT_DATE, $1, 2)', [idUporabnika]);
+            }
+        }
+
+        // ZNAČKA ID 3: "Debatni mojster" (Uporabnik ima vsaj 5 komentarjev)
+        const preveriKomentarje = await pool.query(
+            'SELECT COUNT(*) FROM Komentar WHERE TK_Uporabnikid_uporabnik = $1',
+            [idUporabnika]
+        );
+        if (parseInt(preveriKomentarje.rows[0].count) >= 5) {
+            const imaTretjo = await pool.query('SELECT * FROM Uporabnik_Znacka WHERE TK_Uporabnikid_član = $1 AND TK_Značkaid_znacka = 3', [idUporabnika]);
+            if (imaTretjo.rows.length === 0) {
+                await pool.query('INSERT INTO Uporabnik_Znacka (datum_prejetja, TK_Uporabnikid_član, TK_Značkaid_znacka) VALUES (CURRENT_DATE, $1, 3)', [idUporabnika]);
+            }
+        }
+        // === KONEC SPREMEMBE ZA ZNAČKE ===
+
+        return res.json({
+            uspeh: true,
+            ime: uporabnik.ime,
+            priimek: uporabnik.priimek,
+            email: uporabnik.email
+        });
+       
+    } catch (err) {
+        console.error("Napaka pri prijavi na strežniku:", err);
+        return res.json({ uspeh: false, sporocilo: 'Prišlo je do napake na strežniku pri povezavi z bazo.' });
     }
-
-    // Če sta e-mail in geslo pravilna, shranimo uporabnika v sejo
-    req.session.userId = uporabnik.id_uporabnik;
-    req.session.ime = uporabnik.ime;
-    req.session.priimek = uporabnik.priimek;
-    req.session.email = uporabnik.email;
-
-    // Vrnem uspeh
-    return res.json({ uspeh: true, sporocilo: "Prijava uspešna!" });
-
-  } catch (napaka) {
-    console.error("Napaka pri prijavi:", napaka);
-    return res.status(500).json({ uspeh: false, sporocilo: "Napaka na strežniku." });
-  }
 });
 
-// 5. API pot za pridobivanje podatkov o trenutno prijavljenem uporabniku (za profil.html)
-app.get("/api/trenutni-uporabnik", (req, res) => {
-  if (!req.session.userId) {
-    return res.status(401).json({ prijavljen: false });
-  }
-  res.json({
-    prijavljen: true,
-    ime: req.session.ime,
-    priimek: req.session.priimek,
-    email: req.session.email
-  });
-});
-
-// 6. API pot za odjava
-app.get("/api/odjava", (req, res) => {
-  req.session.destroy();
-  res.redirect("/prijava.html");
-});
-
-// API pot za registracijo uporabnika (Uskajeno s tvojo SQL skripto)
-app.post("/registracija", async (req, res) => {
-  // Iz obrazca poberemo vse podatke, ki jih pošlje HTML
-  const { ime, priimek, email, geslo, telefon } = req.body;
-
-  try {
-    // 1. Preverimo, če uporabnik s tem e-mailom že obstaja
-    const obstajaUporabnik = await pool.query("SELECT * FROM Uporabnik WHERE email = $1", [email]);
-    if (obstajaUporabnik.rows.length > 0) {
-      return res.status(400).send("Uporabnik s tem e-mail naslovom je že registriran!");
+// --- POT ZA PRIDOBIVANJE VSEH UPORABNIKOV ZA ADMINA ---
+app.get('/api/vsi-uporabniki', async (req, res) => {
+    try {
+        // Iz baze poberemo ID, ime, priimek in email vseh registriranih uporabnikov
+        const vsiUporabniki = await pool.query('SELECT id_uporabnik, ime, priimek, email FROM Uporabnik ORDER BY id_uporabnik ASC');
+       
+        return res.json(vsiUporabniki.rows);
+    } catch (err) {
+        console.error("Napaka pri pridobivanju uporabnikov:", err);
+        return res.status(500).json({ sporocilo: 'Napaka na strežniku pri branju uporabnikov.' });
     }
-
-    // 2. Ustvarimo trenutni datum za polje 'datum_registracije' (zahtevano v SQL kot NOT NULL)
-    const trenutniDatum = new Date();
-
-    // 3. Vstavljanje v bazo - uporabimo točna imena stolpcev iz tvoje SQL skripte
-    const vstavljanjeQuery = `
-      INSERT INTO Uporabnik (ime, priimek, email, geslo, telefon, datum_registracije)
-      VALUES ($1, $2, $3, $4, $5, $6)
-    `;
-
-    // Če telefon ni bil vpisan, pošljemo null (saj si z ALTER TABLE umaknila NOT NULL)
-    const telVnos = telefon === "" ? null : telefon;
-
-    await pool.query(vstavljanjeQuery, [ime, priimek, email, geslo, telVnos, trenutniDatum]);
-
-    // 4. Po uspešni registraciji uporabnika preusmerimo na prijavno stran
-    res.redirect("/prijava.html");
-
-  } catch (napaka) {
-    console.error("Napaka pri registraciji:", napaka);
-    res.status(500).send("Prišlo je do napake na strežniku pri registraciji.");
-  }
 });
 
+// --- POT ZA PRIDOBIVANJE ZNAČK PRIJAVLJENEGA UPORABNIKA ---
+app.get('/api/moje-znacke/:email', async (req, res) => {
+    const { email } = req.params;
+
+    try {
+        // 1. Najprej poiščemo ID uporabnika preko e-maila (saj e-mail hranimo v localStorage)
+        const userCheck = await pool.query('SELECT id_uporabnik FROM Uporabnik WHERE email = $1', [email]);
+       
+        if (userCheck.rows.length === 0) {
+            return res.status(404).json({ sporocilo: 'Uporabnik ne obstaja.' });
+        }
+
+        const idUporabnik = userCheck.rows[0].id_uporabnik;
+
+        // 2. Izvedemo JOIN z natančnimi imeni stolpcev iz tvoje SQL skripte
+        const znackeQuery = `
+            SELECT z.naziv, z.opis
+            FROM Značka z
+            JOIN Uporabnik_Znacka uz ON z.id_znacka = uz.TK_Značkaid_znacka
+            WHERE uz.TK_Uporabnikid_član = $1
+        `;
+       
+        const rezZnacke = await pool.query(znackeQuery, [idUporabnik]);
+        return res.json(rezZnacke.rows); // Vrnemo seznam značk (naziv, opis)
+
+    } catch (err) {
+        console.error("Napaka pri pridobivanju značk iz baze:", err);
+        return res.status(500).json({ sporocilo: 'Napaka na strežniku.' });
+    }
+});
+
+// Zagon strežnika je čisto na koncu datoteke
 app.listen(3000, () => {
   console.log("Strežnik deluje na http://localhost:3000");
 });
