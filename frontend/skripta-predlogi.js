@@ -1,4 +1,6 @@
-//PREDLOGI UPORABNIKOV
+// ----------------------------
+// SKRIPT ZA PREDLOGE 
+// ----------------------------
 
 const zacetniPredlogi = [
   {
@@ -25,12 +27,9 @@ const zacetniPredlogi = [
   }
 ];
 
-//shranjevanje v localStorage
 if (!localStorage.getItem('vsiPredlogi')) {
   localStorage.setItem('vsiPredlogi', JSON.stringify(zacetniPredlogi));
 }
-
-//PRIKAZ PREDLOGOV
 
 const vsebnikPredlogov = document.getElementById('predlog-uporabnik');
 
@@ -39,16 +38,13 @@ if (vsebnikPredlogov) {
   
   vsebnikPredlogov.innerHTML = '';
 
-  //generiramo predloge za html
   predlogi.forEach(predlog => {
     
-    //komentarji
     let komentarjiHTML = '';
     predlog.komentarji.forEach(kom => {
       komentarjiHTML += `<div class="komentar"><strong>${kom.avtor}:</strong> ${kom.besedilo}</div>`;
     });
 
-    //Pred izrisom HTML-ja preberemo trenutno shranjeno število glasov iz localStorage
     const trenutniVsecki = localStorage.getItem(`glas_${predlog.id}_vsecki`) || 0;
     const trenutniNeradi = localStorage.getItem(`glas_${predlog.id}_neradi`) || 0;
 
@@ -84,18 +80,13 @@ if (vsebnikPredlogov) {
       </div>
     `;
 
-    //predlog se s tem izpise v html
     vsebnikPredlogov.innerHTML += karticaHTML;
   });
 }
 
+const mapElementId = document.getElementById('map');
 
-//DODAJANJE PREDLOGOV - ZA UPORABNIKA
-
-//zemljevid naredi marker in shrani lokacijo v localStorage
-const mapElement = document.getElementById('map');
-
-if (mapElement) {
+if (mapElementId) {
   const map = L.map('map').setView([46.5547, 15.6459], 13);
 
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -116,7 +107,6 @@ if (mapElement) {
   });
 }
 
-// to je za objavo na stran predlogi.html
 const gumbObjavi = document.getElementById('gumb-objavi');
 
 if (gumbObjavi) {
@@ -125,15 +115,12 @@ if (gumbObjavi) {
     const opis = document.getElementById('opis').value;
     const slikaInput = document.getElementById('slika');
 
-    // preveri če sta izpolnjena naslov in opis
     if (!naslov || !opis) {
       alert("Prosim, izpolnite naslov in opis problema.");
       return;
     }
 
-    // Funkcija, ki dejansko shrani predlog
     function shraniInPreusmeri(koncnaSlikaUrl) {
-      //iskanje starih predlogov v localStorage namesto sessionStorage
       const vsiPredlogi = JSON.parse(localStorage.getItem('vsiPredlogi')) || [];
       const novId = vsiPredlogi.length + 1;
 
@@ -149,34 +136,24 @@ if (gumbObjavi) {
       };
 
       vsiPredlogi.push(novPredlog);
-      //Shranjevanje v localStorage 
       localStorage.setItem('vsiPredlogi', JSON.stringify(vsiPredlogi));
-
-      // ko kliknemo gumb nas da nazaj na stran predlogi.html
       window.location.href = "predlogi.html";
     }
 
-    // Preverjanje slike in pretvorba v Base64
     if (slikaInput && slikaInput.files && slikaInput.files[0]) {
       const izbranaDatoteka = slikaInput.files[0];
       const reader = new FileReader();
 
-      // Ko reader konča z branjem, dobimo Base64 string v reader.result
       reader.onloadend = function() {
         shraniInPreusmeri(reader.result);
       };
 
-      // Zaženemo branje datoteke kot Data URL (Base64)
       reader.readAsDataURL(izbranaDatoteka);
     } else {
-      // Če ni izbrane slike, uporabimo privzeto
       shraniInPreusmeri("slike/zacetna.jpg");
     }
   });
 }
-
-
-//PREDLOGI OBCINE
 
 const zacetniPredlogiObcine = [
   {
@@ -229,8 +206,6 @@ if (!localStorage.getItem('vsiPredlogiObcine')) {
   localStorage.setItem('vsiPredlogiObcine', JSON.stringify(zacetniPredlogiObcine));
 }
 
-//PRIKAZ PREDLOGOV OBCINE
-
 const vsebnikObcina = document.getElementById('predlogi-obcina');
 
 if (vsebnikObcina) {
@@ -238,16 +213,13 @@ if (vsebnikObcina) {
   
   vsebnikObcina.innerHTML = '';
 
-  //generiramo predloge za html
   predlogi.forEach(predlog => {
     
-    //komentarji    
     let komentarjiHTML = '';
     predlog.komentarji.forEach(kom => {
       komentarjiHTML += `<div class="komentar"><strong>${kom.avtor}:</strong> ${kom.besedilo}</div>`;
     });
 
-    //preberemo shranjene glasove za občinske kartice pred izrisom HTML-ja
     const trenutniVseckiObcina = localStorage.getItem(`glas_${predlog.id}_vsecki`) || 0;
     const trenutniNeradiObcina = localStorage.getItem(`glas_${predlog.id}_neradi`) || 0;
 
@@ -283,14 +255,10 @@ if (vsebnikObcina) {
       </div>
     `;
 
-    //predlog se s tem izpise v html
     vsebnikObcina.innerHTML += karticaHTML;
   });
 }
 
-//DODAJANJE PREDLOGOV - ZA OBCINO
-
-//zemljevid naredi marker in shrani lokacijo v localStorage
 const mapElementObcina = document.getElementById('map-obcina');
 let izbraneKoordinateObcina = null;
 
@@ -314,7 +282,6 @@ if (mapElementObcina) {
   });
 }
 
-// to je za objavo na stran obcina.html
 const gumbObjaviObcina = document.getElementById('gumb-objavi-obcina');
 
 if (gumbObjaviObcina) {
@@ -323,13 +290,11 @@ if (gumbObjaviObcina) {
     const opis = document.getElementById('opis-obcina').value;
     const slikaInputObcina = document.getElementById('slika-obcina'); 
 
-    // preveri če sta izpolnjena naslov in opis
     if (!naslov || !opis) {
       alert("Prosim, izpolnite naslov in opis problema.");
       return;
     }
 
-    // Funkcija za shranjevanje občinskega predloga
     function shraniInOsveziObcino(koncnaSlikaUrl) {
       const vsiPredlogiObcine = JSON.parse(localStorage.getItem('vsiPredlogiObcine')) || [];
       const novId = vsiPredlogiObcine.length + 1;
@@ -347,12 +312,9 @@ if (gumbObjaviObcina) {
 
       vsiPredlogiObcine.push(novPredlogObcine);
       localStorage.setItem('vsiPredlogiObcine', JSON.stringify(vsiPredlogiObcine));
-
-      // ko kliknemo gumb nas osveži stran
       window.location.reload();
     }
 
-    // Preverjanje slike in pretvorba v Base64 za občino
     if (slikaInputObcina && slikaInputObcina.files && slikaInputObcina.files[0]) {
       const izbranaDatoteka = slikaInputObcina.files[0];
       const reader = new FileReader();
@@ -368,12 +330,13 @@ if (gumbObjaviObcina) {
   });
 }
 
+// ----------------------------
+// SKRIPT ZA VŠEČKE 
+// ----------------------------
 
-//vsecki
 window.glasuj = function(id, tip) {
     const kljuc = `glas_${id}_${tip}`;
     
-    // SPREMEMBA: Dodana varovalka `|| 0`, če ključ v localStorage še sploh ne obstaja, da ne dobimo napake NaN
     let trenutnoGlasov = parseInt(localStorage.getItem(kljuc) || 0) + 1;
     localStorage.setItem(kljuc, trenutnoGlasov);
     
@@ -382,3 +345,43 @@ window.glasuj = function(id, tip) {
         span.textContent = trenutnoGlasov;
     }
 };
+
+// ----------------------------
+// SKRIPT ZA FILTRIRANJE 
+// ----------------------------
+
+const filterUporabnik = document.getElementById("filter-uporabnik");
+if (filterUporabnik) {
+  filterUporabnik.addEventListener("change", function () {
+    let predlogi = JSON.parse(sessionStorage.getItem("vsiPredlogi")) || [];
+
+    if (this.value === "najnovejsi") {
+      predlogi.sort((a, b) => b.datum - a.datum);
+    }
+    else if (this.value === "najstarejsi") {
+      predlogi.sort((a, b) => a.datum - b.datum);
+    }
+    else if (this.value === "vsecki") {
+      predlogi.sort((a, b) => b.vsecki - a.vsecki);
+    }
+    prikaziPredlogeUporabnik(predlogi);
+  });
+}
+
+const filterObcina = document.getElementById("filter-obcina");
+if (filterObcina) {
+  filterObcina.addEventListener("change", function () {
+    let predlogi = JSON.parse(sessionStorage.getItem("vsiPredlogiObcine")) || [];
+
+    if (this.value === "najnovejsi") {
+      predlogi.sort((a, b) => b.datum - a.datum);
+    }
+    else if (this.value === "najstarejsi") {
+      predlogi.sort((a, b) => a.datum - b.datum);
+    }
+    else if (this.value === "vsecki") {
+      predlogi.sort((a, b) => b.vsecki - a.vsecki);
+    }
+    prikaziPredlogeObcina(predlogi);
+  });
+}

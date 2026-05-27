@@ -6,7 +6,9 @@ body{
   font-size:15px; 
 }
 
-/*header */
+
+
+/* HEADER */
 .glava-strani{
   width:100%;
   background:#8c1212;
@@ -18,7 +20,9 @@ body{
   margin:auto;
 }
 
-/*navigacija */
+
+
+/* NAVIGACIJA */
 .glavna-navigacija{
   min-height:70px;
 }
@@ -31,7 +35,9 @@ body{
   letter-spacing:3px;
 }
 
-/*meni */
+
+
+/* MENI */
 .gumb-meni {
   background-color: #d5d5d5;
   border: #570303 solid 2px!important;
@@ -49,7 +55,9 @@ body{
   color: #c4c4c4 !important;
 }
 
-/*uvodna slika */
+
+
+/* UVODNA SLIKA */
 .uvodna-slika{
   width:100%;
   height:600px;
@@ -87,7 +95,7 @@ body{
   padding: 10px;
 }
 
-/*main */
+/* MAIN */
 main{
   padding:30px;
   margin: 25px auto;
@@ -122,7 +130,9 @@ h4{
   font-size: 16px;
 }
 
-/*informacije */
+
+
+/* INFORMACIJE - INDEX */
 .info-platforma{
   background:#e8e8e8;
   margin-bottom:30px;
@@ -145,7 +155,9 @@ h4{
   background: #e8e8e8;
 }
 
-/*informacije - dva */
+
+
+/* INFORMACIJE PODROBNO - INDEX */
 .info {
   display: flex;
   align-items: center;
@@ -172,7 +184,9 @@ h4{
   padding: 20px;
 }
 
-/*informacije - prijava */
+
+
+/* INFORMACIJE PRIJAVA - INDEX */
 .info-prijava{
   background:#e0dfdf;
   margin-bottom:30px;
@@ -190,7 +204,9 @@ h4{
   padding: 20px;
 }
 
-/*gumb_pod_informacijami */
+
+
+/* GUMB PRIJAVA - INDEX */
 .gumb-prijava {
   display: inline-block;
   padding: 10px 25px;
@@ -216,7 +232,9 @@ h4{
   margin-top: 20px;
 }
 
-/*registracija in prijava */
+
+
+/* REGISTRACIJA IN PRIJAVA */
 .form-check-input:checked {
   background-color: #cb2121;
   border-color: #cb2121;
@@ -227,8 +245,9 @@ h4{
   box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
 }
 
-/*profil uporabnika*/
-/* Prilagojeni dodatki */
+
+
+/* PROFIL UPORABNIKA */
 .avatar-prikaz {
   width: 120px;
   height: 120px;
@@ -309,7 +328,9 @@ h4{
   color: #ffffff;
 }
 
-/*profil obcine*/
+
+
+/* PROFIL OBČINE */
 .admin-avatar {
   width: 120px;
   height: 120px;
@@ -366,7 +387,9 @@ h4{
   color: #ffffff;
 }
 
-/*zasebni klepet*/
+
+
+/* ZASEBNI KLEPET */
 .klepet-okno {
   height: 600px;
   background-color: #ffffff;
@@ -477,7 +500,9 @@ h4{
   box-shadow: 0 0 0 0.25rem rgba(203, 33, 33, 0.25);
 }
 
-/*obcina in uporabnik info*/
+
+
+/* OBČINA IN UPORABNIK - ZAČETNE INFORMACIJE */
 .info-predlogi{
   width: 85%;
   background:#e0dfdf;
@@ -520,7 +545,9 @@ a.gumb-dodaj:hover{
   margin-top: 30px;
 }
 
-/*admin dodajanje predlogov */
+
+
+/* DODAJANJE PREDLOGOV - ADMIN */
 .admin-panel{
   margin-top: 20px;
 }
@@ -531,73 +558,9 @@ a.gumb-dodaj:hover{
   background-color: #f9f9f9;
 }
 
-/*footer */
-footer {
-  background-color: #f8f8f8;
-  padding: 10px;
-  border-top:#8b0000 2px solid;
-}
-
-footer h5 {
-  color: #bf1919;
-  text-transform: uppercase;
-  font-weight: normal;
-  border-bottom: 2px solid #941010;
-  display: inline-block;
-  padding-bottom: 5px;
-  margin-bottom: 20px;
-}
-
-footer p, footer a, footer span, footer i {
-  color: #000000 !important;
-  text-decoration: none;
-  font-size: 15px;
-}
-
-/* media - telefon (KAJA) */
-@media (max-width: 768px) {
-  .glava-strani {grid-area: 1 / span 6;}
-  .info-besedilo {grid-area: 2 / span 1;}
-  .content {grid-area: 2 / span 4;}
-  .info-platforma, .info {
-  flex-direction: column;
-  align-items: stretch;
-}
-  .info-platforma img{
-    width: 80%;
-    object-fit: cover;
-    max-height: 250px;
-  }
-  .info img{
-    width: 350px;
-    padding: 20px;
-  }
-
-  .info-besedilo, .besedilo{
-    width: 100%;
-    padding: 20px;
-  }
-  .uvodna-slika{
-    height: 250px;
-  }
-  .gumb-prijava{
-    margin-top: 10px;
-  }  .footer {grid-area: 3 / span 6;}
-  .uvodna-slika {
-    height: 250px;
-  }
-  .uvodna-vsebina h1 {
-    font-size: 36px;
-  }
-  .uvodna-vsebina p {
-    font-size: 14px;
-  }}
 
 
-
-
-
-/*css za kartice predlogov */
+/* PREDLOGI - KARTICE */
 .predlog-card{
   border: none;
   border-radius: 20px;
@@ -642,11 +605,12 @@ footer p, footer a, footer span, footer i {
   text-decoration: none;
 }
 
-/* FILTERI */
 
+
+/* FILTRIRANJE */
 .filter-vsebnik{
   width: 85%;
-  margin: 20px auto 0 auto;
+  margin: 30px auto 0 auto;
 
   display: flex;
   justify-content: flex-end;
@@ -672,3 +636,71 @@ footer p, footer a, footer span, footer i {
   outline: none;
   border-color: #8c1212;
 }
+
+
+
+/* FOOTER */
+footer {
+  background-color: #f8f8f8;
+  padding: 10px;
+  border-top:#8b0000 2px solid;
+}
+
+footer h5 {
+  color: #bf1919;
+  text-transform: uppercase;
+  font-weight: normal;
+  border-bottom: 2px solid #941010;
+  display: inline-block;
+  padding-bottom: 5px;
+  margin-bottom: 20px;
+}
+
+footer p, footer a, footer span, footer i {
+  color: #000000 !important;
+  text-decoration: none;
+  font-size: 15px;
+}
+
+
+
+/* MEDIA - TELEFON */
+@media (max-width: 768px) {
+  .glava-strani {grid-area: 1 / span 6;}
+  .info-besedilo {grid-area: 2 / span 1;}
+  .content {grid-area: 2 / span 4;}
+  .info-platforma, .info {
+  flex-direction: column;
+  align-items: stretch;
+}
+  .info-platforma img{
+    width: 80%;
+    object-fit: cover;
+    max-height: 250px;
+  }
+  .info img{
+    width: 350px;
+    padding: 20px;
+  }
+
+  .info-besedilo, .besedilo{
+    width: 100%;
+    padding: 20px;
+  }
+  .uvodna-slika{
+    height: 250px;
+  }
+  .gumb-prijava{
+    margin-top: 10px;
+  }  .footer {grid-area: 3 / span 6;}
+  .uvodna-slika {
+    height: 250px;
+  }
+  .uvodna-vsebina h1 {
+    font-size: 36px;
+  }
+  .uvodna-vsebina p {
+    font-size: 14px;
+  }}
+
+

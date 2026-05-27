@@ -1,4 +1,15 @@
+// ----------------------------
+// SKRIPT ZA REGISTRACIJO
+// ----------------------------
+
+
+
+
+
+// ----------------------------
 // SKRIPT ZA PRIJAVO
+// ----------------------------
+
 document.addEventListener("DOMContentLoaded", () => {
     const loginForm = document.getElementById("loginForm");
 
@@ -44,10 +55,16 @@ document.addEventListener("DOMContentLoaded", () => {
                 const rezultat = await response.json();
 
                 if (rezultat.uspeh) {
-                    // Če je prijava uspešna, preusmerimo na profil
+                    // Če je prijava uspešna, shranimo podatke v LocalStorage
                     localStorage.setItem('profilnoIme', rezultat.ime + " " + rezultat.priimek);
                     localStorage.setItem('profilniEmail', rezultat.email);
-                    window.location.href = "profil.html";
+                    
+                    // TUKAJ JE SPREMEMBA: Preusmeritev glede na vpisani e-mail
+                    if (email === "admin@gmail.com") {
+                        window.location.href = "obcina-profil.html";
+                    } else {
+                        window.location.href = "profil.html";
+                    }
                 } else {
                     // Izpiše napako ("Uporabnik ne obstaja!" ali "Napačno geslo")
                     alert(rezultat.sporocilo);
@@ -63,7 +80,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 
+// ----------------------------
 // SKRIPT ZA PROFIL
+// ----------------------------
+
 // Ko se celotna stran naloži, takoj osvežimo podatke iz LocalStorage
 document.addEventListener("DOMContentLoaded", function() {
     prikaziPodatke();
@@ -140,7 +160,11 @@ document.addEventListener("DOMContentLoaded", function() {
 }
 
  
-// SKRIP ZA ZEMLJEVID - status predlogov
+
+// ----------------------------
+// SKRIPT ZA ZEMLJEVID - STATUS
+// ----------------------------
+
 const mapElement = document.getElementById('map');
 
 if (mapElement) {
