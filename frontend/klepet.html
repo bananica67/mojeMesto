@@ -1,167 +1,206 @@
-<!DOCTYPE html>
-<html lang="sl">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>IDE-JA - Zasebni Klepet</title>
+const ws = new WebSocket('ws://localhost:3001');
 
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="css.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-</head>
+let trenutniPrejemnikEmail = null;
 
-<body>
+const chatMessages = document.getElementById('chat-messages');
+const chatInput = document.getElementById('chat-input');
+const chatSendBtn = document.getElementById('chat-send-btn');
 
-<header class="glava-strani">
-  <div class="container-fluid vsebnik-po-meri">
+// Pridobivanje podatkov prijavljenega uporabnika iz localStorage
+const prijavljenIme = localStorage.getItem('ime') || 'Uporabnik';
+const prijavljenPriimek = localStorage.getItem('priimek') || 'Mesta';
+const celotnoImeUporabnika = `${prijavljenIme} ${prijavljenPriimek}`;
+const mojEmail = (localStorage.getItem('email') || '').toLowerCase().trim();
 
-    <nav class="navbar navbar-expand-lg navbar-dark glavna-navigacija px-3 px-lg-4">
-                
-      <div class="d-flex align-items-center">
-        <i class="far fa-lightbulb fa-2x" style="color:#ffffff;"></i>
-        <a class="navbar-brand naziv-znamke" href="index.html" style="padding-left: 10px;">IDE-JA</a>
-      </div>
+console.log("=== POVEZAN UPORABNIK ===");
+console.log("Ime in priimek:", celotnoImeUporabnika);
+console.log("Moj Email:", mojEmail);
 
-      <button class="navbar-toggler gumb-meni" type="button" data-bs-toggle="collapse" data-bs-target="#glavni_meni" aria-controls="glavni_meni" aria-expanded="false" aria-label="Preklopi navigacijo">
-        <i class="fas fa-bars" style="color: #000000; font-size: 1.5rem;"></i>
-      </button>
+ws.onopen = () => {
+    console.log("Uspešno povezan v IDE-JA klepetnico na portu 3001.");
+};
 
-      <div class="collapse navbar-collapse" id="glavni_meni">
-        <ul class="navbar-nav ms-auto py-3 py-lg-0">
-          <li class="nav-item"><a class="nav-link povezava-meni" href="index.html">Domov</a></li>
-          <li class="nav-item"><a class="nav-link povezava-meni" href="prijava.html">Prijava</a></li>
-          <li class="nav-item"><a class="nav-link povezava-meni" href="obcina.html">Predlogi občine</a></li>
-          <li class="nav-item"><a class="nav-link povezava-meni" href="predlogi.html">Predlogi uporabnikov</a></li>
-          <li class="nav-item"><a class="nav-link povezava-meni" href="status.html">Status predlogov</a></li>
-          <li class="nav-item"><a class="nav-link povezava-meni" href="profil.html">Moj profil</a></li>
-          <li class="nav-item"><a class="nav-link povezava-meni" href="obcina-profil.html">Admin</a></li>
-        </ul>
-      </div>
-      
-    </nav>
-
-  </div>
-</header>
-
-<div class="container my-4">
-  <div class="row g-0 shadow klepet-okno">
-      
-      <div class="col-md-4 col-lg-3 seznam-uporabnikov d-none d-md-block">
-        <div class="p-3 bg-white border-bottom">
-          <h5 class="fw-bold m-0 text-dark" style="font-size: 18px;">Pogovori</h5>
-        </div>
+ws.onmessage = (event) => {
+    try {
+        const podatek = JSON.parse(event.data);
+        console.log("Prejeto WS sporočilo:", podatek);
         
-        <div class="uporabnik-kartica aktivna d-flex align-items-center">
-          <div class="mini-avatar" style="background-color: #8c1212;">MO</div>
-          <div class="ms-3 overflow-hidden">
-            <h6 class="mb-0 fw-bold text-truncate" style="font-size: 14px;">Mestna občina Maribor</h6>
-            <small class="text-muted text-truncate d-block">Vaš predlog je bil predan v obravnavo...</small>
-          </div>
-        </div>
+        const p_odKoga = (podatek.odKogaEmail || '').toLowerCase().trim();
+        const p_komu = (podatek.komuEmail || '').toLowerCase().trim();
+        const t_prejemnik = (trenutniPrejemnikEmail || '').toLowerCase().trim();
 
-        <div class="uporabnik-kartica d-flex align-items-center">
-          <div class="mini-avatar" style="background-color: #4a6fa5;">AM</div>
-          <div class="ms-3 overflow-hidden">
-            <h6 class="mb-0 fw-bold text-truncate" style="font-size: 14px;">Anže Mohorič</h6>
-            <small class="text-muted text-truncate d-block">Se strinjam glede tiste ceste v Melju!</small>
-          </div>
-        </div>
+        const zameVklepetu = (p_komu === mojEmail && p_odKoga === t_prejemnik);
+        const odMeneVklepetu = (p_odKoga === mojEmail && p_komu === t_prejemnik);
 
-        <div class="uporabnik-kartica d-flex align-items-center">
-          <div class="mini-avatar" style="background-color: #2e7d32;">TL</div>
-          <div class="ms-3 overflow-hidden">
-            <h6 class="mb-0 fw-bold text-truncate" style="font-size: 14px;">Tina Logar</h6>
-            <small class="text-muted text-truncate d-block">Živijo! Hvala za podporo mojemu predlogu.</small>
-          </div>
-        </div>
-      </div>
+        if (zameVklepetu || odMeneVklepetu) {
+            const sporociloOkvir = document.createElement('div');
+            sporociloOkvir.classList.add('sporocilo');
+            
+            if (odMeneVklepetu) {
+                sporociloOkvir.classList.add('poslano');
+            } else {
+                sporociloOkvir.classList.add('prejeto');
+            }
 
-      <div class="col-md-8 col-lg-9 d-flex flex-column h-100 bg-white">
+            const zdaj = new Date();
+            const casIzpis = zdaj.toLocaleTimeString('sl-SI', { hour: '2-digit', minute: '2-digit' });
+
+            sporociloOkvir.innerHTML = `
+                <div class="vsebina-mehurcka">
+                    <strong>${podatek.avtor}:</strong> ${podatek.tekst}
+                    <span class="cas-sporocila">${casIzpis}</span>
+                </div>
+            `;
+            
+            chatMessages.appendChild(sporociloOkvir);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        } 
+        else if (p_komu === mojEmail && p_odKoga !== t_prejemnik) {
+            const uporabnikKartica = document.querySelector(`.uporabnik-kartica[data-email="${p_odKoga}"]`);
+            if (uporabnikKartica) {
+                uporabnikKartica.style.backgroundColor = "rgba(140, 18, 18, 0.15)";
+                const obvestiloTekst = uporabnikKartica.querySelector('.obvestilo-tekst');
+                if (obvestiloTekst) {
+                    obvestiloTekst.textContent = "Novo sporočilo!";
+                    obvestiloTekst.style.color = "#8c1212";
+                    obvestiloTekst.style.fontWeight = "bold";
+                }
+            }
+        }
+    } catch (e) {
+        console.error("Napaka pri prejemu WS sporočila:", e);
+    }
+};
+
+function posljiSporocilo() {
+    const tekst = chatInput.value.trim();
+    
+    if (!trenutniPrejemnikEmail) {
+        alert("Najprej izberi uporabnika na levi strani!");
+        return;
+    }
+
+    if (tekst !== "") {
+        const paket = {
+            avtor: celotnoImeUporabnika,
+            odKogaEmail: mojEmail,
+            komuEmail: trenutniPrejemnikEmail,
+            tekst: tekst
+        };
         
-        <div class="p-3 border-bottom d-flex align-items-center bg-white justify-content-between">
-          <div class="d-flex align-items-center">
-            <div class="mini-avatar" style="background-color: #8c1212;">MO</div>
-            <div class="ms-3">
-              <h5 class="mb-0 fw-bold text-dark" style="font-size: 16px;">Mestna občina Maribor</h5>
-              <small class="text-success"><i class="fas fa-circle me-1" style="font-size: 9px;"></i> Uradni profil občine</small>
-            </div>
-          </div>
-          <button class="btn btn-sm btn-outline-secondary d-md-none"><i class="fas fa-arrow-left"></i> Nazaj</button>
-        </div>
+        console.log("Pošiljam paket:", paket);
+        ws.send(JSON.stringify(paket));
+        chatInput.value = "";
+    }
+}
 
-        <div class="prikaz-sporocil flex-grow-1">
-          
-          <div class="sporocilo prejeto">
-            <div class="vsebina-mehurcka">
-              Pozdravljeni! Prejeli smo vaš predlog glede sanacije poplavnega območja na Smetanovi ulici. Skupnost ga je zelo dobro podprla.
-              <span class="cas-sporocila text-muted">14:32</span>
-            </div>
-          </div>
+function izberiUporabnikaZaKlepet(prejemnikEmail, celotnoIme, karticaElement) {
+    trenutniPrejemnikEmail = prejemnikEmail.toLowerCase().trim();
+    console.log("Klepet odprt z:", trenutniPrejemnikEmail);
 
-          <div class="sporocilo poslano">
-            <div class="vsebina-mehurcka">
-              Pozdravljeni. Me veseli! Ali mi lahko poveste, kdaj približno si bodo pristojne službe ogledale situacijo na terenu?
-              <span class="cas-sporocila text-light">14:35</span>
-            </div>
-          </div>
+    // Varno odstranimo aktivni razred z vseh kartic
+    document.querySelectorAll('.uporabnik-kartica').forEach(k => k.classList.remove('aktivna'));
+    
+    // Dodamo aktivni razred trenutni kartici, če obstaja
+    if (karticaElement) {
+        karticaElement.classList.add('aktivna');
+        karticaElement.style.backgroundColor = ""; 
+        const obvestiloTekst = karticaElement.querySelector('.obvestilo-tekst');
+        if (obvestiloTekst) {
+            obvestiloTekst.textContent = "Klikni za klepet";
+            obvestiloTekst.style.color = "";
+            obvestiloTekst.style.fontWeight = "";
+        }
+    }
 
-          <div class="sporocilo prejeto">
-            <div class="vsebina-mehurcka">
-              Vaš predlog je bil predan v obravnavo Uradu za komunalo, promet in prostor. Ogled terena načrtujejo v prihodnjem tednu. O vseh spremembah statusa boste obveščeni na profilu.
-              <span class="cas-sporocila text-muted">14:40</span>
-            </div>
-          </div>
+    const glavaIme = document.querySelector('.del-glava h5');
+    if (glavaIme) glavaIme.textContent = celotnoIme;
 
-          <div class="sporocilo poslano">
-            <div class="vsebina-mehurcka">
-              Odlično, hvala vam za hiter odgovor!
-              <span class="cas-sporocila text-light">14:42</span>
-            </div>
-          </div>
+    // Pridobivanje zgodovine
+    fetch(`http://localhost:3001/api/zgodovina-klepeta?mojEmail=${mojEmail}&prejemnikEmail=${trenutniPrejemnikEmail}`)
+        .then(res => res.json())
+        .then(zgodovina => {
+            chatMessages.innerHTML = ''; 
+            zgodovina.forEach(sp => {
+                const sporociloOkvir = document.createElement('div');
+                sporociloOkvir.classList.add('sporocilo');
 
-        </div>
+                const posiljatelj = sp.posiljatelj_email.toLowerCase().trim();
+                if (posiljatelj === mojEmail) {
+                    sporociloOkvir.classList.add('poslano');
+                } else {
+                    sporociloOkvir.classList.add('prejeto');
+                }
 
-        <div class="vnos-sporocila-vsebnik">
-          <form onsubmit="return false;" class="d-flex gap-2">
-            <input type="text" class="form-control vnos-polje rounded-pill" placeholder="Napiši sporočilo...">
-            <button type="button" class="gumb-dodaj rounded-circle p-0 d-flex align-items-center justify-content-center" style="width: 45px; height: 45px; flex-shrink: 0;">
-              <i class="fas fa-paper-plane" style="font-size: 16px;"></i>
-            </button>
-          </form>
-        </div>
+                const cas = new Date(sp.datum_vnos).toLocaleTimeString('sl-SI', { hour: '2-digit', minute: '2-digit' });
 
-      </div>
-      
-  </div>
-</div>
+                sporociloOkvir.innerHTML = `
+                    <div class="vsebina-mehurcka">
+                        ${sp.vsebina}
+                        <span class="cas-sporocila">${cas}</span>
+                    </div>
+                `;
+                chatMessages.appendChild(sporociloOkvir);
+            });
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        })
+        .catch(err => console.error("Napaka pri branju zgodovine:", err));
+}
 
-<footer class="glavna-noga">
-    <div class="container">
-        <div class="row">
-            <div class="col-md-4 mt-3">
-                <h5>IDE-JA</h5>
-                <p>SKUPAJ ZA BOLJŠI MARIBOR!</p>
-            </div>
+function naloziUporabnikeZaKlepet() {
+    const seznamOznaka = document.querySelector('.seznam-uporabnikov');
+    if (!seznamOznaka) return;
 
-            <div class="col-md-4 mt-3">
-                <h5>Povezave</h5>
-                <p><a href="index.html">Domov</a></p>
-                <p><a href="obcina.html">Predlogi občine</a></p>
-                <p><a href="predlogi.html">Predlogi uporabnika</a></p>
-            </div>
+    fetch('http://localhost:3001/api/vsi-uporabniki')
+        .then(response => response.json())
+        .then(uporabniki => {
+            seznamOznaka.innerHTML = `
+                <div class="p-3 bg-white border-bottom">
+                    <h5 class="fw-bold m-0 text-dark" style="font-size: 18px;">Pogovori</h5>
+                </div>
+            `;
 
-            <div class="col-md-4 mt-3">
-                <h5>Kontakt</h5>
-                <p>Maribor, Slovenija</p>
-                <p>info@ide-ja.si</p>
-                <p>+386 2 123 456</p>
-            </div>
+            uporabniki.forEach(uporabnik => {
+                const uEmail = uporabnik.email.toLowerCase().trim();
 
-        </div>
-    </div>
-</footer>
+                // Ne prikažemo samega sebe
+                if (uEmail === mojEmail) return; 
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="skripta.js"></script>
-</body>
-</html>
+                const kratica = `${uporabnik.ime[0]}${uporabnik.priimek[0]}`.toUpperCase();
+                const celotnoIme = `${uporabnik.ime} ${uporabnik.priimek}`;
+
+                const kartica = document.createElement('div');
+                kartica.className = 'uporabnik-kartica d-flex align-items-center p-3 border-bottom';
+                kartica.style.cursor = 'pointer';
+                kartica.setAttribute('data-email', uEmail);
+
+                kartica.innerHTML = `
+                    <div class="mini-avatar" style="background-color: #8c1212; color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink:0;">${kratica}</div>
+                    <div class="ms-3 overflow-hidden">
+                        <h6 class="mb-0 fw-bold text-truncate" style="font-size: 14px; color: #000;">${celotnoIme}</h6>
+                        <small class="text-muted text-truncate d-block obvestilo-tekst">Klikni za klepet</small>
+                    </div>
+                `;
+
+                // POPRAVLJEN KLIK: Sedaj pravilno posredujemo 'kartica' kot tretji parameter
+                kartica.addEventListener('click', () => {
+                    izberiUporabnikaZaKlepet(uEmail, celotnoIme, kartica);
+                });
+
+                seznamOznaka.appendChild(kartica);
+            });
+        })
+        .catch(err => console.error("Napaka pri nalaganju uporabnikov:", err));
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    naloziUporabnikeZaKlepet();
+    
+    chatSendBtn.addEventListener('click', posljiSporocilo);
+    chatInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            posljiSporocilo();
+        }
+    });
+});

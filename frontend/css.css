@@ -672,3 +672,125 @@ footer p, footer a, footer span, footer i {
   outline: none;
   border-color: #8c1212;
 }
+
+/*ZA WS*/
+/*zasebni klepet*/
+.klepet-okno {
+  height: 600px;
+  background-color: #ffffff;
+  border-radius: 15px;
+  overflow: hidden;
+  display: flex; /* Zagotovi, da se stolpci obnašajo kot flex elementi */
+}
+    
+/* Seznam aktivnih klepetov */
+.seznam-uporabnikov {
+  background-color: #f8f9fa;
+  border-right: 2px solid #e0dfdf;
+  height: 100%;
+  overflow-y: auto;
+}
+    
+.uporabnik-kartica {
+  padding: 15px;
+  border-bottom: 1px solid #e0dfdf;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+    
+.uporabnik-kartica:hover {
+  background-color: #f1f3f5;
+}
+    
+.uporabnik-kartica.aktivna {
+  background-color: #f4f1f1;
+  border-left: 4px solid #8c1212;
+}
+
+.mini-avatar {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  background-color: #cb2121;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 16px;
+  flex-shrink: 0; /* Prepreči, da bi se avatar stisnil ob dolgem tekstu */
+}
+
+/* Natančna določitev celotne desne strani */
+.desni-del-klepeta {
+  height: 100%;
+}
+
+.del-glava {
+  height: 75px; /* Fiksna višina glave pogovora */
+  flex-shrink: 0;
+}
+
+/* Območje za sporočila - popravljena višina */
+.prikaz-sporocil {
+  height: calc(600px - 75px - 80px); /* Od celotne višine odštejemo glavo in vnosno polje */
+  overflow-y: auto;
+  background-color: #f4f1f1;
+  padding: 20px;
+}
+
+/* Mehurčki za sporočila */
+.sporocilo {
+  margin-bottom: 15px;
+  max-width: 75%;
+  display: flex;
+}
+
+/* poslana sporočila */
+.sporocilo.poslano {
+  margin-left: auto;
+  justify-content: flex-end;
+}
+
+.sporocilo.poslano .vsebina-mehurcka {
+  background-color: #8c1212;
+  color: white;
+  border-radius: 15px 15px 0px 15px;
+}
+
+/* Prejeta sporočila */
+.sporocilo.prejeto {
+  margin-right: auto;
+  justify-content: flex-start;
+}
+
+.sporocilo.prejeto .vsebina-mehurcka {
+  background-color: #ffffff;
+  color: #000000;
+  border: 1px solid #e0dfdf;
+  border-radius: 15px 15px 15px 0px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.vsebina-mehurcka {
+  padding: 10px 15px;
+  font-size: 14px;
+  position: relative;
+}
+
+.cas-sporocila {
+  font-size: 10px;
+  display: block;
+  margin-top: 5px;
+  text-align: right;
+  opacity: 0.8;
+}
+
+/* Spodnji del za vnos teksta */
+.vnos-sporocila-vsebnik {
+  background-color: #ffffff;
+  padding: 15px;
+  border-top: 2px solid #e0dfdf;
+  height: 80px; /* Fiksna višina spodnjega dela */
+  flex-shrink: 0;
+}

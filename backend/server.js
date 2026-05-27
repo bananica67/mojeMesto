@@ -2,6 +2,7 @@ const path = require("path");
 const express = require("express");
 const { Pool } = require("pg");
 const app = express();
+const WebSocket = require('ws');
 
 // POVEZAVA Z BAZO
 const pool = new Pool({
@@ -10,6 +11,68 @@ const pool = new Pool({
   database: "moje_mesto",    
   password: "superVarnoGeslo",  
   port: 5432,
+});
+
+const wss = new WebSocket.Server({ port: 3001 });
+
+console.log('WebSocket server is running on ws://localhost:3001');
+
+wss.on('connection', (ws) => {
+  console.log('Nov uporabnik se je povezal v klepet.');
+
+  ws.on('message', async (message) => {
+    try {
+      const podatek = JSON.parse(message.toString());
+      console.log('Prejeto sporočilo za bazo:', podatek);
+
+      // 1. Shranimo sporočilo v bazo (vsebovati mora odKogaEmail, komuEmail in tekst)
+      const insertQuery = `
+        INSERT INTO Sporocilo (posiljatelj_email, prejemnik_email, vsebina, datum_vnos)
+        VALUES ($1, $2, $3, CURRENT_TIMESTAMP)
+      `;
+      await pool.query(insertQuery, [podatek.odKogaEmail, podatek.komuEmail, podatek.tekst]);
+
+      // 2. AVTOMATSKO BRISANJE: Pobrišemo vsa sporočila, starejša od 7 dni
+      const deleteStaraQuery = `
+        DELETE FROM Sporocilo 
+        WHERE datum_vnos < NOW() - INTERVAL '7 days'
+      `;
+      await pool.query(deleteStaraQuery);
+
+      // 3. Posredujemo sporočilo naprej vsem povezanim odjemalcem v realnem času
+      wss.clients.forEach((client) => {
+        if (client.readyState === WebSocket.OPEN) {
+          client.send(JSON.stringify(podatek));
+        }
+      });
+
+    } catch (err) {
+      console.error("Napaka pri obdelavi WebSocket sporočila:", err);
+    }
+  });
+
+  ws.on('close', () => {
+    console.log('Uporabnik je zapustil klepet.');
+  });
+});
+
+app.get('/api/zgodovina-klepeta', async (req, res) => {
+    const { mojEmail, prejemnikEmail } = req.query;
+
+    try {
+        const queryText = `
+            SELECT posiljatelj_email, prejemnik_email, vsebina, datum_vnos
+            FROM Sporocilo
+            WHERE (posiljatelj_email = $1 AND prejemnik_email = $2)
+               OR (posiljatelj_email = $2 AND prejemnik_email = $1)
+            ORDER BY datum_vnos ASC
+        `;
+        const rez = await pool.query(queryText, [mojEmail, prejemnikEmail]);
+        return res.json(rez.rows);
+    } catch (err) {
+        console.error("Napaka pri pridobivanju zgodovine klepeta:", err);
+        return res.status(500).json({ sporocilo: 'Napaka na strežniku.' });
+    }
 });
 
 app.use(express.urlencoded({ extended: true }));
