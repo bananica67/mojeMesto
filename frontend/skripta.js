@@ -59,7 +59,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
     }
-}); 
+});
 
 
 
@@ -91,7 +91,7 @@ document.addEventListener("DOMContentLoaded", function() {
       const vnesenoIme = document.getElementById('vnosIme').value;
       if(vnesenoIme.trim() !== "") {
         document.getElementById('prikazanoIme').textContent = vnesenoIme;
-        
+       
         // Shranimo v localStorage
         localStorage.setItem('profilnoIme', vnesenoIme);
 
@@ -122,7 +122,7 @@ document.addEventListener("DOMContentLoaded", function() {
     const shranjenaBarva = localStorage.getItem('profilnaBarva');
     if (shranjenaBarva) {
         document.getElementById('uporabnikAvatar').style.backgroundColor = shranjenaBarva;
-        
+       
         document.querySelectorAll('.barva-krog').forEach(krog => {
           krog.classList.remove('aktivna');
           if (krog.style.backgroundColor === shranjenaBarva || krog.getAttribute('onclick').includes(shranjenaBarva)) {
@@ -130,8 +130,16 @@ document.addEventListener("DOMContentLoaded", function() {
           }
         });
     }
+    const znackeTab = document.getElementById("znacke-tab");
+    if (znackeTab) {
+        znackeTab.addEventListener("click", naloziMojeZnacke);
+    }
+   
+    // Značke naložimo tudi takoj ob odpiranju profila
+    naloziMojeZnacke();
 }
-  
+
+ 
 // SKRIP ZA ZEMLJEVID - status predlogov
 const mapElement = document.getElementById('map');
 
@@ -145,9 +153,9 @@ if (mapElement) {
 }
 
 function odjaviUporabnika() {
-    localStorage.clear(); 
+    localStorage.clear();
     alert('Odjava uspešna.');
-    window.location.href = 'prijava.html'; 
+    window.location.href = 'prijava.html';
 }
 
 // Funkcija, ki naloži uporabnike iz localStorage in jih izriše v tabelo
@@ -165,7 +173,7 @@ function naloziUporabnikeZaAdmina() {
     fetch('/api/vsi-uporabniki')
         .then(response => response.json())
         .then(vsiUporabniki => {
-            
+           
             // Posodobi števec (Skupno uporabnikov: X)
             if (stetjeUporabnikovOznaka) {
                 stetjeUporabnikovOznaka.textContent = `Skupno uporabnikov: ${vsiUporabniki.length}`;
@@ -187,7 +195,7 @@ function naloziUporabnikeZaAdmina() {
                 const vrstica = document.createElement('tr');
                 // Uporabiva tvoj id_uporabnik iz SQL baze za ID vrstice
                 vrstica.id = `uporabnik-row-${uporabnik.id_uporabnik}`;
-                
+               
                 // Združiva ime in priimek točno tako, kot jih imaš v SQL tabeli
                 const polnoIme = `${uporabnik.ime} ${uporabnik.priimek}`;
 
@@ -243,3 +251,52 @@ document.addEventListener("DOMContentLoaded", () => {
         naloziUporabnikeZaAdmina();
     }
 });
+
+// Funkcija, ki prebere značke iz baze in jih izriše v HTML vsebnik
+async function naloziMojeZnacke() {
+    // Vzamemo e-mail iz localStorage (uporablja tvoj ključ 'profilniEmail')
+    const email = localStorage.getItem("profilniEmail") || "kaja@student.um.si";
+    const vsebnik = document.getElementById("seznamZnack");
+
+    if (!vsebnik) return;
+
+    try {
+        const odziv = await fetch(`/api/moje-znacke/${email}`);
+        const znacke = await odziv.json();
+
+        // Če uporabnik nima nobene značke v bazi
+        if (znacke.length === 0) {
+            vsebnik.innerHTML = `
+                <div class="col-12 text-center py-4">
+                    <p class="text-muted mb-0">Trenutno še nimate osvojenih značk. Bodite aktivni v skupnosti!</p>
+                </div>
+            `;
+            return;
+        }
+
+        // Če značke obstajajo, spraznimo napis "Nalaganje..." in jih izrišemo
+        vsebnik.innerHTML = "";
+       
+        znacke.forEach(znacka => {
+            // Izbira ikone glede na ime značke v bazi
+            let ikona = "fa-award";
+            if (znacka.naziv.toLowerCase().includes("iniciator")) ikona = "fa-seedling";
+            if (znacka.naziv.toLowerCase().includes("aktiven")) ikona = "fa-fire";
+            if (znacka.naziv.toLowerCase().includes("debatni")) ikona = "fa-comments";
+
+            vsebnik.innerHTML += `
+                <div class="col-6 col-sm-4">
+                  <div class="znacka-kartica shadow-sm p-3 text-center rounded bg-white h-100" style="border: 2px solid #ffd700; transition: transform 0.2s;">
+                    <div class="znacka-ikona mb-2" style="font-size: 26px; color: #ffd700;"><i class="fas ${ikona}"></i></div>
+                    <h6 class="fw-bold mb-1" style="font-size: 14px; color: #000;">${znacka.naziv}</h6>
+                    <p class="text-muted small mb-0" style="font-size: 11px; line-height: 1.2;">${znacka.opis}</p>
+                  </div>
+                </div>
+            `;
+        });
+
+    } catch (napaka) {
+        console.error("Napaka pri nalaganju značk na frontendu:", napaka);
+        vsebnik.innerHTML = `<div class="col-12 text-center text-danger small py-3">Napaka pri povezavi s strežnikom.</div>`;
+    }
+}
