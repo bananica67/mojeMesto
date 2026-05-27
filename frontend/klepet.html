@@ -1,206 +1,226 @@
-const ws = new WebSocket('ws://localhost:3001');
-
-let trenutniPrejemnikEmail = null;
-
-const chatMessages = document.getElementById('chat-messages');
-const chatInput = document.getElementById('chat-input');
-const chatSendBtn = document.getElementById('chat-send-btn');
-
-// Pridobivanje podatkov prijavljenega uporabnika iz localStorage
-const prijavljenIme = localStorage.getItem('ime') || 'Uporabnik';
-const prijavljenPriimek = localStorage.getItem('priimek') || 'Mesta';
-const celotnoImeUporabnika = `${prijavljenIme} ${prijavljenPriimek}`;
-const mojEmail = (localStorage.getItem('email') || '').toLowerCase().trim();
-
-console.log("=== POVEZAN UPORABNIK ===");
-console.log("Ime in priimek:", celotnoImeUporabnika);
-console.log("Moj Email:", mojEmail);
-
-ws.onopen = () => {
-    console.log("Uspešno povezan v IDE-JA klepetnico na portu 3001.");
-};
-
-ws.onmessage = (event) => {
-    try {
-        const podatek = JSON.parse(event.data);
-        console.log("Prejeto WS sporočilo:", podatek);
-        
-        const p_odKoga = (podatek.odKogaEmail || '').toLowerCase().trim();
-        const p_komu = (podatek.komuEmail || '').toLowerCase().trim();
-        const t_prejemnik = (trenutniPrejemnikEmail || '').toLowerCase().trim();
-
-        const zameVklepetu = (p_komu === mojEmail && p_odKoga === t_prejemnik);
-        const odMeneVklepetu = (p_odKoga === mojEmail && p_komu === t_prejemnik);
-
-        if (zameVklepetu || odMeneVklepetu) {
-            const sporociloOkvir = document.createElement('div');
-            sporociloOkvir.classList.add('sporocilo');
-            
-            if (odMeneVklepetu) {
-                sporociloOkvir.classList.add('poslano');
-            } else {
-                sporociloOkvir.classList.add('prejeto');
-            }
-
-            const zdaj = new Date();
-            const casIzpis = zdaj.toLocaleTimeString('sl-SI', { hour: '2-digit', minute: '2-digit' });
-
-            sporociloOkvir.innerHTML = `
-                <div class="vsebina-mehurcka">
-                    <strong>${podatek.avtor}:</strong> ${podatek.tekst}
-                    <span class="cas-sporocila">${casIzpis}</span>
-                </div>
-            `;
-            
-            chatMessages.appendChild(sporociloOkvir);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        } 
-        else if (p_komu === mojEmail && p_odKoga !== t_prejemnik) {
-            const uporabnikKartica = document.querySelector(`.uporabnik-kartica[data-email="${p_odKoga}"]`);
-            if (uporabnikKartica) {
-                uporabnikKartica.style.backgroundColor = "rgba(140, 18, 18, 0.15)";
-                const obvestiloTekst = uporabnikKartica.querySelector('.obvestilo-tekst');
-                if (obvestiloTekst) {
-                    obvestiloTekst.textContent = "Novo sporočilo!";
-                    obvestiloTekst.style.color = "#8c1212";
-                    obvestiloTekst.style.fontWeight = "bold";
-                }
-            }
-        }
-    } catch (e) {
-        console.error("Napaka pri prejemu WS sporočila:", e);
+<!DOCTYPE html>
+<html lang="sl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Zasebni Klepet - IDE-JA</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="css.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    body {
+      background-color: #f5f5f5;
     }
-};
-
-function posljiSporocilo() {
-    const tekst = chatInput.value.trim();
-    
-    if (!trenutniPrejemnikEmail) {
-        alert("Najprej izberi uporabnika na levi strani!");
-        return;
+    .klepet-okno {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      margin: 20px;
+      max-height: 600px;
     }
-
-    if (tekst !== "") {
-        const paket = {
-            avtor: celotnoImeUporabnika,
-            odKogaEmail: mojEmail,
-            komuEmail: trenutniPrejemnikEmail,
-            tekst: tekst
-        };
-        
-        console.log("Pošiljam paket:", paket);
-        ws.send(JSON.stringify(paket));
-        chatInput.value = "";
+    .seznam-uporabnikov {
+      width: 280px;
+      border-right: 1px solid #e0e0e0;
+      background: white;
+      overflow-y: auto;
     }
-}
-
-function izberiUporabnikaZaKlepet(prejemnikEmail, celotnoIme, karticaElement) {
-    trenutniPrejemnikEmail = prejemnikEmail.toLowerCase().trim();
-    console.log("Klepet odprt z:", trenutniPrejemnikEmail);
-
-    // Varno odstranimo aktivni razred z vseh kartic
-    document.querySelectorAll('.uporabnik-kartica').forEach(k => k.classList.remove('aktivna'));
-    
-    // Dodamo aktivni razred trenutni kartici, če obstaja
-    if (karticaElement) {
-        karticaElement.classList.add('aktivna');
-        karticaElement.style.backgroundColor = ""; 
-        const obvestiloTekst = karticaElement.querySelector('.obvestilo-tekst');
-        if (obvestiloTekst) {
-            obvestiloTekst.textContent = "Klikni za klepet";
-            obvestiloTekst.style.color = "";
-            obvestiloTekst.style.fontWeight = "";
-        }
+    .prikaz-sporocil {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: white;
     }
+    .del-glava {
+      background: #f9f9f9;
+      border-bottom: 1px solid #e0e0e0;
+      padding: 1rem;
+    }
+    .del-glava h5 {
+      margin: 0;
+      color: #333;
+      font-weight: 600;
+    }
+    #chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .sporocilo {
+      display: flex;
+      margin-bottom: 0.5rem;
+      animation: slideIn 0.3s ease-in-out;
+    }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .sporocilo.poslano {
+      justify-content: flex-end;
+    }
+    .sporocilo.prejeto {
+      justify-content: flex-start;
+    }
+    .vsebina-mehurcka {
+      max-width: 70%;
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      word-wrap: break-word;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+    .sporocilo.poslano .vsebina-mehurcka {
+      background-color: #8c1212;
+      color: white;
+      border-bottom-right-radius: 0;
+    }
+    .sporocilo.prejeto .vsebina-mehurcka {
+      background-color: #f0f0f0;
+      color: #333;
+      border-bottom-left-radius: 0;
+      border: 1px solid #ddd;
+    }
+    .cas-sporocila {
+      display: block;
+      font-size: 11px;
+      margin-top: 0.3rem;
+      opacity: 0.7;
+    }
+    .sporocilo.poslano .cas-sporocila {
+      color: rgba(255,255,255,0.7);
+    }
+    .sporocilo.prejeto .cas-sporocila {
+      color: #999;
+    }
+    .vnos-sporocila-vsebnik {
+      border-top: 1px solid #e0e0e0;
+      background: #fafafa;
+      padding: 1rem;
+    }
+    .vnos-sporocila-vsebnik .d-flex {
+      gap: 0.5rem;
+    }
+    #chat-input {
+      flex: 1;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 0.5rem;
+      font-size: 14px;
+    }
+    #chat-input:focus {
+      border-color: #8c1212;
+      box-shadow: 0 0 0 0.2rem rgba(140, 18, 18, 0.25);
+    }
+    #chat-send-btn {
+      background-color: #8c1212;
+      border: none;
+      color: white;
+      padding: 0.5rem 1.5rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background-color 0.2s;
+    }
+    #chat-send-btn:hover {
+      background-color: #6b0d0d;
+      color: white;
+    }
+    .uporabnik-kartica {
+      cursor: pointer;
+      border: none;
+      transition: background-color 0.2s;
+      padding: 1rem;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .uporabnik-kartica:hover {
+      background-color: #f9f9f9;
+    }
+    .uporabnik-kartica.aktivna {
+      background-color: #f0f0f0;
+    }
+    .mini-avatar {
+      flex-shrink: 0;
+    }
+    .obvestilo-tekst {
+      font-size: 13px;
+    }
+    .nenastavljen-klepet {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: #999;
+      font-size: 16px;
+      text-align: center;
+    }
+    @media (max-width: 768px) {
+      .seznam-uporabnikov {
+        width: 200px;
+      }
+      .vsebina-mehurcka {
+        max-width: 90%;
+      }
+      .klepet-okno {
+        margin: 10px;
+        max-height: calc(100vh - 80px);
+      }
+    }
+  </style>
+</head>
+<body>
 
-    const glavaIme = document.querySelector('.del-glava h5');
-    if (glavaIme) glavaIme.textContent = celotnoIme;
+<header class="glava-strani">
+  <div class="container-fluid vsebnik-po-meri">
+    <nav class="navbar navbar-expand-lg navbar-dark glavna-navigacija px-3 px-lg-4">
+      <div class="d-flex align-items-center">
+        <i class="far fa-lightbulb fa-2x" style="color:#ffffff;"></i>
+        <a class="navbar-brand naziv-znamke" href="index.html" style="padding-left: 10px;">IDE-JA</a>
+      </div>
+      <button class="navbar-toggler gumb-meni" type="button" data-bs-toggle="collapse" data-bs-target="#glavni_meni">
+        <i class="fas fa-bars" style="color: #000000; font-size: 1.5rem;"></i>
+      </button>
+      <div class="collapse navbar-collapse" id="glavni_meni">
+        <ul class="navbar-nav ms-auto py-3 py-lg-0">
+          <li class="nav-item"><a class="nav-link povezava-meni" href="index.html">Domov</a></li>
+          <li class="nav-item"><a class="nav-link povezava-meni" href="predlogi.html">Predlogi</a></li>
+          <li class="nav-item"><a class="nav-link povezava-meni" href="profil.html">Moj profil</a></li>
+          <li class="nav-item"><a class="nav-link povezava-meni active" href="klepet.html">Zasebni klepet</a></li>
+        </ul>
+      </div>
+    </nav>
+  </div>
+</header>
 
-    // Pridobivanje zgodovine
-    fetch(`http://localhost:3001/api/zgodovina-klepeta?mojEmail=${mojEmail}&prejemnikEmail=${trenutniPrejemnikEmail}`)
-        .then(res => res.json())
-        .then(zgodovina => {
-            chatMessages.innerHTML = ''; 
-            zgodovina.forEach(sp => {
-                const sporociloOkvir = document.createElement('div');
-                sporociloOkvir.classList.add('sporocilo');
+<div class="container-fluid">
+  <div class="row mt-4">
+    <div class="col-lg-10 offset-lg-1">
+      <h3 class="mb-4">Zasebni Klepet</h3>
+      <div class="klepet-okno d-flex">
+        <!-- Levi panel: Seznam uporabnikov -->
+        <div class="seznam-uporabnikov"></div>
 
-                const posiljatelj = sp.posiljatelj_email.toLowerCase().trim();
-                if (posiljatelj === mojEmail) {
-                    sporociloOkvir.classList.add('poslano');
-                } else {
-                    sporociloOkvir.classList.add('prejeto');
-                }
+        <!-- Desni panel: Prikaz klepeta -->
+        <div class="prikaz-sporocil">
+          <div class="del-glava">
+            <h5>Izberi uporabnika, da začneš s klepetom</h5>
+          </div>
+          <div id="chat-messages"></div>
+          <div class="vnos-sporocila-vsebnik">
+            <div class="d-flex">
+              <input type="text" id="chat-input" class="form-control" placeholder="Tvoje sporočilo..." disabled>
+              <button id="chat-send-btn" class="btn" disabled>Pošlji</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
-                const cas = new Date(sp.datum_vnos).toLocaleTimeString('sl-SI', { hour: '2-digit', minute: '2-digit' });
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="klepet.js"></script>
 
-                sporociloOkvir.innerHTML = `
-                    <div class="vsebina-mehurcka">
-                        ${sp.vsebina}
-                        <span class="cas-sporocila">${cas}</span>
-                    </div>
-                `;
-                chatMessages.appendChild(sporociloOkvir);
-            });
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        })
-        .catch(err => console.error("Napaka pri branju zgodovine:", err));
-}
-
-function naloziUporabnikeZaKlepet() {
-    const seznamOznaka = document.querySelector('.seznam-uporabnikov');
-    if (!seznamOznaka) return;
-
-    fetch('http://localhost:3001/api/vsi-uporabniki')
-        .then(response => response.json())
-        .then(uporabniki => {
-            seznamOznaka.innerHTML = `
-                <div class="p-3 bg-white border-bottom">
-                    <h5 class="fw-bold m-0 text-dark" style="font-size: 18px;">Pogovori</h5>
-                </div>
-            `;
-
-            uporabniki.forEach(uporabnik => {
-                const uEmail = uporabnik.email.toLowerCase().trim();
-
-                // Ne prikažemo samega sebe
-                if (uEmail === mojEmail) return; 
-
-                const kratica = `${uporabnik.ime[0]}${uporabnik.priimek[0]}`.toUpperCase();
-                const celotnoIme = `${uporabnik.ime} ${uporabnik.priimek}`;
-
-                const kartica = document.createElement('div');
-                kartica.className = 'uporabnik-kartica d-flex align-items-center p-3 border-bottom';
-                kartica.style.cursor = 'pointer';
-                kartica.setAttribute('data-email', uEmail);
-
-                kartica.innerHTML = `
-                    <div class="mini-avatar" style="background-color: #8c1212; color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink:0;">${kratica}</div>
-                    <div class="ms-3 overflow-hidden">
-                        <h6 class="mb-0 fw-bold text-truncate" style="font-size: 14px; color: #000;">${celotnoIme}</h6>
-                        <small class="text-muted text-truncate d-block obvestilo-tekst">Klikni za klepet</small>
-                    </div>
-                `;
-
-                // POPRAVLJEN KLIK: Sedaj pravilno posredujemo 'kartica' kot tretji parameter
-                kartica.addEventListener('click', () => {
-                    izberiUporabnikaZaKlepet(uEmail, celotnoIme, kartica);
-                });
-
-                seznamOznaka.appendChild(kartica);
-            });
-        })
-        .catch(err => console.error("Napaka pri nalaganju uporabnikov:", err));
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-    naloziUporabnikeZaKlepet();
-    
-    chatSendBtn.addEventListener('click', posljiSporocilo);
-    chatInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            posljiSporocilo();
-        }
-    });
-});
+</body>
+</html>

@@ -3,48 +3,60 @@ const express = require("express");
 const { Pool } = require("pg");
 const app = express();
 const WebSocket = require('ws');
+const http = require('http');
 
 // POVEZAVA Z BAZO
 const pool = new Pool({
-  user: "postgres",          
+  user: "postgres",
   host: "localhost",
-  database: "moje_mesto",    
-  password: "superVarnoGeslo",  
+  database: "moje_mesto",
+  password: "superVarnoGeslo",
   port: 5432,
 });
 
-const wss = new WebSocket.Server({ port: 3001 });
+// Ustvarimo HTTP strežnik in WebSocket server na istem portu
+const server = http.createServer(app);
+const wss = new WebSocket.Server({ server });
 
-console.log('WebSocket server is running on ws://localhost:3001');
+// Spremljanje povezanih uporabnikov: Map<email, WebSocket>
+const connectedUsers = new Map();
 
 wss.on('connection', (ws) => {
   console.log('Nov uporabnik se je povezal v klepet.');
 
+  ws.userEmail = null;
+
   ws.on('message', async (message) => {
     try {
       const podatek = JSON.parse(message.toString());
-      console.log('Prejeto sporočilo za bazo:', podatek);
+      console.log('Prejeto sporočilo:', podatek);
 
-      // 1. Shranimo sporočilo v bazo (vsebovati mora odKogaEmail, komuEmail in tekst)
+      // Shranimo pošiljateljev email za kasnejšo identifikacijo
+      if (!ws.userEmail) {
+        ws.userEmail = podatek.odKogaEmail;
+        connectedUsers.set(podatek.odKogaEmail, ws);
+      }
+
+      // 1. Shranimo sporočilo v bazo
       const insertQuery = `
-        INSERT INTO Sporocilo (posiljatelj_email, prejemnik_email, vsebina, datum_vnos)
-        VALUES ($1, $2, $3, CURRENT_TIMESTAMP)
+        INSERT INTO Sporocilo (posiljatelj_email, prejemnik_email, vsebina)
+        VALUES ($1, $2, $3)
       `;
       await pool.query(insertQuery, [podatek.odKogaEmail, podatek.komuEmail, podatek.tekst]);
 
-      // 2. AVTOMATSKO BRISANJE: Pobrišemo vsa sporočila, starejša od 7 dni
-      const deleteStaraQuery = `
-        DELETE FROM Sporocilo 
-        WHERE datum_vnos < NOW() - INTERVAL '7 days'
-      `;
-      await pool.query(deleteStaraQuery);
+      // 2. Posredujemo sporočilo SAMO pošiljatelju in prejemniku (zasebno sporočilo)
+      const response = JSON.stringify(podatek);
 
-      // 3. Posredujemo sporočilo naprej vsem povezanim odjemalcem v realnem času
-      wss.clients.forEach((client) => {
-        if (client.readyState === WebSocket.OPEN) {
-          client.send(JSON.stringify(podatek));
-        }
-      });
+      // Pošlji pošiljatelju
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.send(response);
+      }
+
+      // Pošlji prejemniku, če je povezan
+      const recipientWs = connectedUsers.get(podatek.komuEmail);
+      if (recipientWs && recipientWs.readyState === WebSocket.OPEN) {
+        recipientWs.send(response);
+      }
 
     } catch (err) {
       console.error("Napaka pri obdelavi WebSocket sporočila:", err);
@@ -52,10 +64,14 @@ wss.on('connection', (ws) => {
   });
 
   ws.on('close', () => {
-    console.log('Uporabnik je zapustil klepet.');
+    if (ws.userEmail) {
+      connectedUsers.delete(ws.userEmail);
+      console.log(`Uporabnik ${ws.userEmail} je zapustil klepet.`);
+    }
   });
 });
 
+// --- POT ZA PRIKAZ ZGODOVINE KLEPETA ---
 app.get('/api/zgodovina-klepeta', async (req, res) => {
     const { mojEmail, prejemnikEmail } = req.query;
 
@@ -223,6 +239,7 @@ app.get('/api/moje-znacke/:email', async (req, res) => {
 });
 
 // Zagon strežnika je čisto na koncu datoteke
-app.listen(3000, () => {
+server.listen(3000, () => {
   console.log("Strežnik deluje na http://localhost:3000");
+  console.log("WebSocket server deluje na ws://localhost:3000");
 });

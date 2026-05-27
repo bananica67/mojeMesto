@@ -1,4 +1,5 @@
 DROP TABLE IF EXISTS Uporabnik_Znacka CASCADE;
+DROP TABLE IF EXISTS Sporocilo CASCADE;
 DROP TABLE IF EXISTS Značka CASCADE;
 DROP TABLE IF EXISTS Komentar CASCADE;
 DROP TABLE IF EXISTS Podpora CASCADE;
@@ -16,6 +17,14 @@ CREATE TABLE Uporabnik (
 	telefon numeric(19,0) NOT NULL,
 	email varchar(255) NOT NULL UNIQUE,
     datum_registracije date NOT NULL
+);
+
+CREATE TABLE Sporocilo (
+    id_sporocilo bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    posiljatelj_email varchar(255) NOT NULL REFERENCES Uporabnik(email),
+    prejemnik_email varchar(255) NOT NULL REFERENCES Uporabnik(email),
+    vsebina text NOT NULL,
+    datum_vnos timestamp DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE Tip_objave (
