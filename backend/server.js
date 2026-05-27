@@ -19,7 +19,6 @@ app.use(express.static(path.resolve(__dirname, '../frontend')));
 
 // --- POT ZA REGISTRACIJO ---
 app.post('/registracija', async (req, res) => {
-    // Strežnik tukaj prebere VSE podatke, ki jih pošlje tvoj HTML obrazec
     const { spol, ime, priimek, email, geslo, telefon, naslov, hisna_st, posta_kraj, datum_rojstva, opombe } = req.body;
 
     const vnosTelefon = telefon ? telefon : null;
@@ -29,7 +28,7 @@ app.post('/registracija', async (req, res) => {
             INSERT INTO Uporabnik (ime, priimek, geslo, telefon, email, datum_registracije)
             VALUES ($1, $2, $3, $4, $5, CURRENT_DATE)
         `;
-       
+        
         await pool.query(queryText, [ime, priimek, geslo, vnosTelefon, email]);
 
         res.send(`
@@ -38,14 +37,13 @@ app.post('/registracija', async (req, res) => {
                 window.location.href = 'http://localhost:3000/prijava.html';
             </script>
         `);
-    //napaka v bazi //
     } catch (err) {
         console.error("Napaka pri registraciji:", err);
         res.status(500).send("Prišlo je do napake pri shranjevanju v bazo.");
     }
 });
 
-// --- POT ZA PRIJAVO (Prestavljeno nad listen!) ---
+// --- POT ZA PRIJAVO ---
 app.post('/prijava', async (req, res) => {
     const { email, geslo } = req.body;
 
@@ -53,7 +51,6 @@ app.post('/prijava', async (req, res) => {
         const userCheck = await pool.query('SELECT * FROM Uporabnik WHERE email = $1', [email]);
 
         if (userCheck.rows.length === 0) {
-            // Vrnemo JSON z uspeh: false, da ga skripta prebere
             return res.json({ uspeh: false, sporocilo: 'Uporabnik s tem e-mailom ne obstaja!' });
         }
 
@@ -108,9 +105,9 @@ app.post('/prijava', async (req, res) => {
             priimek: uporabnik.priimek,
             email: uporabnik.email
         });
-       
+        
     } catch (err) {
-        console.error("Napaka pri prijavi na strežniku:", err);
+        console.error("Napaka pri prijava na strežniku:", err);
         return res.json({ uspeh: false, sporocilo: 'Prišlo je do napake na strežniku pri povezavi z bazo.' });
     }
 });
@@ -159,7 +156,7 @@ app.get('/api/moje-znacke/:email', async (req, res) => {
     }
 });
 
-// Zagon strežnika je čisto na koncu datoteke
+// Zagon strežnika
 app.listen(3000, () => {
   console.log("Strežnik deluje na http://localhost:3000");
 });
