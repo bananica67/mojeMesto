@@ -1,90 +1,108 @@
-// ----------------------------
-// SKRIPT ZA PREDLOGE 
-// ----------------------------
-
-const zacetniPredlogi = [
-  {
-    id: 1,
-    naslov: "Obupna cesta v Melju",
-    opis: "A ste videli te luknje v Melju? Vsak dan se vozim tam v službo in samo čakam, kdaj mi bo odletela guma. Ko dežuje, se sploh ne vidi, kako globoke so.",
-    slika: "slike/predlog_1.jpg",
-    vsecki: 0,
-    komentarji: [
-      { avtor: "Janja", besedilo: "Katastrofa je tam, res. Vsak dan cik-cak vozim." },
-      { avtor: "Marko", besedilo: "Se strinjam." }
-    ]
-  },
-  {
-    id: 2,
-    naslov: "Poplava na Smetanovi",
-    opis: "Vsakič, ko malo bolj dežuje, se na Smetanovi pri FERI-ju naredi pravo jezero. Voda sploh ne odteka in stoji tam cel dan. Pešci ne moremo čez cesto.",
-    slika: "slike/predlog_2.jpg",
-    vsecki: 0,
-    komentarji: [
-      { avtor: "Nik", besedilo: "Vem prav grozno je." },
-      { avtor: "Ana", besedilo: "Pa vozit se je tam mimo tudi obupno, ko je tako." }
-    ]
-  }
-];
-
-if (!localStorage.getItem('vsiPredlogi')) {
-  localStorage.setItem('vsiPredlogi', JSON.stringify(zacetniPredlogi));
-}
-
 const vsebnikPredlogov = document.getElementById('predlog-uporabnik');
+const vsebnikObcina = document.getElementById('predlogi-obcina');
 
-if (vsebnikPredlogov) {
-  const predlogi = JSON.parse(localStorage.getItem('vsiPredlogi'));
-  
-  vsebnikPredlogov.innerHTML = '';
+// Zamenjava lokalnega pomnilnika s FETCH iz baze
+if (vsebnikPredlogov || vsebnikObcina) {
+  fetch('/api/predlogi')
+    .then(res => res.json())
+    .then(predlogi => {
 
-  predlogi.forEach(predlog => {
-    
-    let komentarjiHTML = '';
-    predlog.komentarji.forEach(kom => {
-      komentarjiHTML += `<div class="komentar"><strong>${kom.avtor}:</strong> ${kom.besedilo}</div>`;
-    });
+      // 1. IZPIS NA STRANI UPORABNIKOV (vse razen ID = 1)
+      if (vsebnikPredlogov) {
+        vsebnikPredlogov.innerHTML = '';
+        const filtriraniUporabniki = predlogi.filter(p => p.tk_uporabnikid_uporabnik !== 1 && p.TK_Uporabnikid_uporabnik !== 1);
+        
+        filtriraniUporabniki.forEach(predlog => {
+          const trenutniVsecki = localStorage.getItem(`glas_${predlog.id_objava}_vsecki`) || 0;
+          const trenutniNeradi = localStorage.getItem(`glas_${predlog.id_objava}_neradi`) || 0;
 
-    const trenutniVsecki = localStorage.getItem(`glas_${predlog.id}_vsecki`) || 0;
-    const trenutniNeradi = localStorage.getItem(`glas_${predlog.id}_neradi`) || 0;
+          const karticaHTML = `
+            <div class="col-lg-6">
+              <div class="card shadow predlog-card">
+                <img src="${predlog.fotografija || 'slike/zacetna.jpg'}" class="card-img-top predlog-img" alt="slika">
+                <div class="card-body p-4">
+                  <h3 class="fw-bold mb-3">${predlog.naslov}</h3>
+                  <p class="text-muted">${predlog.opis}</p>
+                  
+                <div class="d-flex gap-3 my-4">
+                  <button class="btn btn-success glas-btn" onclick="glasuj(${predlog.id_objava}, 'vsecki')">
+                  <i class="fas fa-thumbs-up"></i> <span id="span_${predlog.id_objava}_vsecki">${trenutniVsecki}</span>
+                  </button>
 
-    const karticaHTML = `
-      <div class="col-lg-6">
-        <div class="card shadow predlog-card">
-          <img src="${predlog.slika}" class="card-img-top predlog-img" alt="slika">
-          <div class="card-body p-4">
-            <h3 class="fw-bold mb-3">${predlog.naslov}</h3>
-            <p class="text-muted">${predlog.opis}</p>
-            
-          <div class="d-flex gap-3 my-4">
-            <button class="btn btn-success glas-btn" onclick="glasuj(${predlog.id}, 'vsecki')">
-            <i class="fas fa-thumbs-up"></i> <span id="span_${predlog.id}_vsecki">${trenutniVsecki}</span>
-            </button>
+                  <button class="btn btn-danger glas-btn" onclick="glasuj(${predlog.id_objava}, 'neradi')">
+                  <i class="fas fa-thumbs-down"></i> <span id="span_${predlog.id_objava}_neradi">${trenutniNeradi}</span>
+                  </button>
+                </div>
+                  
+                <hr>
+                  
+                <h5 class="fw-bold mb-3">Komentarji</h5>
+                <div class="mb-3">
+                  <div class="komentar"><small class="text-muted">Komentarji bodo na voljo kmalu.</small></div>
+                </div>
+                                  
+                <textarea class="form-control comment-box mb-3" rows="3" placeholder="Dodaj komentar..."></textarea>
+                <button class="btn komentar-gumb fw-bold">Objavi komentar</button>
+                </div>
+              </div>
+            </div>
+          `;
+          vsebnikPredlogov.innerHTML += karticaHTML;
+        });
+      }
 
-            <button class="btn btn-danger glas-btn" onclick="glasuj(${predlog.id}, 'neradi')">
-            <i class="fas fa-thumbs-down"></i> <span id="span_${predlog.id}_neradi">${trenutniNeradi}</span>
-            </button>
-          </div>
-            
-          <hr>
-            
-          <h5 class="fw-bold mb-3">Komentarji</h5>
-          <div class="mb-3">
-            ${komentarjiHTML}
-          </div>
-                            
-          <textarea class="form-control comment-box mb-3" rows="3" placeholder="Dodaj komentar..."></textarea>
-          <button class="btn komentar-gumb fw-bold">Objavi komentar</button>
-          </div>
-        </div>
-      </div>
-    `;
+      // 2. IZPIS NA STRANI OBČINE (samo ID = 1)
+      if (vsebnikObcina) {
+        vsebnikObcina.innerHTML = '';
+        const filtriranaObcina = predlogi.filter(p => p.tk_uporabnikid_uporabnik === 1 || p.TK_Uporabnikid_uporabnik === 1);
+        
+        filtriranaObcina.forEach(predlog => {
+          const trenutniVseckiObcina = localStorage.getItem(`glas_${predlog.id_objava}_vsecki`) || 0;
+          const trenutniNeradiObcina = localStorage.getItem(`glas_${predlog.id_objava}_neradi`) || 0;
 
-    vsebnikPredlogov.innerHTML += karticaHTML;
-  });
+          const karticaHTML = `
+            <div class="col-lg-6">
+              <div class="card shadow predlog-card">
+                <img src="${predlog.fotografija || 'slike/zacetna.jpg'}" class="card-img-top predlog-img" alt="slika">
+                <div class="card-body p-4">
+                  <h3 class="fw-bold mb-3">${predlog.naslov}</h3>
+                  <p class="text-muted">${predlog.opis}</p>
+                  
+                  <div class="d-flex gap-3 my-4">
+                    <button class="btn btn-success glas-btn" onclick="glasuj(${predlog.id_objava}, 'vsecki')">
+                    <i class="fas fa-thumbs-up"></i> <span id="span_${predlog.id_objava}_vsecki">${trenutniVseckiObcina}</span>
+                    </button>
+
+                    <button class="btn btn-danger glas-btn" onclick="glasuj(${predlog.id_objava}, 'neradi')">
+                    <i class="fas fa-thumbs-down"></i> <span id="span_${predlog.id_objava}_neradi">${trenutniNeradiObcina}</span>
+                    </button>
+                  </div>
+                  
+                  <hr>
+                  
+                  <h5 class="fw-bold mb-3">Komentarji</h5>
+                  <div class="mb-3">
+                    <div class="komentar"><small class="text-muted">Komentarji bodo na voljo kmalu.</small></div>
+                  </div>
+                                  
+                  <textarea class="form-control comment-box mb-3" rows="3" placeholder="Dodaj komentar..."></textarea>
+                  <button class="btn komentar-gumb fw-bold">Objavi komentar</button>
+                </div>
+              </div>
+            </div>
+          `;
+          vsebnikObcina.innerHTML += karticaHTML;
+        });
+      }
+
+    })
+    .catch(err => console.error("Napaka pri nalaganju predlogov:", err));
 }
+
+// --- TUKAJ NAPREJ VSE OSTANE TOČNO TAKO, KOT SI IMELA NASTAVLJENO ---
 
 const mapElementId = document.getElementById('map');
+let izbraneKoordinate = null;
 
 if (mapElementId) {
   const map = L.map('map').setView([46.5547, 15.6459], 13);
@@ -95,7 +113,6 @@ if (mapElementId) {
   }).addTo(map);
 
   let trenutniMarker = null;
-  let izbraneKoordinate = null;
 
   map.on('click', function(e) {
     izbraneKoordinate = e.latlng;
@@ -155,112 +172,7 @@ if (gumbObjavi) {
   });
 }
 
-const zacetniPredlogiObcine = [
-  {
-    id: 1,
-    naslov: "Nova kolesarska pot",
-    opis: "Občina načrtuje izgradnjo nove kolesarske poti med centrom mesta in mestnim parkom za večjo varnost kolesarjev.",
-    slika: "slike/kolo.jpg",
-    vsecki: 0,
-    komentarji: [
-      { avtor: "Mitja", besedilo: "To bi zelo izboljšalo promet v centru." },
-      { avtor: "Nina", besedilo: "Super ideja za bolj varno vožnjo s kolesom." }
-    ]
-  },
-  {
-    id: 2,
-    naslov: "Prenova avtobusnih postaj",
-    opis: "Predlagana je prenova avtobusnih postaj z novimi nadstreški, osvetlitvijo in digitalnimi prikazovalniki prihodov.",
-    slika: "slike/avtobus.jpg",
-    vsecki: 0,
-    komentarji: [
-      { avtor: "Miha", besedilo: "Končno nekaj koristnega za javni prevoz." },
-      { avtor: "Petra", besedilo: "Upam da pride tudi več avtobusov." }
-    ]
-  },
-  {
-    id: 3,
-    naslov: "Boljša osvetlitev pešpoti",
-    opis: "Uporabniki opozarjajo na slabo osvetljene poti ob robu mesta, kaj zmanjšuje občutek varnosti v večernih urah.",
-    slika: "slike/osvetlitev.jpg",
-    vsecki: 0,
-    komentarji: [
-      { avtor: "Janez", besedilo: "Poti ob gozdu so res popolnoma v temi, nujno rabimo luči." },
-      { avtor: "Maja", besedilo: "Se strinjam, pozimi je tam zelo neprijetno hoditi." }
-    ]
-  },
-  {
-    id: 4,
-    naslov: "Ureditev mestnega parka",
-    opis: "Potrebno bi bilo rednejše vzdrževanje klopi in namestitev dodatnih košev za odpadke v osrednjem parku.",
-    slika: "slike/park.jpeg",
-    vsecki: 0,
-    komentarji: [
-      { avtor: "Luka", besedilo: "Koši so čez vikend vedno polni, potrebujemo pogostejši odvoz." },
-      { avtor: "Anja", besedilo: "Park je nujno potreben prenove, sploh klopi." }
-    ]
-  }
-];
-
-if (!localStorage.getItem('vsiPredlogiObcine')) {
-  localStorage.setItem('vsiPredlogiObcine', JSON.stringify(zacetniPredlogiObcine));
-}
-
-const vsebnikObcina = document.getElementById('predlogi-obcina');
-
-if (vsebnikObcina) {
-  const predlogi = JSON.parse(localStorage.getItem('vsiPredlogiObcine'));
-  
-  vsebnikObcina.innerHTML = '';
-
-  predlogi.forEach(predlog => {
-    
-    let komentarjiHTML = '';
-    predlog.komentarji.forEach(kom => {
-      komentarjiHTML += `<div class="komentar"><strong>${kom.avtor}:</strong> ${kom.besedilo}</div>`;
-    });
-
-    const trenutniVseckiObcina = localStorage.getItem(`glas_${predlog.id}_vsecki`) || 0;
-    const trenutniNeradiObcina = localStorage.getItem(`glas_${predlog.id}_neradi`) || 0;
-
-    const karticaHTML = `
-      <div class="col-lg-6">
-        <div class="card shadow predlog-card">
-          <img src="${predlog.slika}" class="card-img-top predlog-img" alt="slika">
-          <div class="card-body p-4">
-            <h3 class="fw-bold mb-3">${predlog.naslov}</h3>
-            <p class="text-muted">${predlog.opis}</p>
-            
-            <div class="d-flex gap-3 my-4">
-              <button class="btn btn-success glas-btn" onclick="glasuj(${predlog.id}, 'vsecki')">
-              <i class="fas fa-thumbs-up"></i> <span id="span_${predlog.id}_vsecki">${trenutniVseckiObcina}</span>
-              </button>
-
-              <button class="btn btn-danger glas-btn" onclick="glasuj(${predlog.id}, 'neradi')">
-              <i class="fas fa-thumbs-down"></i> <span id="span_${predlog.id}_neradi">${trenutniNeradiObcina}</span>
-              </button>
-            </div>
-            
-            <hr>
-            
-            <h5 class="fw-bold mb-3">Komentarji</h5>
-            <div class="mb-3">
-              ${komentarjiHTML}
-            </div>
-                            
-            <textarea class="form-control comment-box mb-3" rows="3" placeholder="Dodaj komentar..."></textarea>
-            <button class="btn komentar-gumb fw-bold">Objavi komentar</button>
-          </div>
-        </div>
-      </div>
-    `;
-
-    vsebnikObcina.innerHTML += karticaHTML;
-  });
-}
-
 const mapElementObcina = document.getElementById('map-obcina');
-let izbraneKoordinateObcina = null;
 
 if (mapElementObcina) {
   const mapObcina = L.map('map-obcina').setView([46.5547, 15.6459], 13);
@@ -273,11 +185,11 @@ if (mapElementObcina) {
   let trenchesMarkerObcina = null;
 
   mapObcina.on('click', function(e) {
-    izbraneKoordinateObcina = e.latlng;
+    izbraneKoordinate = e.latlng; // Povezano na isto spremenljivko kot zgoraj
     if (trenchesMarkerObcina) {
-      trenchesMarkerObcina.setLatLng(izbraneKoordinateObcina);
+      trenchesMarkerObcina.setLatLng(izbraneKoordinate);
     } else {
-      trenchesMarkerObcina = L.marker(izbraneKoordinateObcina).addTo(mapObcina);
+      trenchesMarkerObcina = L.marker(izbraneKoordinate).addTo(mapObcina);
     }
   });
 }
@@ -306,8 +218,8 @@ if (gumbObjaviObcina) {
         slika: koncnaSlikaUrl, 
         vsecki: 0,
         komentarji: [],
-        lat: izbraneKoordinateObcina ? izbraneKoordinateObcina.lat : null,
-        lng: izbraneKoordinateObcina ? izbraneKoordinateObcina.lng : null
+        lat: izbraneKoordinate ? izbraneKoordinate.lat : null,
+        lng: izbraneKoordinate ? izbraneKoordinate.lng : null
       };
 
       vsiPredlogiObcine.push(novPredlogObcine);
@@ -347,7 +259,7 @@ window.glasuj = function(id, tip) {
 };
 
 // ----------------------------
-// SKRIPT ZA FILTRIRANJE 
+// SKRIPT ZA FILTRIRANJE (Ostane nedotaknjen)
 // ----------------------------
 
 const filterUporabnik = document.getElementById("filter-uporabnik");

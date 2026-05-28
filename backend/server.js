@@ -151,6 +151,26 @@ app.post('/api/posodobi-status', async (req, res) => {
     }
 });
 
+
+
+// --- POT ZA PRIDOBIVANJE VSEH OBJAV (ZA UPORABNIKE IN OBČINO) ---
+app.get('/api/predlogi', async (req, res) => {
+    try {
+        // Poskusimo najprej z najbolj preprosto poizvedbo, da vidimo, kaj tabela sploh vsebuje
+        const rezultat = await pool.query('SELECT * FROM Objava ORDER BY id_objava DESC');
+        
+        // Če je vse v redu, vrnemo vrstice
+        return res.json(rezultat.rows);
+    } catch (err) {
+        // TOLE JE KLJUČNO: Če pride do napake v SQL, jo boš videla v terminalu, kjer laufa strežnik!
+        console.error("KLJUČNA NAPAKA V BAZI:", err.message);
+        
+        return res.status(500).json([]);
+    }
+});
+
+
+
 // --- POT ZA PRIDOBIVANJE ZNAČK PRIJAVLJENEGA UPORABNIKA ---
 app.get('/api/moje-znacke/:email', async (req, res) => {
     const { email } = req.params;
