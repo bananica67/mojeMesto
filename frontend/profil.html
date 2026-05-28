@@ -35,7 +35,6 @@
       <li class="nav-item"><a class="nav-link povezava-meni" href="obcina.html">Predlogi občine</a></li>
       <li class="nav-item"><a class="nav-link povezava-meni" href="predlogi.html">Predlogi uporabnikov</a></li>
       <li class="nav-item"><a class="nav-link povezava-meni" href="status.html">Status predlogov</a></li>
-      <li class="nav-item"><a class="nav-link povezava-meni" href="klepet.html">Zasebni klepet</a></li>
     </ul>
   </div>
       
@@ -44,114 +43,120 @@
 </div>
 </header>
 
-
 <div class="container my-5">
-  <div class="row g-4">
+<div class="row g-4">
       
-      <div class="col-lg-4">
-        <div class="uporabnik shadow border-0 text-center rounded-3 bg-white p-4">
-          <div id="uporabnikAvatar" class="avatar-prikaz" style="background-color: #cb2121;">
-            <i class="fas fa-user"></i>
-          </div>
+  <!-- PROFIL -->
+  <div class="col-lg-4">
+  <div class="uporabnik shadow border-0 text-center rounded-3 bg-white p-4">
+    <div id="uporabnikAvatar" class="avatar-prikaz" style="background-color: #cb2121;">
+      <i class="fas fa-user"></i>
+    </div>
           
-          <div class="Izbira-barve mb-4">
-            <span class="text-muted d-block small mb-2">Izberi barvo profila:</span>
-            <!-- POPRAVEK: Prvi krog sedaj pravilno kliče funkcijo profilna z argumenti -->
-            <div class="barva-krog aktivna" style="background-color: #923c83;" onclick="profilna(this, '#923c83')"></div>
-            <div class="barva-krog" style="background-color: #8c1212;" onclick="profilna(this, '#8c1212')"></div>
-            <div class="barva-krog" style="background-color: #2b2b2b;" onclick="profilna(this, '#2b2b2b')"></div>
-            <div class="barva-krog" style="background-color: #4a6fa5;" onclick="profilna(this, '#4a6fa5')"></div>
-            <div class="barva-krog" style="background-color: #2e7d32;" onclick="profilna(this, '#2e7d32')"></div>
-          </div>
+    <div class="Izbira-barve mb-4">
+      <span class="text-muted d-block small mb-2">Izberi barvo profila:</span>
+      <div class="barva-krog aktivna" style="background-color: #923c83;" onclick="profilna(this, '#923c83')"></div>
+      <div class="barva-krog" style="background-color: #8c1212;" onclick="profilna(this, '#8c1212')"></div>
+      <div class="barva-krog" style="background-color: #2b2b2b;" onclick="profilna(this, '#2b2b2b')"></div>
+      <div class="barva-krog" style="background-color: #4a6fa5;" onclick="profilna(this, '#4a6fa5')"></div>
+      <div class="barva-krog" style="background-color: #2e7d32;" onclick="profilna(this, '#2e7d32')"></div>
+    </div>
 
-          <h3 class="mb-1 border-0" id="prikazanoIme">Kaja Bohorč</h3>
-          <p class="text-muted small" id="prikazanEmail">kaja@student.um.si</p>
+    <h3 class="mb-1 border-0" id="prikazanoIme">Kaja Bohorč</h3>
+    <p class="text-muted small" id="prikazanEmail">kaja@student.um.si</p>
           
-          <div class="d-grid gap-2 col-10 mx-auto mt-3">
-            <button class="gumb-dodaj w-100" data-bs-toggle="modal" data-bs-target="#modalIme">
-              <i class="fas fa-edit me-2"></i>Spremeni ime
-            </button>
-            <button class="komentar-gumb w-100 mt-2" onclick="alert('Funkcionalnost zasebnega klepeta se pripravlja!')">
-              <i class="fas fa-comments me-2"></i>Zasebni klepet
-            </button>
-            <hr class="my-3">
-            <button class="gumb-odjava w-100" onclick="odjaviUporabnika()">
-  <i class="fas fa-sign-out-alt me-2"></i>Odjava
-</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-lg-8">
-        <div class="card border-0 shadow rounded-3 p-4 bg-white" style="min-height: 480px;">
-          
-          <ul class="nav nav-tabs mb-4" id="profileTabs" role="tablist">
-            <li class="nav-item" role="presentation">
-              <button class="nav-link active" id="predlogi-tab" data-bs-toggle="tab" data-bs-target="#predlogi" type="button" role="tab">
-                <i class="fas fa-lightbulb me-2"></i>Moji Predlogi (2)
-              </button>
-            </li>
-            <li class="nav-item" role="presentation">
-              <button class="nav-link" id="znacke-tab" data-bs-toggle="tab" data-bs-target="#znacke" type="button" role="tab">
-                <i class="fas fa-award me-2"></i>Značke (3)
-              </button>
-            </li>
-          </ul>
-
-          <div class="tab-content" id="profileTabsContent">
+    <div class="d-grid gap-2 col-10 mx-auto mt-3">
+      <button class="gumb-dodaj w-100" data-bs-toggle="modal" data-bs-target="#modalIme">
+        <i class="fas fa-edit me-2"></i>Spremeni ime
+      </button>
             
-            <div class="tab-pane fade show active" id="predlogi" role="tabpanel">
-              <div class="row g-3">
+      <a href="klepet.html" class="komentar-gumb w-100 text-decoration-none d-inline-block text-center" style="line-height: normal; padding: 10px 20px;">
+        <i class="fas fa-comments me-2"></i>Zasebni klepet
+      </a>
+            
+      <hr class="my-3">
+      <button class="gumb-odjava w-100" onclick="odjaviUporabnika()">
+        <i class="fas fa-sign-out-alt me-2"></i>Odjava
+      </button>
+    </div>
+        
+  </div>
+  </div>
+
+  <!-- ZAVIHKI -->
+  <div class="col-lg-8">
+  <div class="card border-0 shadow rounded-3 p-4 bg-white" style="min-height: 480px;">
+          
+  <ul class="nav nav-tabs mb-4" id="profileTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active" id="predlogi-tab" data-bs-toggle="tab" data-bs-target="#predlogi" type="button" role="tab">
+      <i class="fas fa-lightbulb me-2"></i>Moji Predlogi (2)
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="znacke-tab" data-bs-toggle="tab" data-bs-target="#znacke" type="button" role="tab">
+      <i class="fas fa-award me-2"></i>Značke (3)
+      </button>
+    </li>
+  </ul>
+
+<!-- VSEBINA ZAVIHKOV -->
+<div class="tab-content" id="profileTabsContent">
+            
+  <!-- ZAVIHEK 1: PREDLOGI -->
+  <div class="tab-pane fade show active" id="predlogi" role="tabpanel">
+  <div class="row g-3">
                 
-                <div class="col-md-6">
-                  <div class="card predlog-card shadow-sm h-100">
-                    <img src="slike/zacetna.jpg" class="card-img-top predlog-img" alt="Poplava" onerror="this.src='https://images.unsplash.com/photo-1541888946425-d81bb19240f5?q=80&w=500&auto=format&fit=cover'">
-                    <div class="card-body">
-                      <h5 class="text-uppercase fw-bold mb-2" style="color: #000; font-size: 16px;">Poplava na Smetanovi</h5>
-                      <p class="text-muted small text-truncate">Vsakič, ko malo bolj dežuje, se na Smetanovi pri FERI-ju naredi pravo jezero...</p>
-                      <div class="d-flex justify-content-between align-items-center mt-3">
-                        <span class="badge bg-success"><i class="fas fa-thumbs-up me-1"></i> 42</span>
-                        <span class="text-muted small">Status: V obravnavi</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="col-md-6">
-                  <div class="card predlog-card shadow-sm h-100">
-                    <img src="slike/zacetna.jpg" class="card-img-top predlog-img" alt="Cesta" onerror="this.src='https://images.unsplash.com/photo-1515162305285-0293e4767cc2?q=80&w=500&auto=format&fit=cover'">
-                    <div class="card-body">
-                      <h5 class="text-uppercase fw-bold mb-2" style="color: #000; font-size: 16px;">Obupna cesta v Melju</h5>
-                      <p class="text-muted small text-truncate">A ste videli te luknje v Melju? Vsak dan se vozim tam v službo in samo čakam...</p>
-                      <div class="d-flex justify-content-between align-items-center mt-3">
-                        <span class="badge bg-success"><i class="fas fa-thumbs-up me-1"></i> 18</span>
-                        <span class="text-muted small">Status: Oddano</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-              </div>
-            </div>
-
-            <div class="tab-pane fade" id="znacke" role="tabpanel">
-              <div class="row g-3" id="seznamZnack">
-                
-                <div class="col-12 text-center py-4">
-                  <span class="text-muted small">Nalaganje vaših značk...</span>
-                </div>
-
-              </div>
-            </div>
-
-              </div>
-            </div>
-
-          </div>
-        </div>
+  <div class="col-md-6">
+    <div class="card predlog-card shadow-sm h-100">
+    <img src="slike/zacetna.jpg" class="card-img-top predlog-img" alt="Poplava" onerror="this.src='https://images.unsplash.com/photo-1541888946425-d81bb19240f5?q=80&w=500&auto=format&fit=cover'">
+    <div class="card-body">
+      <h5 class="text-uppercase fw-bold mb-2" style="color: #000; font-size: 16px;">Poplava na Smetanovi</h5>
+      <p class="text-muted small text-truncate">Vsakič, ko malo bolj dežuje, se na Smetanovi pri FERI-ju naredi pravo jezero...</p>
+      <div class="d-flex justify-content-between align-items-center mt-3">
+        <span class="badge bg-success"><i class="fas fa-thumbs-up me-1"></i> 42</span>
+        <span class="text-muted small">Status: V obravnavi</span>
       </div>
+    </div>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="card predlog-card shadow-sm h-100">
+    <img src="slike/zacetna.jpg" class="card-img-top predlog-img" alt="Cesta" onerror="this.src='https://images.unsplash.com/photo-1515162305285-0293e4767cc2?q=80&w=500&auto=format&fit=cover'">
+    <div class="card-body">
+      <h5 class="text-uppercase fw-bold mb-2" style="color: #000; font-size: 16px;">Obupna cesta v Melju</h5>
+      <p class="text-muted small text-truncate">A ste videli te luknje v Melju? Vsak dan se vozim tam v službo in samo čakam...</p>
+      <div class="d-flex justify-content-between align-items-center mt-3">
+        <span class="badge bg-success"><i class="fas fa-thumbs-up me-1"></i> 18</span>
+        <span class="text-muted small">Status: Oddano</span>
+      </div>
+    </div>
+    </div>
+  </div>
 
   </div>
+  </div>
+
+  <!-- ZAVIHEK 2: ZNAČKE -->    
+  <div class="tab-pane fade" id="znacke" role="tabpanel">
+  <div class="row g-3" id="seznamZnack">
+                
+  <div class="col-12 text-center py-4">
+    <span class="text-muted small">Nalaganje vaših značk...</span>
+  </div>
+
+  </div>
+  </div>
+
+  </div>
+  </div>
+
+  </div>
+  </div>
+  </div>
+
+</div>
 </div>
 
 <div class="modal fade" id="modalIme" tabindex="-1" aria-hidden="true">

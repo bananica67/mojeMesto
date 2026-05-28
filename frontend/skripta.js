@@ -324,3 +324,117 @@ async function naloziMojeZnacke() {
         vsebnik.innerHTML = `<div class="col-12 text-center text-danger small py-3">Napaka pri povezavi s strežnikom.</div>`;
     }
 }
+
+
+// ----------------------------
+// PREDLOGI ZA ADMINA
+// ----------------------------
+
+function naloziPredlogeZaAdmina() {
+    const seznamPredlogovOznaka = document.getElementById('seznamPredlogov');
+    const stetjePredlogovOznaka = document.getElementById('stetjePredlogov');
+    const praznoObvestiloPredlogi = document.getElementById('praznoObvestiloPredlogi');
+
+    if (!seznamPredlogovOznaka) return;
+
+    // Spremenjeno na splošno pot, ki jo že imaš nastavljeno
+    fetch('/api/vsi-predlogi')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("Strežnik je vrnil status " + response.status);
+            }
+            return response.json();
+        })
+        .then(vsiPredlogi => {
+            if (stetjePredlogovOznaka) {
+                stetjePredlogovOznaka.textContent = `Skupno predlogov: ${vsiPredlogi.length}`;
+            }
+
+            if (vsiPredlogi.length === 0) {
+                if (praznoObvestiloPredlogi) praznoObvestiloPredlogi.classList.remove('d-none');
+                seznamPredlogovOznaka.innerHTML = '';
+                return;
+            }
+
+            if (praznoObvestiloPredlogi) praznoObvestiloPredlogi.classList.add('d-none');
+            seznamPredlogovOznaka.innerHTML = '';
+
+            vsiPredlogi.forEach((predlog) => {
+                const vrstica = document.createElement('tr');
+                vrstica.id = `predlog-row-${predlog.id_objava}`;
+                
+                // PostgreSQL vrne izključno male črke za imena stolpcev
+                const sID = parseInt(predlog.tk_status_pobudid_status_pobud) || 1; 
+                const avtorID = predlog.tk_uporabnikid_uporabnik || "Neznano";
+
+                vrstica.innerHTML = `
+                    <td>
+                        <img src="${predlog.fotografija || 'slike/zacetna.jpg'}" class="img-fluid rounded-3" style="height: 60px; width: 80px; object-fit: cover;" onerror="this.src='slike/zacetna.jpg'">
+                    </td>
+                    <td class="fw-bold text-uppercase" style="font-size: 14px;">
+                        ${predlog.naslov}
+                    </td>
+                    <td class="text-muted">
+                        ID Uporabnika: ${avtorID}
+                    </td>
+                    <td>
+                        <span class="badge bg-success"><i class="fas fa-thumbs-up me-1"></i> 0</span>
+                    </td>
+                    <td>
+                        <select class="form-select form-select-sm status-select" onchange="osveziStatus(${predlog.id_objava}, this.value)">
+                            <option value="1" ${sID === 1 ? 'selected' : ''}>Oddano</option>
+                            <option value="2" ${sID === 2 ? 'selected' : ''}>V obravnavi</option>
+                            <option value="3" ${sID === 3 ? 'selected' : ''}>Zaključeno</option>
+                        </select>
+                    </td>
+                    <td style="text-align: center;">
+                        <button class="gumb-brisi btn-sm" onclick="izbrisiPredlog(${predlog.id_objava})">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </td>
+                `;
+                seznamPredlogovOznaka.appendChild(vrstica);
+            });
+        })
+        .catch(error => {
+            console.error('Napaka pri pridobivanju predlogov:', error);
+        });
+}
+
+function osveziStatus(idObjava, novStatusId) {
+    fetch('/api/posodobi-status', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ 
+            id_objava: parseInt(idObjava), 
+            nov_status_id: parseInt(novStatusId) 
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.uspeh) {
+            alert('Status uspešno posodobljen!');
+        } else {
+            alert('Napaka pri posodabljanju statusa.');
+        }
+    })
+    .catch(err => console.error('Napaka pri posodabljanju:', err));
+}
+
+function izbrisiPredlog(idObjava) {
+    if (confirm('Ali ste prepričani, da želite izbrusiti ta predlog?')) {
+        alert('Za izbris predloga z ID ' + idObjava + ' nimaš nastavljene DELETE poti.');
+    }
+}
+
+// Avtomatski zagon ob nalaganju strani za oba zavihka
+document.addEventListener("DOMContentLoaded", () => {
+    if (document.getElementById('seznamUporabnikov')) {
+        naloziUporabnikeZaAdmina();
+    }
+    if (document.getElementById('seznamPredlogov')) {
+        naloziPredlogeZaAdmina();
+    }
+});

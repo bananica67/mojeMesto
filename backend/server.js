@@ -125,6 +125,32 @@ app.get('/api/vsi-uporabniki', async (req, res) => {
     }
 });
 
+// --- POT ZA PRIDOBIVANJE VSEH PREDLOGOV ZA ADMINA ---
+app.get('/api/vsi-predlogi', async (req, res) => {
+    try {
+        const vsiPredlogi = await pool.query('SELECT * FROM Objava ORDER BY id_objava ASC');
+        return res.json(vsiPredlogi.rows);
+    } catch (err) {
+        console.error("Napaka pri branju objav:", err);
+        return res.status(500).json({ sporocilo: 'Napaka na strežniku pri branju objav.' });
+    }
+});
+
+// --- POT ZA POSODABLJANJE STATUSA PREDLOGA ---
+app.post('/api/posodobi-status', async (req, res) => {
+    const { id_objava, nov_status_id } = req.body;
+    try {
+        await pool.query(
+            'UPDATE Objava SET tk_status_pobudid_status_pobud = $1 WHERE id_objava = $2', 
+            [parseInt(nov_status_id), parseInt(id_objava)]
+        );
+        return res.json({ uspeh: true });
+    } catch (err) {
+        console.error("Napaka pri posodabljanju statusa:", err);
+        return res.status(500).json({ uspeh: false });
+    }
+});
+
 // --- POT ZA PRIDOBIVANJE ZNAČK PRIJAVLJENEGA UPORABNIKA ---
 app.get('/api/moje-znacke/:email', async (req, res) => {
     const { email } = req.params;

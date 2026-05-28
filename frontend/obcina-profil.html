@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="sl">
 
-<head> <!-- KONČANO (dodajanje predlogov) -->
+<head> <!-- KONČANO -->
 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -35,7 +35,6 @@
       <li class="nav-item"><a class="nav-link povezava-meni" href="obcina.html">Predlogi občine</a></li>
       <li class="nav-item"><a class="nav-link povezava-meni" href="predlogi.html">Predlogi uporabnikov</a></li>
       <li class="nav-item"><a class="nav-link povezava-meni" href="status.html">Status predlogov</a></li>
-      <li class="nav-item"><a class="nav-link povezava-meni" href="klepet.html">Zasebni klepet</a></li>
     </ul>
   </div>
       
@@ -48,163 +47,112 @@
 <div class="row g-4">
       
   <!-- PROFIL -->
-      <div class="col-lg-3">
-        <div class="admin shadow border-0 text-center rounded-3 bg-white p-4">
-          <div class="admin-avatar">
-            <i class="fas fa-building-flag"></i>
-          </div>
+  <div class="col-lg-3">
+  <div class="admin shadow border-0 text-center rounded-3 bg-white p-4">
           
-          <h3 class="mb-1 border-0 fw-bold">Mestna občina Maribor</h3>
-          <p class="text-muted small">Skrbnik platforme (Admin)</p>
-          <p class="badge bg-secondary px-3 py-2">Uradni profil</p>
+    <div class="admin-avatar">
+      <i class="fas fa-building-flag"></i>
+    </div>
           
-          <hr class="my-4">
+    <h3 class="mb-1 border-0 fw-bold">Mestna občina Maribor</h3>
+    <p class="text-muted small">Skrbnik platforme (Admin)</p>
+    <p class="badge bg-secondary px-3 py-2">Uradni profil</p>
           
-          <div class="d-grid gap-2 col-11 mx-auto">
-            <button class="komentar-gumb w-100" onclick="alert('Funkcionalnost zasebnega klepeta se pripravlja!')">
-              <i class="fas fa-comments me-2"></i>Zasebni klepet
-            </button>
-            <button class="gumb-odjava w-100 mt-2" onclick="alert('Odjava uspešna.')">
-              <i class="fas fa-sign-out-alt me-2"></i>Odjava
-            </button>
-          </div>
-        </div>
-      </div>
+    <hr class="my-4">
+          
+    <div class="d-grid gap-2 col-11 mx-auto">
+      <a href="klepet.html" class="komentar-gumb w-100 text-decoration-none d-inline-block text-center" style="line-height: normal; padding: 10px 20px;">
+        <i class="fas fa-comments me-2"></i>Zasebni klepet
+      </a>
+      <button class="gumb-odjava w-100 mt-2" onclick="alert('Odjava uspešna.')">
+        <i class="fas fa-sign-out-alt me-2"></i>Odjava
+      </button>
+    </div>
+  
+  </div>
+  </div>
 
-      <!-- Desni del: Nadzorna plošča z zavihki -->
-      <div class="col-lg-9">
-        <div class="card border-0 shadow rounded-3 p-4 bg-white" style="min-height: 500px;">
+  <!-- ZAVIHKI -->
+  <div class="col-lg-9">
+  <div class="card border-0 shadow rounded-3 p-4 bg-white" style="min-height: 500px;">
           
-          <!-- Menjava zavihkov (Predlogi / Uporabniki) -->
-          <ul class="nav nav-tabs mb-4" id="adminTabs" role="tablist">
-            <li class="nav-item" role="presentation">
-              <button class="nav-link active" id="predlogi-tab" data-bs-toggle="tab" data-bs-target="#zavihek-predlogi" type="button" role="tab">
-                <i class="fas fa-lightbulb me-2"></i>Upravljanje predlogov
-              </button>
-            </li>
-            <li class="nav-item" role="presentation">
-              <button class="nav-link" id="uporabniki-tab" data-bs-toggle="tab" data-bs-target="#zavihek-uporabniki" type="button" role="tab">
-                <i class="fas fa-users me-2"></i>Registrirani uporabniki
-              </button>
-            </li>
-          </ul>
+  <ul class="nav nav-tabs mb-4" id="adminTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active" id="predlogi-tab" data-bs-toggle="tab" data-bs-target="#zavihek-predlogi" type="button" role="tab">
+      <i class="fas fa-lightbulb me-2"></i>Upravljanje predlogov
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="uporabniki-tab" data-bs-toggle="tab" data-bs-target="#zavihek-uporabniki" type="button" role="tab">
+      <i class="fas fa-users me-2"></i>Registrirani uporabniki
+      </button>
+    </li>
+  </ul>
 
-          <!-- Vsebina zavihkov -->
-          <div class="tab-content" id="adminTabsContent">
+<!-- VSEBINA ZAVIHKOV -->
+<div class="tab-content" id="adminTabsContent">
             
-            <!-- ZAVIHEK 1: PREDLOGI OBČANOV -->
-            <div class="tab-pane fade show active" id="zavihek-predlogi" role="tabpanel">
-              <div class="d-flex justify-content-between align-items-center mb-4">
-                <h4 class="m-0 fw-bold text-dark" style="font-size: 20px;">Predlogi občanov</h4>
-                <span class="badge bg-danger p-2" id="stetjePredlogov">Skupno predlogov: 2</span>
-              </div>
+  <!-- ZAVIHEK 1: UPRAVLJANJE PREDLOGOV -->
+  <div class="tab-pane fade show active" id="zavihek-predlogi" role="tabpanel">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h4 class="m-0 fw-bold text-dark" style="font-size: 20px;">Vsi predlogi</h4>
+      <span class="badge bg-danger p-2" id="stetjePredlogov">Skupno predlogov: 2</span>
+    </div>
 
-              <div class="table-responsive" id="tabelaPredlogovKontejner">
-                <table class="table table-hover align-middle">
-                  <thead class="table-light">
-                    <tr>
-                      <th style="width: 15%;">Slika</th>
-                      <th style="width: 35%;">Naslov in opis</th>
-                      <th style="width: 10%;">Glasovi</th>
-                      <th style="width: 25%;">Status (Uredi)</th>
-                      <th style="width: 15%; text-align: center;">Akcija</th>
-                    </tr>
-                  </thead>
-                  <tbody id="seznamPredlogov">
-                    <tr id="predlog-row-1">
-                      <td>
-                        <img src="slike/zacetna.jpg" class="img-fluid rounded-3 shadow-sm" style="height: 60px; width: 80px; object-fit: cover;" alt="Poplava" onerror="this.src='https://images.unsplash.com/photo-1541888946425-d81bb19240f5?q=80&w=150&auto=format&fit=cover'">
-                      </td>
-                      <td>
-                        <h6 class="fw-bold mb-1 text-uppercase" style="font-size: 14px;">Poplava na Smetanovi</h6>
-                        <p class="text-muted small mb-0 text-truncate" style="max-width: 250px;">Vsakič, ko malo bolj dežuje, se pri FERI-ju naredi jezero...</p>
-                      </td>
-                      <td>
-                        <span class="badge bg-success"><i class="fas fa-thumbs-up me-1"></i> 42</span>
-                      </td>
-                      <td>
-                        <select class="form-select form-select-sm status-select" onchange="osveziStatus(1, this.value)">
-                          <option value="Oddano">Oddano</option>
-                          <option value="Odobreno" selected>Odobreno</option>
-                          <option value="V obdelavi">V obdelavi</option>
-                          <option value="Končano">Končano</option>
-                          <option value="Zavrnjeno">Zavrnjeno</option>
-                        </select>
-                      </td>
-                      <td style="text-align: center;">
-                        <button class="gumb-brisi btn-sm" onclick="izbrisiPredlog(1)" title="Izbriši predlog">
-                          <i class="fas fa-trash-alt"></i>
-                        </button>
-                      </td>
-                    </tr>
-                    <tr id="predlog-row-2">
-                      <td>
-                        <img src="slike/zacetna.jpg" class="img-fluid rounded-3 shadow-sm" style="height: 60px; width: 80px; object-fit: cover;" alt="Cesta" onerror="this.src='https://images.unsplash.com/photo-1515162305285-0293e4767cc2?q=80&w=150&auto=format&fit=cover'">
-                      </td>
-                      <td>
-                        <h6 class="fw-bold mb-1 text-uppercase" style="font-size: 14px;">Obupna cesta v Melju</h6>
-                        <p class="text-muted small mb-0 text-truncate" style="max-width: 250px;">A ste videli te luknje v Melju? Vsak dan se vozim tam...</p>
-                      </td>
-                      <td>
-                        <span class="badge bg-success"><i class="fas fa-thumbs-up me-1"></i> 18</span>
-                      </td>
-                      <td>
-                        <select class="form-select form-select-sm status-select" onchange="osveziStatus(2, this.value)">
-                          <option value="Oddano" selected>Oddano</option>
-                          <option value="Odobreno">Odobreno</option>
-                          <option value="V obdelavi">V obdelavi</option>
-                          <option value="Končano">Končano</option>
-                          <option value="Zavrnjeno">Zavrnjeno</option>
-                        </select>
-                      </td>
-                      <td style="text-align: center;">
-                        <button class="gumb-brisi btn-sm" onclick="izbrisiPredlog(2)" title="Izbriši predlog">
-                          <i class="fas fa-trash-alt"></i>
-                        </button>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
+    <div class="table-responsive" id="tabelaUporabnikovKontejner">
+    <table class="table table-hover align-middle">
+      <thead class="table-light">
+        <tr>
+          <th style="width: 15%;">Slika</th>
+          <th style="width: 25%;">Naslov</th>
+          <th style="width: 15%;">Avtor</th> <th style="width: 15%;">Glasovi</th>
+          <th style="width: 15%;">Status (Uredi)</th>
+          <th style="width: 15%; text-align: center;">Akcija</th>
+        </tr>
+      </thead>
+      <tbody id="seznamPredlogov"></tbody>
+    </table>
+    </div>
 
-              <div id="praznoObvestiloPredlogi" class="text-center py-5 d-none">
-                <i class="fas fa-folder-open text-muted mb-3" style="font-size: 48px;"></i>
-                <h5 class="text-muted">Trenutno ni nobenih predlogov za pregled.</h5>
-              </div>
-            </div>
+    <div id="praznoObvestiloPredlogi" class="text-center py-5 d-none">
+      <i class="fas fa-folder-open text-muted mb-3" style="font-size: 48px;"></i>
+      <h5 class="text-muted">Trenutno ni nobenih predlogov za pregled.</h5>
+    </div>
+  </div>
 
-            <!-- ZAVIHEK 2: UPRAVLJANJE UPORABNIKOV (NOVO!) -->
-            <div class="tab-pane fade" id="zavihek-uporabniki" role="tabpanel">
-              <div class="d-flex justify-content-between align-items-center mb-4">
-                <h4 class="m-0 fw-bold text-dark" style="font-size: 20px;">Seznam registriranih uporabnikov</h4>
-                <span class="badge bg-danger p-2" id="stetjeUporabnikov">Skupno uporabnikov: 3</span>
-              </div>
+  <!-- ZAVIHEK 2: UPRAVLJANJE UPORABNIKOV -->
+  <div class="tab-pane fade" id="zavihek-uporabniki" role="tabpanel">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h4 class="m-0 fw-bold text-dark" style="font-size: 20px;">Seznam registriranih uporabnikov</h4>
+      <span class="badge bg-danger p-2" id="stetjeUporabnikov">Skupno uporabnikov: 3</span>
+    </div>
 
-              <div class="table-responsive" id="tabelaUporabnikovKontejner">
-                <table class="table table-hover align-middle">
-                  <thead class="table-light">
-                    <tr>
-                      <th style="width: 10%;">ID</th>
-                      <th style="width: 30%;">Uporabniško ime / Ime</th>
-                      <th style="width: 30%;">E-pošta</th>
-                      <th style="width: 15%;">Vloga (Status)</th>
-                      <th style="width: 15%; text-align: center;">Akcija</th>
-                    </tr>
-                  </thead>
-                  <tbody id="seznamUporabnikov">
-                  </tbody>
-                </table>
-              </div>
+    <div class="table-responsive" id="tabelaUporabnikovKontejner">
+    <table class="table table-hover align-middle">
+      <thead class="table-light">
+        <tr>
+          <th style="width: 10%;">ID</th>
+          <th style="width: 30%;">Uporabniško ime / Ime</th>
+          <th style="width: 30%;">E-pošta</th>
+          <th style="width: 15%;">Vloga (Status)</th>
+          <th style="width: 15%; text-align: center;">Akcija</th>
+        </tr>
+      </thead>
+      <tbody id="seznamUporabnikov"></tbody>
+    </table>
+    </div>
 
-              <div id="praznoObvestiloUporabniki" class="text-center py-5 d-none">
-                <i class="fas fa-users-slash text-muted mb-3" style="font-size: 48px;"></i>
-                <h5 class="text-muted">V bazi ni registriranih uporabnikov.</h5>
-              </div>
-            </div>
+    <div id="praznoObvestiloUporabniki" class="text-center py-5 d-none">
+      <i class="fas fa-users-slash text-muted mb-3" style="font-size: 48px;"></i>
+      <h5 class="text-muted">V bazi ni registriranih uporabnikov.</h5>
+    </div>
+  </div>
 
-          </div>
-        </div>
-      </div>
+</div>
+</div>
+</div>
+</div>
+</div>
 
 <footer class="glavna-noga">
   <div class="container">
