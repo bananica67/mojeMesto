@@ -153,7 +153,7 @@ app.post('/api/posodobi-status', async (req, res) => {
 
 
 
-// --- POT ZA PRIDOBIVANJE VSEH OBJAV (ZA UPORABNIKE IN OBČINO) ---
+// --- POT ZA PRIDOBIVANJE VSEH OBJAV ---
 app.get('/api/predlogi', async (req, res) => {
     try {
         // Poskusimo najprej z najbolj preprosto poizvedbo, da vidimo, kaj tabela sploh vsebuje
