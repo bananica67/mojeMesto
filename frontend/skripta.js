@@ -1,12 +1,4 @@
 // ----------------------------
-// SKRIPT ZA REGISTRACIJO
-// ----------------------------
-
-
-
-
-
-// ----------------------------
 // SKRIPT ZA PRIJAVO
 // ----------------------------
 
@@ -55,11 +47,14 @@ document.addEventListener("DOMContentLoaded", () => {
                 const rezultat = await response.json();
 
                 if (rezultat.uspeh) {
-                    // Če je prijava uspešna, shranimo podatke v LocalStorage
+                    // KLJUČNA SPREMEMBA: Shranimo ID uporabnika/admina iz baze v LocalStorage
+                    localStorage.setItem('trenutniUporabnikId', rezultat.id_uporabnik);
+                    
+                    // Shranimo še ostale podatke za profil
                     localStorage.setItem('profilnoIme', rezultat.ime + " " + rezultat.priimek);
                     localStorage.setItem('profilniEmail', rezultat.email);
                     
-                    // TUKAJ JE SPREMEMBA: Preusmeritev glede na vpisani e-mail
+                    // Preusmeritev glede na vpisani e-mail
                     if (email === "admin@gmail.com") {
                         window.location.href = "obcina-profil.html";
                     } else {
@@ -161,29 +156,11 @@ document.addEventListener("DOMContentLoaded", function() {
 
  
 
+/// ----------------------------
+// SKRIPT ZA ADMIN - UPORABNIKI
 // ----------------------------
-// SKRIPT ZA ZEMLJEVID - STATUS
-// ----------------------------
 
-const mapElement = document.getElementById('map');
-
-if (mapElement) {
-  const map = L.map('map').setView([46.5547, 15.6459], 13);
-
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19,
-    attribution: '&copy; OpenStreetMap contributors'
-  }).addTo(map);
-}
-
-function odjaviUporabnika() {
-    localStorage.clear();
-    alert('Odjava uspešna.');
-    window.location.href = 'prijava.html';
-}
-
-// Funkcija, ki naloži uporabnike iz localStorage in jih izriše v tabelo
-// Popolnoma prilagojena funkcija za tvojo SQL bazo
+// Funkcija, ki naloži uporabnike iz SQL baze preko strežnika in jih izriše v tabelo
 function naloziUporabnikeZaAdmina() {
     const seznamUporabnikovOznaka = document.getElementById('seznamUporabnikov');
     const stetjeUporabnikovOznaka = document.getElementById('stetjeUporabnikov');
@@ -192,8 +169,6 @@ function naloziUporabnikeZaAdmina() {
 
     if (!seznamUporabnikovOznaka) return;
 
-    // TUKAJ POKLIČEŠ SVOJ URL NA STREŽNIKU (npr. /api/uporabniki ali /get_users.php)
-    // Zamenjaj '/api/uporabniki' s tvojo točno potjo, ki jo imaš nastavljeno na backendu!
     fetch('/api/vsi-uporabniki')
         .then(response => response.json())
         .then(vsiUporabniki => {
@@ -205,23 +180,26 @@ function naloziUporabnikeZaAdmina() {
 
             // Če je baza prazna
             if (vsiUporabniki.length === 0) {
-                praznoObvestilo.classList.remove('d-none');
-                tabelaKontejner.classList.add('d-none');
+                if (praznoObvestilo) praznoObvestilo.classList.remove('d-none');
+                if (tabelaKontejner) tabelaKontejner.classList.add('d-none');
                 return;
             }
 
-            praznoObvestilo.classList.add('d-none');
-            tabelaKontejner.classList.remove('d-none');
+            if (praznoObvestilo) praznoObvestilo.classList.add('d-none');
+            if (tabelaKontejner) tabelaKontejner.classList.remove('d-none');
             seznamUporabnikovOznaka.innerHTML = '';
 
             // Sprehodi se skozi uporabnike iz SQL baze
             vsiUporabniki.forEach((uporabnik) => {
                 const vrstica = document.createElement('tr');
-                // Uporabiva tvoj id_uporabnik iz SQL baze za ID vrstice
+                // Uporabimo id_uporabnik iz SQL baze za ID vrstice
                 vrstica.id = `uporabnik-row-${uporabnik.id_uporabnik}`;
                
-                // Združiva ime in priimek točno tako, kot jih imaš v SQL tabeli
+                // Združimo ime in priimek
                 const polnoIme = `${uporabnik.ime} ${uporabnik.priimek}`;
+
+                // Preberemo ID tipa uporabnika iz baze (privzeto 2 = Uporabnik)
+                const uID = parseInt(uporabnik.tk_tip_uporabnikaid_tip_uporabnika) || 2;
 
                 vrstica.innerHTML = `
                     <td class="fw-bold text-muted">#${uporabnik.id_uporabnik}</td>
@@ -232,10 +210,9 @@ function naloziUporabnikeZaAdmina() {
                     </td>
                     <td class="text-muted">${uporabnik.email}</td>
                     <td>
-                        <select class="form-select form-select-sm status-select" onchange="spemeniVlogoUporabnika(${uporabnik.id_uporabnik}, this.value)">
-                            <option value="obcan" selected>Občan</option>
-                            <option value="obcina">Predstavnik občine</option>
-                            <option value="admin">Administrator</option>
+                        <select class="form-select form-select-sm status-select" onchange="spremeniVlogoUporabnika(${uporabnik.id_uporabnik}, this.value)">
+                          <option value="1" ${uID === 1 ? 'selected' : ''}>Administrator</option>
+                          <option value="2" ${uID === 2 ? 'selected' : ''}>Uporabnik</option>
                         </select>
                     </td>
                 `;
@@ -247,7 +224,7 @@ function naloziUporabnikeZaAdmina() {
         });
 }
 
-// DODANO: Avtomatski zagon funkcije, ko se naloži HTML stran
+// Avtomatski zagon funkcije, ko se naloži HTML stran
 document.addEventListener("DOMContentLoaded", () => {
     // Preverimo, če smo sploh na strani, ki vsebuje tabelo za uporabnike
     if (document.getElementById('seznamUporabnikov')) {
@@ -255,54 +232,33 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 
-// Funkcija, ki prebere značke iz baze in jih izriše v HTML vsebnik
-async function naloziMojeZnacke() {
-    // Vzamemo e-mail iz localStorage (uporablja tvoj ključ 'profilniEmail')
-    const email = localStorage.getItem("profilniEmail") || "kaja@student.um.si";
-    const vsebnik = document.getElementById("seznamZnack");
-
-    if (!vsebnik) return;
-
-    try {
-        const odziv = await fetch(`/api/moje-znacke/${email}`);
-        const znacke = await odziv.json();
-
-        // Če uporabnik nima nobene značke v bazi
-        if (znacke.length === 0) {
-            vsebnik.innerHTML = `
-                <div class="col-12 text-center py-4">
-                    <p class="text-muted mb-0">Trenutno še nimate osvojenih značk. Bodite aktivni v skupnosti!</p>
-                </div>
-            `;
-            return;
+function spremeniVlogoUporabnika(idUporabnik, novVlogaId) {
+    console.log("Funkcija sprožena za ID:", idUporabnik, "Nova vloga:", novVlogaId); // Za preverjanje v konzoli
+    
+    fetch('/api/posodobi-vlogo', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ 
+            id_uporabnik: parseInt(idUporabnik), 
+            nov_vloga_id: parseInt(novVlogaId) 
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.uspeh) {
+            alert('Vloga uporabnika uspešno posodobljena!');
+        } else {
+            alert('Napaka pri posodabljanju vloge na strežniku.');
         }
-
-        // Če značke obstajajo, spraznimo napis "Nalaganje..." in jih izrišemo
-        vsebnik.innerHTML = "";
-       
-        znacke.forEach(znacka => {
-            // Izbira ikone glede na ime značke v bazi
-            let ikona = "fa-award";
-            if (znacka.naziv.toLowerCase().includes("iniciator")) ikona = "fa-seedling";
-            if (znacka.naziv.toLowerCase().includes("aktiven")) ikona = "fa-fire";
-            if (znacka.naziv.toLowerCase().includes("debatni")) ikona = "fa-comments";
-
-            vsebnik.innerHTML += `
-                <div class="col-6 col-sm-4">
-                  <div class="znacka-kartica shadow-sm p-3 text-center rounded bg-white h-100" style="border: 2px solid #ffd700; transition: transform 0.2s;">
-                    <div class="znacka-ikona mb-2" style="font-size: 26px; color: #ffd700;"><i class="fas ${ikona}"></i></div>
-                    <h6 class="fw-bold mb-1" style="font-size: 14px; color: #000;">${znacka.naziv}</h6>
-                    <p class="text-muted small mb-0" style="font-size: 11px; line-height: 1.2;">${znacka.opis}</p>
-                  </div>
-                </div>
-            `;
-        });
-
-    } catch (napaka) {
-        console.error("Napaka pri nalaganju značk na frontendu:", napaka);
-        vsebnik.innerHTML = `<div class="col-12 text-center text-danger small py-3">Napaka pri povezavi s strežnikom.</div>`;
-    }
+    })
+    .catch(err => {
+        console.error('Napaka pri omrežni povezavi:', err);
+        alert('Prišlo je do napake pri komunikaciji s strežnikom.');
+    });
 }
+
 
 
 // ----------------------------
@@ -406,3 +362,84 @@ document.addEventListener("DOMContentLoaded", () => {
         naloziPredlogeZaAdmina();
     }
 });
+
+
+
+// ----------------------------
+// SKRIPTA ZA ZNAČKE
+// ----------------------------
+
+// Funkcija, ki prebere značke iz baze in jih izriše v HTML vsebnik
+async function naloziMojeZnacke() {
+    // Vzamemo e-mail iz localStorage (uporablja tvoj ključ 'profilniEmail')
+    const email = localStorage.getItem("profilniEmail") || "kaja@student.um.si";
+    const vsebnik = document.getElementById("seznamZnack");
+
+    if (!vsebnik) return;
+
+    try {
+        const odziv = await fetch(`/api/moje-znacke/${email}`);
+        const znacke = await odziv.json();
+
+        // Če uporabnik nima nobene značke v bazi
+        if (znacke.length === 0) {
+            vsebnik.innerHTML = `
+                <div class="col-12 text-center py-4">
+                    <p class="text-muted mb-0">Trenutno še nimate osvojenih značk. Bodite aktivni v skupnosti!</p>
+                </div>
+            `;
+            return;
+        }
+
+        // Če značke obstajajo, spraznimo napis "Nalaganje..." in jih izrišemo
+        vsebnik.innerHTML = "";
+       
+        znacke.forEach(znacka => {
+            // Izbira ikone glede na ime značke v bazi
+            let ikona = "fa-award";
+            if (znacka.naziv.toLowerCase().includes("iniciator")) ikona = "fa-seedling";
+            if (znacka.naziv.toLowerCase().includes("aktiven")) ikona = "fa-fire";
+            if (znacka.naziv.toLowerCase().includes("debatni")) ikona = "fa-comments";
+
+            vsebnik.innerHTML += `
+                <div class="col-6 col-sm-4">
+                  <div class="znacka-kartica shadow-sm p-3 text-center rounded bg-white h-100" style="border: 2px solid #ffd700; transition: transform 0.2s;">
+                    <div class="znacka-ikona mb-2" style="font-size: 26px; color: #ffd700;"><i class="fas ${ikona}"></i></div>
+                    <h6 class="fw-bold mb-1" style="font-size: 14px; color: #000;">${znacka.naziv}</h6>
+                    <p class="text-muted small mb-0" style="font-size: 11px; line-height: 1.2;">${znacka.opis}</p>
+                  </div>
+                </div>
+            `;
+        });
+
+    } catch (napaka) {
+        console.error("Napaka pri nalaganju značk na frontendu:", napaka);
+        vsebnik.innerHTML = `<div class="col-12 text-center text-danger small py-3">Napaka pri povezavi s strežnikom.</div>`;
+    }
+}
+
+
+
+// ----------------------------
+// SKRIPT ZA ZEMLJEVID - STATUS
+// ----------------------------
+
+const mapElement = document.getElementById('map');
+
+if (mapElement) {
+  const map = L.map('map').setView([46.5547, 15.6459], 13);
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(map);
+}
+
+function odjaviUporabnika() {
+    localStorage.clear();
+    alert('Odjava uspešna.');
+    window.location.href = 'prijava.html';
+}
+
+
+
