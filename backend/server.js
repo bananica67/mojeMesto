@@ -191,8 +191,31 @@ app.get('/api/predlogi', async (req, res) => {
 
 
 
-// --- POT ZA OBJAVLJANJE NOVIH OBJAV ---
+// --- POT ZA POSODABLJANJE VŠEČKOV---
+app.post('/api/posodobi-vsecke', async (req, res) => {
+    const { id_objava } = req.body;
 
+    try {
+        // Povečamo število všečkov za 1 in hkrati zahtevamo vrnitev posodobljene vrednosti (RETURNING st_vseckov)
+        const rezultat = await pool.query(
+            'UPDATE Objava SET st_vseckov = COALESCE(st_vseckov, 0) + 1 WHERE id_objava = $1 RETURNING st_vseckov',
+            [parseInt(id_objava)]
+        );
+
+        if (rezultat.rows.length > 0) {
+            return res.json({ uspeh: true, novi_vsecki: rezultat.rows[0].st_vseckov });
+        } else {
+            return res.json({ uspeh: false, sporocilo: "Objava ne obstaja." });
+        }
+    } catch (err) {
+        console.error("Napaka pri posodabljanju všečkov:", err);
+        return res.status(500).json({ uspeh: false });
+    }
+});
+
+
+
+// --- POT ZA DODAJANJE PREDLOGOV ---
 
 
 
