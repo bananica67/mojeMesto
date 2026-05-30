@@ -1,97 +1,37 @@
 const vsebnikPredlogov = document.getElementById('predlog-uporabnik');
 const vsebnikObcina = document.getElementById('predlogi-obcina');
 
-// Zamenjava lokalnega pomnilnika s FETCH iz baze
+// -------------------------------------------------------------
+// 1. NALAGANJE IN FILTRIRANJE OBJAV IZ SQL BAZE
+// -------------------------------------------------------------
 if (vsebnikPredlogov || vsebnikObcina) {
   fetch('/api/predlogi')
     .then(res => res.json())
     .then(predlogi => {
 
-      // 1. IZPIS NA STRANI UPORABNIKOV (vse razen ID = 1)
+      // A) IZPIS NA STRANI UPORABNIKOV (Vse objave, kjer avtor NI ID = 1)
       if (vsebnikPredlogov) {
         vsebnikPredlogov.innerHTML = '';
-        const filtriraniUporabniki = predlogi.filter(p => p.tk_uporabnikid_uporabnik !== 1 && p.TK_Uporabnikid_uporabnik !== 1);
+        const filtriraniUporabniki = predlogi.filter(p => parseInt(p.tk_uporabnikid_uporabnik) !== 1);
         
         filtriraniUporabniki.forEach(predlog => {
           const trenutniVsecki = localStorage.getItem(`glas_${predlog.id_objava}_vsecki`) || 0;
           const trenutniNeradi = localStorage.getItem(`glas_${predlog.id_objava}_neradi`) || 0;
 
-          const karticaHTML = `
-            <div class="col-lg-6">
-              <div class="card shadow predlog-card">
-                <img src="${predlog.fotografija || 'slike/zacetna.jpg'}" class="card-img-top predlog-img" alt="slika">
-                <div class="card-body p-4">
-                  <h3 class="fw-bold mb-3">${predlog.naslov}</h3>
-                  <p class="text-muted">${predlog.opis}</p>
-                  
-                <div class="d-flex gap-3 my-4">
-                  <button class="btn btn-success glas-btn" onclick="glasuj(${predlog.id_objava}, 'vsecki')">
-                  <i class="fas fa-thumbs-up"></i> <span id="span_${predlog.id_objava}_vsecki">${trenutniVsecki}</span>
-                  </button>
-
-                  <button class="btn btn-danger glas-btn" onclick="glasuj(${predlog.id_objava}, 'neradi')">
-                  <i class="fas fa-thumbs-down"></i> <span id="span_${predlog.id_objava}_neradi">${trenutniNeradi}</span>
-                  </button>
-                </div>
-                  
-                <hr>
-                  
-                <h5 class="fw-bold mb-3">Komentarji</h5>
-                <div class="mb-3">
-                  <div class="komentar"><small class="text-muted">Komentarji bodo na voljo kmalu.</small></div>
-                </div>
-                                  
-                <textarea class="form-control comment-box mb-3" rows="3" placeholder="Dodaj komentar..."></textarea>
-                <button class="btn komentar-gumb fw-bold">Objavi komentar</button>
-                </div>
-              </div>
-            </div>
-          `;
-          vsebnikPredlogov.innerHTML += karticaHTML;
+          vsebnikPredlogov.innerHTML += generirajKarticoHTML(predlog, trenutniVsecki, trenutniNeradi);
         });
       }
 
-      // 2. IZPIS NA STRANI OBČINE (samo ID = 1)
+      // B) IZPIS NA STRANI OBČINE (Samo uradne objave, kjer je avtor ID = 1)
       if (vsebnikObcina) {
         vsebnikObcina.innerHTML = '';
-        const filtriranaObcina = predlogi.filter(p => p.tk_uporabnikid_uporabnik === 1 || p.TK_Uporabnikid_uporabnik === 1);
+        const filtriranaObcina = predlogi.filter(p => parseInt(p.tk_uporabnikid_uporabnik) === 1);
         
         filtriranaObcina.forEach(predlog => {
           const trenutniVseckiObcina = localStorage.getItem(`glas_${predlog.id_objava}_vsecki`) || 0;
           const trenutniNeradiObcina = localStorage.getItem(`glas_${predlog.id_objava}_neradi`) || 0;
 
-          const karticaHTML = `
-            <div class="col-lg-6">
-              <div class="card shadow predlog-card">
-                <img src="${predlog.fotografija || 'slike/zacetna.jpg'}" class="card-img-top predlog-img" alt="slika">
-                <div class="card-body p-4">
-                  <h3 class="fw-bold mb-3">${predlog.naslov}</h3>
-                  <p class="text-muted">${predlog.opis}</p>
-                  
-                  <div class="d-flex gap-3 my-4">
-                    <button class="btn btn-success glas-btn" onclick="glasuj(${predlog.id_objava}, 'vsecki')">
-                    <i class="fas fa-thumbs-up"></i> <span id="span_${predlog.id_objava}_vsecki">${trenutniVseckiObcina}</span>
-                    </button>
-
-                    <button class="btn btn-danger glas-btn" onclick="glasuj(${predlog.id_objava}, 'neradi')">
-                    <i class="fas fa-thumbs-down"></i> <span id="span_${predlog.id_objava}_neradi">${trenutniNeradiObcina}</span>
-                    </button>
-                  </div>
-                  
-                  <hr>
-                  
-                  <h5 class="fw-bold mb-3">Komentarji</h5>
-                  <div class="mb-3">
-                    <div class="komentar"><small class="text-muted">Komentarji bodo na voljo kmalu.</small></div>
-                  </div>
-                                  
-                  <textarea class="form-control comment-box mb-3" rows="3" placeholder="Dodaj komentar..."></textarea>
-                  <button class="btn komentar-gumb fw-bold">Objavi komentar</button>
-                </div>
-              </div>
-            </div>
-          `;
-          vsebnikObcina.innerHTML += karticaHTML;
+          vsebnikObcina.innerHTML += generirajKarticoHTML(predlog, trenutniVseckiObcina, trenutniNeradiObcina);
         });
       }
 
@@ -99,13 +39,47 @@ if (vsebnikPredlogov || vsebnikObcina) {
     .catch(err => console.error("Napaka pri nalaganju predlogov:", err));
 }
 
-// --- TUKAJ NAPREJ VSE OSTANE TOČNO TAKO, KOT SI IMELA NASTAVLJENO ---
+// Pomožna funkcija za generiranje izgleda kartice
+function generirajKarticoHTML(predlog, vsecki, neradi) {
+  return `
+    <div class="col-lg-6">
+      <div class="card shadow predlog-card">
+        <img src="${predlog.fotografija || 'slike/zacetna.jpg'}" class="card-img-top predlog-img" alt="slika">
+        <div class="card-body p-4">
+          <h3 class="fw-bold mb-3">${predlog.naslov}</h3>
+          <p class="text-muted">${predlog.opis}</p>
+          
+          <div class="d-flex gap-3 my-4">
+            <button class="btn btn-success glas-btn" onclick="glasuj(${predlog.id_objava}, 'vsecki')">
+              <i class="fas fa-thumbs-up"></i> <span id="span_${predlog.id_objava}_vsecki">${vsecki}</span>
+            </button>
+            <button class="btn btn-danger glas-btn" onclick="glasuj(${predlog.id_objava}, 'neradi')">
+              <i class="fas fa-thumbs-down"></i> <span id="span_${predlog.id_objava}_neradi">${neradi}</span>
+            </button>
+          </div>
+          
+          <hr>
+          <h5 class="fw-bold mb-3">Komentarji</h5>
+          <div class="mb-3">
+            <div class="komentar"><small class="text-muted">Komentarji bodo na voljo kmalu.</small></div>
+          </div>
+                          
+          <textarea class="form-control comment-box mb-3" rows="3" placeholder="Dodaj komentar..."></textarea>
+          <button class="btn komentar-gumb fw-bold">Objavi komentar</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
 
-const mapElementId = document.getElementById('map');
+// -------------------------------------------------------------
+// 2. INICIACIJAZEMLJEVIDA (Skupni ID: map-predlog)
+// -------------------------------------------------------------
+const mapElement = document.getElementById('map-predlog');
 let izbraneKoordinate = null;
 
-if (mapElementId) {
-  const map = L.map('map').setView([46.5547, 15.6459], 13);
+if (mapElement) {
+  const map = L.map('map-predlog').setView([46.5547, 15.6459], 13);
 
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
@@ -123,6 +97,9 @@ if (mapElementId) {
     }
   });
 }
+
+
+
 
 const gumbObjavi = document.getElementById('gumb-objavi');
 
