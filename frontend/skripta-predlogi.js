@@ -104,6 +104,9 @@ if (mapElement) {
 
 
 
+// ----------------------------
+// SKRIPT ZA VŠEČKE
+// ----------------------------
 window.glasuj = function(id) {
     // Pošljemo posodobitev na strežnik
     fetch('/api/posodobi-vsecke', {

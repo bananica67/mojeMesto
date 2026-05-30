@@ -55,12 +55,12 @@ document.addEventListener("DOMContentLoaded", () => {
                     localStorage.setItem('profilniEmail', rezultat.email);
                     
                     // Preusmeritev glede na vpisani e-mail
-                    if (email === "admin@gmail.com") {
-                        window.location.href = "obcina-profil.html";
+                    if (rezultat.tip_uporabnika === 1) {
+                       window.location.href = "obcina-profil.html";
                     } else {
-                        window.location.href = "profil.html";
+                       window.location.href = "profil.html";
                     }
-                } else {
+                    } else {
                     // Izpiše napako ("Uporabnik ne obstaja!" ali "Napačno geslo")
                     alert(rezultat.sporocilo);
                 }

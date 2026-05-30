@@ -107,7 +107,8 @@ app.post('/prijava', async (req, res) => {
             id_uporabnik: uporabnik.id_uporabnik,
             ime: uporabnik.ime,
             priimek: uporabnik.priimek,
-            email: uporabnik.email
+            email: uporabnik.email,
+            tip_uporabnika: parseInt(uporabnik.tk_tip_uporabnikaid_tip_uporabnika)
         });
         
     } catch (err) {

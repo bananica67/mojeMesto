@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 
-<body>
+<body> <!-- KONČANO -->
 
 <header class="glava-strani">
 <div class="container-fluid vsebnik-po-meri">
@@ -41,6 +41,7 @@
 </div>
 </header>
 
+<!-- PROFIL -->
 <div class="container my-5">
 <div class="row g-4">
       
@@ -60,7 +61,7 @@
       <a href="klepet.html" class="komentar-gumb w-100 text-decoration-none d-inline-block text-center" style="line-height: normal; padding: 10px 20px;">
         <i class="fas fa-comments me-2"></i>Zasebni klepet
       </a>
-      <button class="gumb-odjava w-100 mt-2" onclick="alert('Odjava uspešna.')">
+      <button class="gumb-odjava w-100" onclick="odjaviUporabnika()">
         <i class="fas fa-sign-out-alt me-2"></i>Odjava
       </button>
     </div>
@@ -68,6 +69,7 @@
   </div>
   </div>
 
+  <!-- ZAVIHKI -->
   <div class="col-lg-9">
   <div class="card border-0 shadow rounded-3 p-4 bg-white" style="min-height: 500px;">
           
@@ -84,8 +86,10 @@
     </li>
   </ul>
 
+<!-- VSEBINA ZAVIHKOV -->
 <div class="tab-content" id="adminTabsContent">
-            
+  
+  <!-- ZAVIHEK 1: UPRAVLJANJE PREDLOGOV -->
   <div class="tab-pane fade show active" id="zavihek-predlogi" role="tabpanel">
     <div class="d-flex justify-content-between align-items-center mb-4">
       <h4 class="m-0 fw-bold text-dark" style="font-size: 20px;">Vsi predlogi</h4>
@@ -113,6 +117,7 @@
     </div>
   </div>
 
+  <!-- ZAVIHEK 2: UPRAVLJANJE UPORABNIKOV -->
   <div class="tab-pane fade" id="zavihek-uporabniki" role="tabpanel">
     <div class="d-flex justify-content-between align-items-center mb-4">
       <h4 class="m-0 fw-bold text-dark" style="font-size: 20px;">Seznam registriranih uporabnikov</h4>
