@@ -313,7 +313,9 @@ function naloziPredlogeZaAdmina() {
                         ID Uporabnika: ${avtorID}
                     </td>
                     <td>
-                        <span class="badge bg-success"><i class="fas fa-thumbs-up me-1"></i> 0</span>
+                        <span class="badge bg-success">
+                            <i class="fas fa-thumbs-up me-1"></i> ${predlog.st_vseckov || 0}
+                        </span>
                     </td>
                     <td>
                         <select class="form-select form-select-sm status-select" onchange="osveziStatus(${predlog.id_objava}, this.value)">
