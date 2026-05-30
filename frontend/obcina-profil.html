@@ -1,9 +1,7 @@
 <!DOCTYPE html>
 <html lang="sl">
 
-<head> <!-- KONČANO -->
-
-<meta charset="UTF-8">
+<head> <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>IDE-JA - Občina Profil</title>
 
@@ -46,7 +44,6 @@
 <div class="container my-5">
 <div class="row g-4">
       
-  <!-- PROFIL -->
   <div class="col-lg-3">
   <div class="admin shadow border-0 text-center rounded-3 bg-white p-4">
           
@@ -55,7 +52,6 @@
     </div>
           
     <h3 class="mb-1 border-0 fw-bold">Mestna občina Maribor</h3>
-    <p class="text-muted small">Skrbnik platforme (Admin)</p>
     <p class="badge bg-secondary px-3 py-2">Uradni profil</p>
           
     <hr class="my-4">
@@ -72,7 +68,6 @@
   </div>
   </div>
 
-  <!-- ZAVIHKI -->
   <div class="col-lg-9">
   <div class="card border-0 shadow rounded-3 p-4 bg-white" style="min-height: 500px;">
           
@@ -89,10 +84,8 @@
     </li>
   </ul>
 
-<!-- VSEBINA ZAVIHKOV -->
 <div class="tab-content" id="adminTabsContent">
             
-  <!-- ZAVIHEK 1: UPRAVLJANJE PREDLOGOV -->
   <div class="tab-pane fade show active" id="zavihek-predlogi" role="tabpanel">
     <div class="d-flex justify-content-between align-items-center mb-4">
       <h4 class="m-0 fw-bold text-dark" style="font-size: 20px;">Vsi predlogi</h4>
@@ -103,11 +96,11 @@
     <table class="table table-hover align-middle">
       <thead class="table-light">
         <tr>
-          <th style="width: 15%;">Slika</th>
-          <th style="width: 25%;">Naslov</th>
-          <th style="width: 15%;">Avtor</th> <th style="width: 15%;">Glasovi</th>
-          <th style="width: 15%;">Status (Uredi)</th>
-          <th style="width: 15%; text-align: center;">Akcija</th>
+          <th style="width: 12%;">Slika</th>
+          <th style="width: 30%;">Naslov</th>
+          <th style="width: 18%;">Avtor</th> 
+          <th style="width: 20%;">Glasovi</th>
+          <th style="width: 20%;">Status (Uredi)</th>
         </tr>
       </thead>
       <tbody id="seznamPredlogov"></tbody>
@@ -120,7 +113,6 @@
     </div>
   </div>
 
-  <!-- ZAVIHEK 2: UPRAVLJANJE UPORABNIKOV -->
   <div class="tab-pane fade" id="zavihek-uporabniki" role="tabpanel">
     <div class="d-flex justify-content-between align-items-center mb-4">
       <h4 class="m-0 fw-bold text-dark" style="font-size: 20px;">Seznam registriranih uporabnikov</h4>
@@ -132,10 +124,9 @@
       <thead class="table-light">
         <tr>
           <th style="width: 10%;">ID</th>
-          <th style="width: 30%;">Uporabniško ime / Ime</th>
+          <th style="width: 25%;">Uporabniško ime / Ime</th>
           <th style="width: 30%;">E-pošta</th>
           <th style="width: 15%;">Vloga (Status)</th>
-          <th style="width: 15%; text-align: center;">Akcija</th>
         </tr>
       </thead>
       <tbody id="seznamUporabnikov"></tbody>

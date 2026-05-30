@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
 
     <style>
-      #map-obcina {
+      #map-predlog {
         height: 400px;
         width: 100%;
         border-radius: 6px;
@@ -65,35 +65,34 @@
 
           <h2 class="fw-bold mb-4">Dodaj nov predlog</h2>
                     
-          <form class="d-flex flex-column flex-grow-1">
+          <form class="d-flex flex-column flex-grow-1" id="obrazec-predlog">
             <div class="mb-3">
               <label class="form-label fw-bold small">Naslov problema</label>
-              <input type="text" id="naslov-obcina" class="form-control" placeholder="Npr. Slaba osvetlitev...">
+              <input type="text" id="naslov-predlog" class="form-control" placeholder="Npr. Slaba osvetlitev...">
             </div>
 
             <div class="mb-3 flex-grow-1 d-flex flex-column">
               <label class="form-label fw-bold small">Opis problema</label>
-              <textarea id="opis-obcina" class="form-control flex-grow-1" style="min-height: 150px;" placeholder="Podrobno opišite..."></textarea>
+              <textarea id="opis-predlog" class="form-control flex-grow-1" style="min-height: 150px;" placeholder="Podrobno opišite..."></textarea>
             </div>
 
             <div class="mb-3">
               <label class="form-label fw-bold small">Dodaj sliko</label>
-              <input type="file" id="slika-obcina" class="form-control">
+              <input type="file" id="slika-predlog" class="form-control">
             </div>
     
             <div class="mb-4">
               <label class="form-label fw-bold small">Izberite lokacijo na zemljevidu</label>
-              <div id="map-obcina"></div>
+              <div id="map-predlog"></div>
             </div>
 
-            <button type="button" id="gumb-objavi-obcina" class="btn btn-danger text-white fw-bold w-100 py-3 mt-auto">Objavi predlog</button>
+            <button type="button" id="gumb-objavi-predlog" class="btn btn-danger text-white fw-bold w-100 py-3 mt-auto gumb-objavi-skupni">Objavi predlog</button>
           </form>
                 
         </div>
     </div>
 </section>
 
-<!-- FILTRI -->
 <div class="filter-vsebnik">
   <label for="filter-obcina" class="filter-label">Razvrsti po:</label>
 
@@ -105,7 +104,6 @@
 </div>
 
 <main class="container mb-5">
-  <!-- JavaScript tu samodejno zgenerira predloge iz baze -->
   <div class="row g-4" id="predlogi-obcina"></div>
 </main>
 

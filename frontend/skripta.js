@@ -238,11 +238,6 @@ function naloziUporabnikeZaAdmina() {
                             <option value="admin">Administrator</option>
                         </select>
                     </td>
-                    <td style="text-align: center;">
-                        <button class="gumb-brisi btn-sm" onclick="izbrisiUporabnikaIzBaze(${uporabnik.id_uporabnik})" title="Izbriši uporabnika">
-                            <i class="fas fa-trash-alt"></i>
-                        </button>
-                    </td>
                 `;
                 seznamUporabnikovOznaka.appendChild(vrstica);
             });
@@ -250,22 +245,6 @@ function naloziUporabnikeZaAdmina() {
         .catch(error => {
             console.error('Napaka pri pridobivanju uporabnikov iz SQL baze:', error);
         });
-}
-
-// Funkcija za brisanje, ki pošlje DELETE zahtevo na backend preko ID-ja
-function izbrisiUporabnikaIzBaze(idUporabnik) {
-    if (confirm('Ali ste prepričani, da želite izbrisati tega uporabnika?')) {
-        fetch(`/api/uporabniki/${idUporabnik}`, {
-            method: 'DELETE'
-        })
-        .then(response => {
-            if(response.ok) {
-                naloziUporabnikeZaAdmina(); // Ponovno osveži tabelo
-            } else {
-                alert('Napaka pri brisanju uporabnika.');
-            }
-        });
-    }
 }
 
 // DODANO: Avtomatski zagon funkcije, ko se naloži HTML stran
@@ -387,11 +366,6 @@ function naloziPredlogeZaAdmina() {
                             <option value="3" ${sID === 3 ? 'selected' : ''}>Zaključeno</option>
                         </select>
                     </td>
-                    <td style="text-align: center;">
-                        <button class="gumb-brisi btn-sm" onclick="izbrisiPredlog(${predlog.id_objava})">
-                            <i class="fas fa-trash-alt"></i>
-                        </button>
-                    </td>
                 `;
                 seznamPredlogovOznaka.appendChild(vrstica);
             });
@@ -421,12 +395,6 @@ function osveziStatus(idObjava, novStatusId) {
         }
     })
     .catch(err => console.error('Napaka pri posodabljanju:', err));
-}
-
-function izbrisiPredlog(idObjava) {
-    if (confirm('Ali ste prepričani, da želite izbrusiti ta predlog?')) {
-        alert('Za izbris predloga z ID ' + idObjava + ' nimaš nastavljene DELETE poti.');
-    }
 }
 
 // Avtomatski zagon ob nalaganju strani za oba zavihka
