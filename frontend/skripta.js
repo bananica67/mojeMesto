@@ -60,7 +60,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
     }
-}); 
+});
 
 
 
@@ -92,7 +92,7 @@ document.addEventListener("DOMContentLoaded", function() {
       const vnesenoIme = document.getElementById('vnosIme').value;
       if(vnesenoIme.trim() !== "") {
         document.getElementById('prikazanoIme').textContent = vnesenoIme;
-        
+       
         // Shranimo v localStorage
         localStorage.setItem('profilnoIme', vnesenoIme);
 
@@ -123,7 +123,7 @@ document.addEventListener("DOMContentLoaded", function() {
     const shranjenaBarva = localStorage.getItem('profilnaBarva');
     if (shranjenaBarva) {
         document.getElementById('uporabnikAvatar').style.backgroundColor = shranjenaBarva;
-        
+       
         document.querySelectorAll('.barva-krog').forEach(krog => {
           krog.classList.remove('aktivna');
           if (krog.style.backgroundColor === shranjenaBarva || krog.getAttribute('onclick').includes(shranjenaBarva)) {
@@ -154,9 +154,9 @@ if (mapElement) {
 }
 
 function odjaviUporabnika() {
-    localStorage.clear(); 
+    localStorage.clear();
     alert('Odjava uspešna.');
-    window.location.href = 'prijava.html'; 
+    window.location.href = 'prijava.html';
 }
 
 // Funkcija, ki naloži uporabnike iz localStorage in jih izriše v tabelo
@@ -174,7 +174,7 @@ function naloziUporabnikeZaAdmina() {
     fetch('/api/vsi-uporabniki')
         .then(response => response.json())
         .then(vsiUporabniki => {
-            
+           
             // Posodobi števec (Skupno uporabnikov: X)
             if (stetjeUporabnikovOznaka) {
                 stetjeUporabnikovOznaka.textContent = `Skupno uporabnikov: ${vsiUporabniki.length}`;
@@ -196,7 +196,7 @@ function naloziUporabnikeZaAdmina() {
                 const vrstica = document.createElement('tr');
                 // Uporabiva tvoj id_uporabnik iz SQL baze za ID vrstice
                 vrstica.id = `uporabnik-row-${uporabnik.id_uporabnik}`;
-                
+               
                 // Združiva ime in priimek točno tako, kot jih imaš v SQL tabeli
                 const polnoIme = `${uporabnik.ime} ${uporabnik.priimek}`;
 

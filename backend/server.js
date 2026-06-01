@@ -374,7 +374,7 @@ app.post('/registracija', async (req, res) => {
             INSERT INTO Uporabnik (ime, priimek, geslo, telefon, email, datum_registracije)
             VALUES ($1, $2, $3, $4, $5, CURRENT_DATE)
         `;
-        
+       
         await pool.query(queryText, [ime, priimek, geslo, vnosTelefon, email]);
 
         res.send(`
@@ -454,7 +454,7 @@ app.post('/prijava', async (req, res) => {
             priimek: uporabnik.priimek,
             email: uporabnik.email
         });
-        
+       
     } catch (err) {
         console.error("Napaka pri prijavi na strežniku:", err);
         return res.json({ uspeh: false, sporocilo: 'Prišlo je do napake na strežniku pri povezavi z bazo.' });
@@ -468,7 +468,7 @@ app.get('/api/vsi-uporabniki', async (req, res) => {
     try {
         // Iz baze poberemo ID, ime, priimek in email vseh registriranih uporabnikov
         const vsiUporabniki = await pool.query('SELECT id_uporabnik, ime, priimek, email FROM Uporabnik ORDER BY id_uporabnik ASC');
-        
+       
         return res.json(vsiUporabniki.rows);
     } catch (err) {
         console.error("Napaka pri pridobivanju uporabnikov:", err);
@@ -483,7 +483,7 @@ app.get('/api/moje-znacke/:email', async (req, res) => {
     try {
         // ID uporabnika preko e-maila 
         const userCheck = await pool.query('SELECT id_uporabnik FROM Uporabnik WHERE email = $1', [email]);
-        
+       
         if (userCheck.rows.length === 0) {
             return res.status(404).json({ sporocilo: 'Uporabnik ne obstaja.' });
         }
@@ -492,12 +492,12 @@ app.get('/api/moje-znacke/:email', async (req, res) => {
 
         // 2. Izvedemo JOIN z natančnimi imeni stolpcev iz tvoje SQL skripte
         const znackeQuery = `
-            SELECT z.naziv, z.opis 
+            SELECT z.naziv, z.opis
             FROM Značka z
             JOIN Uporabnik_Znacka uz ON z.id_znacka = uz.TK_Značkaid_znacka
             WHERE uz.TK_Uporabnikid_član = $1
         `;
-        
+       
         const rezZnacke = await pool.query(znackeQuery, [idUporabnik]);
         return res.json(rezZnacke.rows); // Vrnemo seznam značk (naziv, opis)
 
