@@ -1,6 +1,250 @@
 //PREDLOGI UPORABNIKOV
 
-const zacetniPredlogi = [
+// =================================================================
+// 1. GENERIRANJE IN PRIKAZ PREDLOGOV (UPORABNIKI + OBČINA)
+// =================================================================
+
+const vsebnikPredlogov = document.getElementById('predlog-uporabnik');
+const vsebnikObcina = document.getElementById('predlogi-obcina');
+
+// Funkcija, ki naloži predloge uporabnikov iz baze (preko API strežnika)
+async function naloziPredlogeUporabnikov() {
+  if (!vsebnikPredlogov) return;
+  
+  try {
+    const response = await fetch('/api/vsi-predlogi-uporabnikov');
+    const predlogi = await response.json();
+    
+    vsebnikPredlogov.innerHTML = '';
+
+    if (predlogi.length === 0) {
+      vsebnikPredlogov.innerHTML = '<p class="text-muted">Ni še nobenih predlogov.</p>';
+      return;
+    }
+
+    predlogi.forEach(predlog => {
+      let komentarjiHTML = '';
+      if (predlog.komentarji && predlog.komentarji.length > 0) {
+        predlog.komentarji.forEach(kom => {
+          komentarjiHTML += `<div class="komentar"><strong>${kom.avtor}:</strong> ${kom.besedilo}</div>`;
+        });
+      } else {
+        komentarjiHTML = '<p class="text-muted smaill">Ni še komentarjev.</p>';
+      }
+
+      // Vsečke zaenkrat obdrživa v localStorage, dokler ne narediva tabele v bazi
+      const trenutniVsecki = localStorage.getItem(`glas_${predlog.id}_vsecki`) || 0;
+      const trenutniNeradi = localStorage.getItem(`glas_${predlog.id}_neradi`) || 0;
+
+      // Če ni slike, damo privzeto
+      const slikaPrikaz = predlog.fotografija || 'slike/zacetna.jpg';
+
+      const karticaHTML = `
+        <div class="col-lg-6">
+          <div class="card shadow predlog-card">
+            <img src="${slikaPrikaz}" class="card-img-top predlog-img" alt="slika">
+            <div class="card-body p-4">
+              <h3 class="fw-bold mb-3">${predlog.naslov}</h3>
+              <p class="text-muted">${predlog.opis}</p>
+              
+              <div class="d-flex gap-3 my-4">
+                <button class="btn btn-success glas-btn" onclick="glasuj(${predlog.id}, 'vsecki')">
+                  <i class="fas fa-thumbs-up"></i> <span id="span_${predlog.id}_vsecki">${trenutniVsecki}</span>
+                </button>
+                <button class="btn btn-danger glas-btn" onclick="glasuj(${predlog.id}, 'neradi')">
+                  <i class="fas fa-thumbs-down"></i> <span id="span_${predlog.id}_neradi">${trenutniNeradi}</span>
+                </button>
+              </div>
+              
+              <hr>
+              
+              <h5 class="fw-bold mb-3">Komentarji</h5>
+              <div class="mb-3">${komentarjiHTML}</div>
+                              
+              <textarea id="komentar-input-${predlog.id}" class="form-control comment-box mb-3" rows="3" placeholder="Dodaj komentar..."></textarea>
+              <button class="btn komentar-gumb fw-bold" onclick="objaviKomentar(${predlog.id})">Objavi komentar</button>
+            </div>
+          </div>
+        </div>
+      `;
+      vsebnikPredlogov.innerHTML += karticaHTML;
+    });
+  } catch (err) {
+    console.error("Napaka pri pridobivanju predlogov:", err);
+  }
+}
+
+// Ker občina še nima API-ja v bazi, jo začasno pustiva na localStorage, da se stran ne sesuje
+const zacetniPredlogiObcine = [
+  {
+    id: 101,
+    naslov: "Nova kolesarska pot",
+    opis: "Občina načrtuje izgradnjo nove kolesarske poti med centrom mesta in mestnim parkom.",
+    slika: "slike/kolo.jpg",
+    komentarji: []
+  }
+];
+if (!localStorage.getItem('vsiPredlogiObcine')) {
+  localStorage.setItem('vsiPredlogiObcine', JSON.stringify(zacetniPredlogiObcine));
+}
+
+function prikaziPredlogeObcine() {
+  if (!vsebnikObcina) return;
+  const predlogi = JSON.parse(localStorage.getItem('vsiPredlogiObcine'));
+  vsebnikObcina.innerHTML = '';
+  
+  predlogi.forEach(predlog => {
+    const karticaHTML = `
+      <div class="col-lg-6">
+        <div class="card shadow predlog-card">
+          <img src="${predlog.slika}" class="card-img-top predlog-img" alt="slika">
+          <div class="card-body p-4">
+            <h3 class="fw-bold mb-3">${predlog.naslov}</h3>
+            <p class="text-muted">${predlog.opis}</p>
+          </div>
+        </div>
+      </div>
+    `;
+    vsebnikObcina.innerHTML += karticaHTML;
+  });
+}
+
+// Zaženemo nalaganje ob odpiranju strani
+document.addEventListener("DOMContentLoaded", () => {
+  naloziPredlogeUporabnikov();
+  prikaziPredlogeObcine();
+});
+
+// =================================================================
+// 2. DODAJANJE NOVEGA PREDLOGA NA STREŽNIK (ZEMLJEVID + FILEREADER)
+// =================================================================
+
+const mapElement = document.getElementById('map');
+let izbraneKoordinate = null;
+
+if (mapElement) {
+  const map = L.map('map').setView([46.5547, 15.6459], 13);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+  let trenutniMarker = null;
+  map.on('click', function(e) {
+    izbraneKoordinate = e.latlng;
+    if (trenutniMarker) {
+      trenutniMarker.setLatLng(izbraneKoordinate);
+    } else {
+      trenutniMarker = L.marker(izbraneKoordinate).addTo(map);
+    }
+  });
+}
+
+const gumbObjavi = document.getElementById('gumb-objavi');
+if (gumbObjavi) {
+  gumbObjavi.addEventListener('click', function() {
+    const naslov = document.getElementById('naslov').value;
+    const opis = document.getElementById('opis').value;
+    const slikaInput = document.getElementById('slika');
+    const emailPrijavljenega = localStorage.getItem('prijavljenEmail'); // Preberemo email prijavljenega uporabnika
+
+    if (!emailPrijavljenega) {
+      alert("Za oddajo predloga morate biti prijavljeni!");
+      return;
+    }
+    if (!naslov || !opis) {
+      alert("Prosim, izpolnite naslov in opis problema.");
+      return;
+    }
+
+    function posljiNaStrezenik(slikaBase64) {
+      fetch('/api/dodaj-predlog', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          naslov: naslov,
+          opis: opis,
+          email: emailPrijavljenega,
+          fotografija: slikaBase64
+        })
+      })
+      .then(res => res.json())
+      .then(podatki => {
+        if (podatki.uspeh) {
+          if (podatki.novaZnacka) {
+            alert(`Čestitke! Prejeli ste novo značko: ${podatki.novaZnacka}`);
+          } else {
+            alert(podatki.sporocilo);
+          }
+          window.location.href = "predlogi.html";
+        } else {
+          alert("Napaka: " + podatki.sporocilo);
+        }
+      })
+      .catch(err => console.error("Napaka pri fetchu:", err));
+    }
+
+    if (slikaInput && slikaInput.files && slikaInput.files[0]) {
+      const reader = new FileReader();
+      reader.onloadend = function() {
+        posljiNaStrezenik(reader.result);
+      };
+      reader.readAsDataURL(slikaInput.files[0]);
+    } else {
+      posljiNaStrezenik("slike/zacetna.jpg");
+    }
+  });
+}
+
+// =================================================================
+// 3. DODAJANJE KOMENTARJEV IN GLASOVANJE
+// =================================================================
+
+window.objaviKomentar = async function(idObjave) {
+  const input = document.getElementById(`komentar-input-${idObjave}`);
+  const vsebina = input.value;
+  const email = localStorage.getItem('prijavljenEmail');
+
+  if (!email) {
+    alert("Za komentiranje morate biti prijavljeni!");
+    return;
+  }
+  if (!vsebina) {
+    alert("Vpišite besedilo komentarja!");
+    return;
+  }
+
+  try {
+    const response = await fetch('/api/dodaj-komentar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ vsebina, idObjave, email })
+    });
+    const rez = await response.json();
+    
+    if (rez.uspeh) {
+      input.value = '';
+      naloziPredlogeUporabnikov(); // Ponovno osvežimo iz baze
+    } else {
+      alert(rez.sporocilo);
+    }
+  } catch (err) {
+    console.error("Napaka pri pošiljanju komentarja:", err);
+  }
+};
+
+window.glasuj = function(id, tip) {
+  const kljuc = `glas_${id}_${tip}`;
+  let trenutnoGlasov = parseInt(localStorage.getItem(kljuc) || 0) + 1;
+  localStorage.setItem(kljuc, trenutnoGlasov);
+  
+  const span = document.getElementById(`span_${id}_${tip}`);
+  if (span) {
+    span.textContent = trenutnoGlasov;
+  }
+};
+
+
+
+
+/*const zacetniPredlogi = [
   {
     id: 1,
     naslov: "Obupna cesta v Melju",
@@ -130,10 +374,17 @@ if (gumbObjavi) {
       alert("Prosim, izpolnite naslov in opis problema.");
       return;
     }
+      
+     // to je za objavo na stran predlogi.html
+// to je za objavo na stran predlogi.html
 
+  
+
+//9999999999999999999999999
     // Funkcija, ki dejansko shrani predlog
-    function shraniInPreusmeri(koncnaSlikaUrl) {
-      //iskanje starih predlogov v localStorage namesto sessionStorage
+   // Namesto tvoje trenutne funkcije shraniInPreusmeri, uporabi to:
+function shraniInPreusmeri(koncnaSlikaUrl) {
+      //
       const vsiPredlogi = JSON.parse(localStorage.getItem('vsiPredlogi')) || [];
       const novId = vsiPredlogi.length + 1;
 
@@ -174,6 +425,41 @@ if (gumbObjavi) {
     }
   });
 }
+
+//PREDLOGI-UPORABNIKOV
+app.get('/api/vsi-predlogi-uporabnikov', async (req, res) => {
+    try {
+        // 1. Preberemo vse objave, ki so tipa 'Predlog'
+        const objaveRez = await pool.query(`
+            SELECT id_objava AS id, naslov, opis, slika, stevilo_podpor 
+            FROM Objava 
+            WHERE tip_objave = 'Predlog'
+            ORDER BY id_objava DESC
+        `);
+
+        const predlogi = objaveRez.rows;
+
+        // 2. Za vsak predlog poiščemo še pripadajoče komentarje
+        for (let predlog of predlogi) {
+            const komRez = await pool.query(`
+                SELECT u.ime AS avtor, k.vsebina AS besedilo 
+                FROM Komentar k
+                JOIN Uporabnik u ON k.tk_uporabnikid_uporabnik = u.id_uporabnik
+                WHERE k.tk_objavaid_objava = $1
+                ORDER BY k.id_komentar ASC
+            `, [predlog.id]);
+            
+            predlog.komentarji = komRez.rows;
+        }
+
+        return res.json(predlogi);
+    } catch (err) {
+        console.error("Napaka pri branju predlogov iz baze:", err);
+        return res.status(500).json([]);
+    }
+});
+
+  
 
 
 //PREDLOGI OBCINE
@@ -382,3 +668,7 @@ window.glasuj = function(id, tip) {
         span.textContent = trenutnoGlasov;
     }
 };
+*/
+
+
+

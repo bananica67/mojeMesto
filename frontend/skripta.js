@@ -46,7 +46,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (rezultat.uspeh) {
                     // Če je prijava uspešna, preusmerimo na profil
                     localStorage.setItem('profilnoIme', rezultat.ime + " " + rezultat.priimek);
-                    localStorage.setItem('profilniEmail', rezultat.email);
+                    localStorage.setItem('prijavljenEmail', rezultat.email);
+                    //localStorage.setItem('profilniEmail', rezultat.email);
                     window.location.href = "profil.html";
                 } else {
                     // Izpiše napako ("Uporabnik ne obstaja!" ali "Napačno geslo")
@@ -112,7 +113,7 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     // DODANO: Izris shranjenega e-maila
-    const shranjenEmail = localStorage.getItem('profilniEmail');
+    const shranjenEmail = localStorage.getItem('prijavljenEmail');//prijavljenEmail
     const emailElement = document.getElementById('prikazanEmail');
     if (shranjenEmail && emailElement) {
         emailElement.textContent = shranjenEmail;
@@ -130,7 +131,15 @@ document.addEventListener("DOMContentLoaded", function() {
           }
         });
     }
+    const znackeTab = document.getElementById("znacke-tab");
+    if (znackeTab) {
+        znackeTab.addEventListener("click", naloziMojeZnacke);
+    }
+    
+    // Značke naložimo tudi takoj ob odpiranju profila
+    naloziMojeZnacke();
 }
+
   
 // SKRIP ZA ZEMLJEVID - status predlogov
 const mapElement = document.getElementById('map');
@@ -243,3 +252,53 @@ document.addEventListener("DOMContentLoaded", () => {
         naloziUporabnikeZaAdmina();
     }
 });
+
+// Funkcija, ki prebere značke iz baze in jih izriše v HTML vsebnik
+/*
+async function naloziMojeZnacke() {
+    // Vzamemo e-mail iz localStorage (uporablja tvoj ključ 'profilniEmail')
+    const email = localStorage.getItem("prijavljenEmail") || "kaja@student.um.si"; 
+    const vsebnik = document.getElementById("seznamZnack");
+
+    if (!vsebnik) return;
+
+    try {
+        const odziv = await fetch(`/api/moje-znacke/${email}`);
+        const znacke = await odziv.json();
+
+        // Če uporabnik nima nobene značke v bazi
+        if (znacke.length === 0) {
+            vsebnik.innerHTML = `
+                <div class="col-12 text-center py-4">
+                    <p class="text-muted mb-0">Trenutno še nimate osvojenih značk. Bodite aktivni v skupnosti!</p>
+                </div>
+            `;
+            return;
+        }
+
+        // Če značke obstajajo, spraznimo napis "Nalaganje..." in jih izrišemo
+        vsebnik.innerHTML = ""; 
+        
+        znacke.forEach(znacka => {
+            // Izbira ikone glede na ime značke v bazi
+            let ikona = "fa-award";
+            if (znacka.naziv.toLowerCase().includes("iniciator")) ikona = "fa-seedling";
+            if (znacka.naziv.toLowerCase().includes("aktiven")) ikona = "fa-fire";
+            if (znacka.naziv.toLowerCase().includes("debatni")) ikona = "fa-comments";
+
+            vsebnik.innerHTML += `
+                <div class="col-6 col-sm-4">
+                  <div class="znacka-kartica shadow-sm p-3 text-center rounded bg-white h-100" style="border: 2px solid #ffd700; transition: transform 0.2s;">
+                    <div class="znacka-ikona mb-2" style="font-size: 26px; color: #ffd700;"><i class="fas ${ikona}"></i></div>
+                    <h6 class="fw-bold mb-1" style="font-size: 14px; color: #000;">${znacka.naziv}</h6>
+                    <p class="text-muted small mb-0" style="font-size: 11px; line-height: 1.2;">${znacka.opis}</p>
+                  </div>
+                </div>
+            `;
+        });
+
+    } catch (napaka) {
+        console.error("Napaka pri nalaganju značk na frontendu:", napaka);
+        vsebnik.innerHTML = `<div class="col-12 text-center text-danger small py-3">Napaka pri povezavi s strežnikom.</div>`;
+    }
+}*/
