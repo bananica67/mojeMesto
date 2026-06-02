@@ -1,7 +1,15 @@
 const path = require("path");
 const express = require("express");
+const http = require("http"); // Dodano za WebSocket podporo
+const WebSocket = require("ws"); // Dodano za livechat
 const { Pool } = require("pg");
 const app = express();
+
+// Ustvarimo HTTP strežnik iz dotedanje Express aplikacije
+const server = http.createServer(app);
+
+// Nastavimo WebSocket strežnik, ki si deli isti port
+const wss = new WebSocket.Server({ server });
 
 // =================================================================
 // POVEZAVA Z BAZO
@@ -19,6 +27,74 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(express.json({ limit: '50mb' }));
 
 app.use(express.static(path.resolve(__dirname, '../frontend')));
+
+// =================================================================
+// LIVECHAT WEBSOCKET LOGIKA
+// =================================================================
+
+const connectedUsers = new Map(); // Sledenje uporabnikov
+
+wss.on('connection', (ws) => {
+  ws.userEmail = null;
+
+  ws.on('message', async (message) => {
+    try {
+      const podatek = JSON.parse(message.toString());
+      
+      if (!ws.userEmail) {
+        ws.userEmail = podatek.odKogaEmail;
+        connectedUsers.set(podatek.odKogaEmail, ws);
+      }
+
+      // POPRAVEK: Tukaj spremeni podatek.besedilo v podatek.tekst
+      await pool.query(
+        `INSERT INTO Sporocilo (posiljatelj_email, prejemnik_email, vsebina, datum_vnos) 
+         VALUES ($1, $2, $3, CURRENT_TIMESTAMP)`,
+        [podatek.odKogaEmail, podatek.komuEmail, podatek.tekst] 
+      );
+
+      const response = JSON.stringify(podatek);
+
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.send(response);
+      }
+
+      const recipientWs = connectedUsers.get(podatek.komuEmail);
+      if (recipientWs && recipientWs.readyState === WebSocket.OPEN) {
+        recipientWs.send(response);
+      }
+    } catch (err) {
+      console.error("Napaka pri obdelavi WebSocket sporočila:", err);
+    }
+  });
+
+  ws.on('close', () => {
+    if (ws.userEmail) {
+      connectedUsers.delete(ws.userEmail);
+      console.log(`Uporabnik ${ws.userEmail} je zapustil klepet.`);
+    }
+  });
+});
+
+app.get('/api/zgodovina-klepeta', async (req, res) => {
+    const { mojEmail, prejemnikEmail } = req.query;
+    try {
+        const queryText = `
+            SELECT posiljatelj_email, prejemnik_email, vsebina, datum_vnos
+            FROM Sporocilo
+            WHERE (posiljatelj_email = $1 AND prejemnik_email = $2)
+               OR (posiljatelj_email = $2 AND prejemnik_email = $1)
+            ORDER BY datum_vnos ASC
+        `;
+        const rez = await pool.query(queryText, [mojEmail, prejemnikEmail]);
+        return res.json(rez.rows);
+    } catch (err) {
+        console.error("Napaka pri pridobivanju zgodovine klepeta:", err);
+        return res.status(500).json({ sporocilo: 'Napaka na strežniku.' });
+    }
+});
+
+
 
 // =================================================================
 // REGISTRACIJA
@@ -210,7 +286,7 @@ app.post('/api/dodaj-komentar', async (req, res) => {
 });
 
 // =================================================================
-// ODDAJA NOVEGA PREDLOGA (Z OKREPLJENIM SISTEMOM ZNAČK)
+// ODDAJA NOVEGA PREDLOGA
 // =================================================================
 app.post('/api/dodaj-predlog', async (req, res) => {
     const { naslov, opis, email, fotografija } = req.body;
@@ -231,9 +307,7 @@ app.post('/api/dodaj-predlog', async (req, res) => {
             statusId = 2; // V obravnavi
         }
 
-        // POPRAVEK: Izognemo se napačnemu imenu stolpca tako, da vzamemo vse stolpce s '*'
         const odlocanjeRes = await pool.query("SELECT * FROM tip_odlocanja WHERE naziv = 'Prijava težav v lokalnem okolju' LIMIT 1");
-        // Ker ne vemo točnega imena stolpca, dinamično preberemo prvo lastnost vrstice
         const odlocanjeId = Object.values(odlocanjeRes.rows[0])[0];
 
         const vnosObjaveQuery = `
@@ -253,7 +327,6 @@ app.post('/api/dodaj-predlog', async (req, res) => {
             statusId
         ]);
 
-        // Pokličemo varno funkcijo za preštevanje in podelitev pravih značk!
         await preveriInPodeliZnacko(email);
 
         return res.json({
@@ -287,8 +360,6 @@ app.post('/api/posodobi-vsecke', async (req, res) => {
     }
 });
 
-
-
 // =================================================================
 // PREDLOGI ZA UPORABNIKA
 // =================================================================
@@ -296,7 +367,6 @@ app.post('/api/posodobi-vsecke', async (req, res) => {
 app.get('/api/moji-predlogi/:email', async (req, res) => {
     const { email } = req.params;
     try {
-        // Poiščemo samo objave tipa 'Predlog', ki pripadajo uporabniku s tem emailom
         const uporabnikoviPredlogi = await pool.query(`
             SELECT o.id_objava, o.naslov, o.opis, o.fotografija, o.st_vseckov, 
                    s.naziv AS status
@@ -321,10 +391,7 @@ app.get('/api/moji-predlogi/:email', async (req, res) => {
 app.delete('/api/izbrisi-predlog/:id', async (req, res) => {
     const { id } = req.params;
     try {
-        // Najprej izbrišemo komentarje, vezane na to objavo, da ne kršimo tujih ključev (Foreign Key)
         await pool.query('DELETE FROM komentar WHERE tk_objavaid_objava = $1', [parseInt(id)]);
-        
-        // Nato izbrišemo še samo objavo
         const rezultat = await pool.query('DELETE FROM objava WHERE id_objava = $1', [parseInt(id)]);
 
         if (rezultat.rowCount > 0) {
@@ -337,8 +404,6 @@ app.delete('/api/izbrisi-predlog/:id', async (req, res) => {
         return res.status(500).json({ uspeh: false, sporocilo: 'Napaka na strežniku.' });
     }
 });
-
-
 
 // =================================================================
 // PRIDOBIVANJE ZNAČK ZA PROFIL
@@ -412,6 +477,7 @@ async function preveriInPodeliZnacko(email) {
     }
 }
 
-app.listen(3000, () => {
+
+server.listen(3000, () => {
   console.log("Strežnik deluje na http://localhost:3000");
 });

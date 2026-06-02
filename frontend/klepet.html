@@ -45,96 +45,34 @@
 </div>
 </header>
 
-<div class="container my-4">
-  <div class="row g-0 shadow klepet-okno">
+<div class="container-fluid">
+<div class="row mt-4">
+<div class="col-lg-10 offset-lg-1">
       
-      <div class="col-md-4 col-lg-3 seznam-uporabnikov d-none d-md-block">
-        <div class="p-3 bg-white border-bottom">
-          <h5 class="fw-bold m-0 text-dark" style="font-size: 18px;">Pogovori</h5>
-        </div>
+  <h3 class="mb-4">Zasebni Klepet</h3>
+  <div class="klepet-okno d-flex">
         
-        <div class="uporabnik-kartica aktivna d-flex align-items-center">
-          <div class="mini-avatar" style="background-color: #8c1212;">MO</div>
-          <div class="ms-3 overflow-hidden">
-            <h6 class="mb-0 fw-bold text-truncate" style="font-size: 14px;">Mestna občina Maribor</h6>
-            <small class="text-muted text-truncate d-block">Vaš predlog je bil predan v obravnavo...</small>
-          </div>
-        </div>
+  <!-- Levi panel: Seznam uporabnikov -->
+  <div class="seznam-uporabnikov"></div>
 
-        <div class="uporabnik-kartica d-flex align-items-center">
-          <div class="mini-avatar" style="background-color: #4a6fa5;">AM</div>
-          <div class="ms-3 overflow-hidden">
-            <h6 class="mb-0 fw-bold text-truncate" style="font-size: 14px;">Anže Mohorič</h6>
-            <small class="text-muted text-truncate d-block">Se strinjam glede tiste ceste v Melju!</small>
-          </div>
-        </div>
-
-        <div class="uporabnik-kartica d-flex align-items-center">
-          <div class="mini-avatar" style="background-color: #2e7d32;">TL</div>
-          <div class="ms-3 overflow-hidden">
-            <h6 class="mb-0 fw-bold text-truncate" style="font-size: 14px;">Tina Logar</h6>
-            <small class="text-muted text-truncate d-block">Živijo! Hvala za podporo mojemu predlogu.</small>
-          </div>
-        </div>
+  <!-- Desni panel: Prikaz klepeta -->
+  <div class="prikaz-sporocil">
+    <div class="del-glava">
+    <h5>Izberi uporabnika, da začneš s klepetom</h5>
+    </div>
+  
+    <div id="chat-messages"></div>
+    <div class="vnos-sporocila-vsebnik">
+      <div class="d-flex">
+        <input type="text" id="chat-input" class="form-control" placeholder="Tvoje sporočilo..." disabled>
+        <button id="chat-send-btn" class="btn" disabled>Pošlji</button>
       </div>
-
-      <div class="col-md-8 col-lg-9 d-flex flex-column h-100 bg-white">
-        
-        <div class="p-3 border-bottom d-flex align-items-center bg-white justify-content-between">
-          <div class="d-flex align-items-center">
-            <div class="mini-avatar" style="background-color: #8c1212;">MO</div>
-            <div class="ms-3">
-              <h5 class="mb-0 fw-bold text-dark" style="font-size: 16px;">Mestna občina Maribor</h5>
-              <small class="text-success"><i class="fas fa-circle me-1" style="font-size: 9px;"></i> Uradni profil občine</small>
-            </div>
-          </div>
-          <button class="btn btn-sm btn-outline-secondary d-md-none"><i class="fas fa-arrow-left"></i> Nazaj</button>
-        </div>
-
-        <div class="prikaz-sporocil flex-grow-1">
-          
-          <div class="sporocilo prejeto">
-            <div class="vsebina-mehurcka">
-              Pozdravljeni! Prejeli smo vaš predlog glede sanacije poplavnega območja na Smetanovi ulici. Skupnost ga je zelo dobro podprla.
-              <span class="cas-sporocila text-muted">14:32</span>
-            </div>
-          </div>
-
-          <div class="sporocilo poslano">
-            <div class="vsebina-mehurcka">
-              Pozdravljeni. Me veseli! Ali mi lahko poveste, kdaj približno si bodo pristojne službe ogledale situacijo na terenu?
-              <span class="cas-sporocila text-light">14:35</span>
-            </div>
-          </div>
-
-          <div class="sporocilo prejeto">
-            <div class="vsebina-mehurcka">
-              Vaš predlog je bil predan v obravnavo Uradu za komunalo, promet in prostor. Ogled terena načrtujejo v prihodnjem tednu. O vseh spremembah statusa boste obveščeni na profilu.
-              <span class="cas-sporocila text-muted">14:40</span>
-            </div>
-          </div>
-
-          <div class="sporocilo poslano">
-            <div class="vsebina-mehurcka">
-              Odlično, hvala vam za hiter odgovor!
-              <span class="cas-sporocila text-light">14:42</span>
-            </div>
-          </div>
-
-        </div>
-
-        <div class="vnos-sporocila-vsebnik">
-          <form onsubmit="return false;" class="d-flex gap-2">
-            <input type="text" class="form-control vnos-polje rounded-pill" placeholder="Napiši sporočilo...">
-            <button type="button" class="gumb-dodaj rounded-circle p-0 d-flex align-items-center justify-content-center" style="width: 45px; height: 45px; flex-shrink: 0;">
-              <i class="fas fa-paper-plane" style="font-size: 16px;"></i>
-            </button>
-          </form>
-        </div>
-
-      </div>
-      
+    </div>
+    </div>
   </div>
+
+</div>
+</div>
 </div>
 
 <footer class="glavna-noga">
@@ -165,7 +103,7 @@
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="skripta.js"></script>
+<script src="klepet.js"></script>
 
 </body>
 </html>
