@@ -193,14 +193,17 @@ if (gumbObjavi) {
       .catch(err => alert("Prišlo je do napake na strežniku."));
     }
 
-    if (slikaInput && slikaInput.files && slikaInput.files[0]) {
+    if (slikaInput && slikaInput.files && slikaInput.files.length > 0) {
       const reader = new FileReader();
-      reader.onloadend = function() { posljiNaStrezenik(reader.result); };
+      reader.onloadend = function() { 
+        posljiNaStrezenik(reader.result); 
+      };
       reader.readAsDataURL(slikaInput.files[0]);
     } else {
+      // Če uporabnik sploh ni kliknil ali izbral datoteke, pošljemo privzeto sliko
       posljiNaStrezenik("slike/zacetna.jpg");
     }
-  });
+  }); 
 }
 
 
@@ -211,7 +214,7 @@ if (gumbObjavi) {
 
 window.objaviKomentar = async function(idObjave) {
   const input = document.getElementById(`komentar-input-${idObjave}`);
-  const vsebina = input ? input.value : "";
+  const vsebina = input ? input.value.trim() : "";
   const email = localStorage.getItem('prijavljenEmail');
 
   if (!email) {
@@ -232,8 +235,31 @@ window.objaviKomentar = async function(idObjave) {
     const rez = await response.json();
     
     if (rez.uspeh) {
+      // Poiščemo vnosno polje (textarea) za to specifično objavo
+      const trenutniInput = document.getElementById(`komentar-input-${idObjave}`);
+      if (trenutniInput) {
+        // Pomaknemo se en element nazaj (gor), da najdemo točno tisti div s komentarji, ki je nad textarea
+        const vsebnikKomentarjev = trenutniInput.previousElementSibling;
+        
+        if (vsebnikKomentarjev) {
+          // Če je bil prej izpisan napis "Še ni komentarjev...", ga počistimo
+          if (vsebnikKomentarjev.innerHTML.includes("Še ni komentarjev")) {
+            vsebnikKomentarjev.innerHTML = "";
+          }
+          
+          // Iz emaila potegnemo ime pred @ za lepši začasni prikaz avtorja
+          const zacasniAvtor = email.split('@')[0];
+          
+          // Ustvarimo nov element za komentar in ga dodamo na konec seznama pod naslov Komentarji
+          const novKomentarDiv = document.createElement('div');
+          novKomentarDiv.className = 'mb-1';
+          novKomentarDiv.innerHTML = `<strong>${zacasniAvtor}:</strong> ${vsebina}`;
+          vsebnikKomentarjev.appendChild(novKomentarDiv);
+        }
+      }
+
+      // Počistimo vnosno polje
       input.value = '';
-      window.location.reload(); 
     } else {
       alert(rez.sporocilo);
     }
