@@ -1,35 +1,36 @@
+// =================================================================
+// NALAGANJE PREDLOGOV IZ STREŽNIKA
+// =================================================================
+
 const vsebnikPredlogov = document.getElementById('predlog-uporabnik');
 const vsebnikObcina = document.getElementById('predlogi-obcina');
 
-// -------------------------------------------------------------
-// 1. NALAGANJE IN FILTRIRANJE OBJAV IZ SQL BAZE
-// -------------------------------------------------------------
 if (vsebnikPredlogov || vsebnikObcina) {
-  fetch('/api/predlogi')
+  fetch('/api/vsi-predlogi-uporabnikov')
     .then(res => res.json())
     .then(predlogi => {
 
-      // A) IZPIS NA STRANI UPORABNIKOV (Vse objave, kjer avtor NI ID = 1)
+      // Razdelimo predloge glede na to ali je avtor Občina (ID=1) ali navaden občan
+      const filtriraniUporabniki = predlogi.filter(p => parseInt(p.tk_uporabnikid_uporabnik) !== 1);
+      const filtriranaObcina = predlogi.filter(p => parseInt(p.tk_uporabnikid_uporabnik) === 1);
+
+      sessionStorage.setItem("vsiPredlogi", JSON.stringify(filtriraniUporabniki));
+      sessionStorage.setItem("vsiPredlogiObcine", JSON.stringify(filtriranaObcina));
+
+      // Izpis za stran s predlogi uporabnikov (predlogi.html)
       if (vsebnikPredlogov) {
         vsebnikPredlogov.innerHTML = '';
-        const filtriraniUporabniki = predlogi.filter(p => parseInt(p.tk_uporabnikid_uporabnik) !== 1);
-        
         filtriraniUporabniki.forEach(predlog => {
-          // Všečke beremo direktno iz SQL stolpca 'st_vseckov'
           const trenutniVsecki = predlog.st_vseckov || 0; 
-
           vsebnikPredlogov.innerHTML += generirajKarticoHTML(predlog, trenutniVsecki);
         });
       }
 
-      // B) IZPIS NA STRANI OBČINE (Samo uradne objave, kjer je avtor ID = 1)
+      // Izpis za stran obcina.html (predlogi občine)
       if (vsebnikObcina) {
         vsebnikObcina.innerHTML = '';
-        const filtriranaObcina = predlogi.filter(p => parseInt(p.tk_uporabnikid_uporabnik) === 1);
-        
         filtriranaObcina.forEach(predlog => {
           const trenutniVseckiObcina = predlog.st_vseckov || 0;
-
           vsebnikObcina.innerHTML += generirajKarticoHTML(predlog, trenutniVseckiObcina);
         });
       }
@@ -38,14 +39,25 @@ if (vsebnikPredlogov || vsebnikObcina) {
     .catch(err => console.error("Napaka pri nalaganju predlogov:", err));
 }
 
-// Pomožna funkcija za generiranje izgleda kartice (Gumb za nevšečke je odstranjen)
 function generirajKarticoHTML(predlog, vsecki) {
+  
+  // Preverimo, če je avtor občina (ID=1), izpišemo uradno ime, drugače ime in priimek občana
+  let izpisAvtorja = "";
+  if (parseInt(predlog.tk_uporabnikid_uporabnik) === 1) {
+    izpisAvtorja = "Mestna občina Maribor";
+  } else {
+    izpisAvtorja = `${predlog.avtor_ime || 'Neznani'} ${predlog.avtor_priimek || 'Uporabnik'}`;
+  }
+
   return `
     <div class="col-lg-6">
       <div class="card shadow predlog-card">
-        <img src="${predlog.fotografija || 'slike/zacetna.jpg'}" class="card-img-top predlog-img" alt="slika">
+        <img src="${predlog.fotografija || 'slike/zacetna.jpg'}" 
+             onerror="this.onerror=null; this.src='slike/zacetna.jpg';" 
+             class="card-img-top predlog-img" alt="slika">
         <div class="card-body p-4">
-          <h3 class="fw-bold mb-3">${predlog.naslov}</h3>
+          <h3 class="fw-bold mb-1">${predlog.naslov}</h3>
+          <p class="small fw-bold mb-3">Avtor: ${izpisAvtorja}</p>
           <p class="text-muted">${predlog.opis}</p>
           
           <div class="d-flex gap-3 my-4">
@@ -57,11 +69,14 @@ function generirajKarticoHTML(predlog, vsecki) {
           <hr>
           <h5 class="fw-bold mb-3">Komentarji</h5>
           <div class="mb-3">
-            <div class="komentar"><small class="text-muted">Komentarji bodo na voljo kmalu.</small></div>
+             ${predlog.komentarji && predlog.komentarji.length > 0 ? 
+               predlog.komentarji.map(k => `<div class="mb-1"><strong>${k.avtor}:</strong> ${k.besedilo}</div>`).join('') :
+               `<div class="komentar"><small class="text-muted">Še ni komentarjev. Bodite prvi!</small></div>`
+             }
           </div>
                           
-          <textarea class="form-control comment-box mb-3" rows="3" placeholder="Dodaj komentar..."></textarea>
-          <button class="btn komentar-gumb fw-bold">Objavi komentar</button>
+          <textarea id="komentar-input-${predlog.id_objava}" class="form-control comment-box mb-3" rows="3" placeholder="Dodaj komentar..."></textarea>
+          <button class="btn komentar-gumb fw-bold" onclick="objaviKomentar(${predlog.id_objava})">Objavi komentar</button>
         </div>
       </div>
     </div>
@@ -70,22 +85,21 @@ function generirajKarticoHTML(predlog, vsecki) {
 
 
 
-// -------------------------------------------------------------
-// 2. INICIACIJA ZEMLJEVIDA (Skupni ID: map-predlog)
-// -------------------------------------------------------------
+// =================================================================
+// ZEMLJEVID
+// =================================================================
+
 const mapElement = document.getElementById('map-predlog');
 let izbraneKoordinate = null;
 
 if (mapElement) {
   const map = L.map('map-predlog').setView([46.5547, 15.6459], 13);
-
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
     attribution: '&copy; OpenStreetMap contributors'
   }).addTo(map);
 
   let trenutniMarker = null;
-
   map.on('click', function(e) {
     izbraneKoordinate = e.latlng;
     if (trenutniMarker) {
@@ -98,77 +112,132 @@ if (mapElement) {
 
 
 
-// ----------------------------
-// SKRIPT ZA NOVE PREDLOGE 
-// ----------------------------
+// =================================================================
+// VŠEČKANJE
+// =================================================================
 
-
-
-// ----------------------------
-// SKRIPT ZA VŠEČKE
-// ----------------------------
 window.glasuj = function(id) {
-    // Pošljemo posodobitev na strežnik
     fetch('/api/posodobi-vsecke', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id_objava: id })
     })
     .then(res => res.json())
     .then(data => {
         if (data.uspeh) {
             const span = document.getElementById(`span_${id}_vsecki`);
-            if (span) {
-                // Dinamično povečamo številko na ekranu za 1 brez ponovnega nalaganja strani
-                span.textContent = data.novi_vsecki;
-            }
+            if (span) span.textContent = data.novi_vsecki;
         } else {
             alert("Napaka pri oddaji glasu.");
         }
     })
-    .catch(err => console.error("Napaka pri glasovanju:", err));
+    .catch(err => console.error(err));
 };
 
 
 
-// ----------------------------
-// SKRIPT ZA FILTRIRANJE (Ostane nedotaknjen)
-// ----------------------------
+// =================================================================
+// ODDAJA NOVEGA PREDLOGA
+// =================================================================
 
-const filterUporabnik = document.getElementById("filter-uporabnik");
-if (filterUporabnik) {
-  filterUporabnik.addEventListener("change", function () {
-    let predlogi = JSON.parse(sessionStorage.getItem("vsiPredlogi")) || [];
+const gumbObjavi = document.getElementById('gumb-objavi-predlog');
 
-    if (this.value === "najnovejsi") {
-      predlogi.sort((a, b) => b.datum - a.datum);
+if (gumbObjavi) {
+  gumbObjavi.addEventListener('click', function(e) {
+    e.preventDefault();
+
+    const naslovElement = document.getElementById('naslov-predlog');
+    const opisElement = document.getElementById('opis-predlog');
+    const slikaInput = document.getElementById('slika-predlog');
+    const emailPrijavljenega = localStorage.getItem('prijavljenEmail');
+
+    if (!emailPrijavljenega) {
+      alert("Za oddajo predloga morate biti prijavljeni!");
+      return;
     }
-    else if (this.value === "najstarejsi") {
-      predlogi.sort((a, b) => a.datum - b.datum);
+
+    const naslov = naslovElement.value.trim();
+    const opis = opisElement.value.trim();
+
+    if (!naslov || !opis) {
+      alert("Prosim, izpolnite naslov in opis problema.");
+      return;
     }
-    else if (this.value === "vsecki") {
-      predlogi.sort((a, b) => b.vsecki - a.vsecki);
+
+    function posljiNaStrezenik(slikaBase64) {
+      fetch('/api/dodaj-predlog', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          naslov: naslov,
+          opis: opis,
+          email: emailPrijavljenega,
+          fotografija: slikaBase64
+        })
+      })
+      .then(res => res.json())
+      .then(podatki => {
+        if (podatki.uspeh) {
+          alert(podatki.sporocilo);
+          
+          // Če je objavila občina jo vrže na obcina.html
+          if (podatki.jeObcina) {
+             window.location.href = "obcina.html";
+          } else {
+             window.location.href = "predlogi.html";
+          }
+        } else {
+          alert("Napaka: " + podatki.sporocilo);
+        }
+      })
+      .catch(err => alert("Prišlo je do napake na strežniku."));
     }
-    prikaziPredlogeUporabnik(predlogi);
+
+    if (slikaInput && slikaInput.files && slikaInput.files[0]) {
+      const reader = new FileReader();
+      reader.onloadend = function() { posljiNaStrezenik(reader.result); };
+      reader.readAsDataURL(slikaInput.files[0]);
+    } else {
+      posljiNaStrezenik("slike/zacetna.jpg");
+    }
   });
 }
 
-const filterObcina = document.getElementById("filter-obcina");
-if (filterObcina) {
-  filterObcina.addEventListener("change", function () {
-    let predlogi = JSON.parse(sessionStorage.getItem("vsiPredlogiObcine")) || [];
 
-    if (this.value === "najnovejsi") {
-      predlogi.sort((a, b) => b.datum - a.datum);
+
+// =================================================================
+// OBJAVA NOVEGA KOMENTARJA
+// =================================================================
+
+window.objaviKomentar = async function(idObjave) {
+  const input = document.getElementById(`komentar-input-${idObjave}`);
+  const vsebina = input ? input.value : "";
+  const email = localStorage.getItem('prijavljenEmail');
+
+  if (!email) {
+    alert("Za komentiranje morate biti prijavljeni!");
+    return;
+  }
+  if (!vsebina) {
+    alert("Vpišite besedilo komentarja!");
+    return;
+  }
+
+  try {
+    const response = await fetch('/api/dodaj-komentar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ vsebina, idObjaves: idObjave, email })
+    });
+    const rez = await response.json();
+    
+    if (rez.uspeh) {
+      input.value = '';
+      window.location.reload(); 
+    } else {
+      alert(rez.sporocilo);
     }
-    else if (this.value === "najstarejsi") {
-      predlogi.sort((a, b) => a.datum - b.datum);
-    }
-    else if (this.value === "vsecki") {
-      predlogi.sort((a, b) => b.vsecki - a.vsecki);
-    }
-    prikaziPredlogeObcina(predlogi);
-  });
-}
+  } catch (err) {
+    console.error("Napaka pri pošiljanju komentarja:", err);
+  }
+};
