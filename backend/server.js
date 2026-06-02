@@ -188,6 +188,8 @@ app.post('/api/dodaj-komentar', async (req, res) => {
     }
 });
 
+
+
 app.post('/api/dodaj-predlog', async (req, res) => {
     const { naslov, opis, email, fotografija } = req.body;
     if (!naslov || !opis || !email) return res.status(400).json({ uspeh: false });
@@ -217,8 +219,8 @@ app.post('/api/dodaj-predlog', async (req, res) => {
         let imeNoveZnacke = null;
         const countRes = await pool.query('SELECT COUNT(*) FROM objava WHERE tk_uporabnikid_uporabnik = $1', [idUporabnika]);
         const stObjav = parseInt(countRes.rows[0].count);
-
-        // Preveri mejnik za "Idejni vodja" (ID 1)
+        
+// Preveri mejnik za "Idejni vodja" (ID 1)
         if (stObjav === 1) {
             const znackaRes = await pool.query("SELECT id_znacka FROM značka WHERE naziv = 'Idejni vodja' LIMIT 1");
             if (znackaRes.rows.length > 0) {
