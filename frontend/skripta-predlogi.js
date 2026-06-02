@@ -11,8 +11,13 @@ if (vsebnikPredlogov || vsebnikObcina) {
     .then(predlogi => {
 
       // Razdelimo predloge glede na to ali je avtor Občina (ID=1) ali navaden občan
-      const filtriraniUporabniki = predlogi.filter(p => parseInt(p.tk_uporabnikid_uporabnik) !== 1);
-      const filtriranaObcina = predlogi.filter(p => parseInt(p.tk_uporabnikid_uporabnik) === 1);
+      const filtriraniUporabniki = predlogi.filter(p => 
+      parseInt(p.tk_uporabnikid_uporabnik) !== 1 && parseInt(p.tk_status_pobudid_status_pobud) === 1
+      );
+
+      const filtriranaObcina = predlogi.filter(p => 
+      parseInt(p.tk_uporabnikid_uporabnik) === 1 && parseInt(p.tk_status_pobudid_status_pobud) === 1
+      );
 
       sessionStorage.setItem("vsiPredlogi", JSON.stringify(filtriraniUporabniki));
       sessionStorage.setItem("vsiPredlogiObcine", JSON.stringify(filtriranaObcina));
