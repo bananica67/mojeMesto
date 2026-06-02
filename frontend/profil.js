@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
         naloziUporabnikeZaAdmina();
     }
     
-    if (document.getElementById('seznamPredlogov') && window.location.pathname.includes('admin')) {
+    if (document.getElementById('seznamPredlogov')) {
         // Zaženemo samo, če smo na admin strani, na profilu se nalaga dinamično spodaj
         naloziPredlogeZaAdmina();
     }
@@ -111,10 +111,10 @@ function odjaviUporabnika() {
 // =================================================================
 
 async function naloziMojePredloge() {
-    const seznamPredlogovOznaka = document.getElementById("seznamPredlogov");
+    const seznamPredlogovOznaka = document.getElementById("seznamUporabnikovihPredlogov");
     const stevilkaPredlogov = document.getElementById("stevilkaPredlogov");
     
-    if (!seznamPredlogovOznaka || window.location.pathname.includes('admin')) return;
+    if (!seznamPredlogovOznaka) return;
 
     const email = localStorage.getItem("prijavljenEmail");
     if (!email) {
