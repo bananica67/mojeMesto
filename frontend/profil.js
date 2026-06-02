@@ -9,7 +9,8 @@ document.addEventListener("DOMContentLoaded", () => {
         naloziUporabnikeZaAdmina();
     }
     
-    if (document.getElementById('seznamPredlogov')) {
+    if (document.getElementById('seznamPredlogov') && window.location.pathname.includes('admin')) {
+        // Zaženemo samo, če smo na admin strani, na profilu se nalaga dinamično spodaj
         naloziPredlogeZaAdmina();
     }
 });
@@ -82,11 +83,19 @@ function prikaziPodatke() {
         });
     }
 
+    // Poslušalci dogodkov za klik na zavihke (za osveževanje podatkov)
     const znackeTab = document.getElementById("znacke-tab");
     if (znackeTab) {
         znackeTab.addEventListener("click", naloziMojeZnacke);
     }
+
+    const predlogiTab = document.getElementById("predlogi-tab");
+    if (predlogiTab) {
+        predlogiTab.addEventListener("click", naloziMojePredloge);
+    }
     
+    // Začetni prenos vseh podatkov ob nalaganju strani
+    naloziMojePredloge();
     naloziMojeZnacke();
 }
 
@@ -97,6 +106,108 @@ function odjaviUporabnika() {
 }
 
 
+// =================================================================
+// FUNKCIJA ZA PREDLOGE
+// =================================================================
+
+async function naloziMojePredloge() {
+    const seznamPredlogovOznaka = document.getElementById("seznamPredlogov");
+    const stevilkaPredlogov = document.getElementById("stevilkaPredlogov");
+    
+    if (!seznamPredlogovOznaka || window.location.pathname.includes('admin')) return;
+
+    const email = localStorage.getItem("prijavljenEmail");
+    if (!email) {
+        seznamPredlogovOznaka.innerHTML = `<tr><td colspan="5" class="text-center text-danger small py-3">Uporabnik ni prijavljen.</td></tr>`;
+        return;
+    }
+
+    try {
+        const odziv = await fetch(`/api/moji-predlogi/${email}`);
+        const predlogi = await odziv.json();
+
+        if (stevilkaPredlogov) {
+            stevilkaPredlogov.textContent = `(${predlogi.length})`;
+        }
+
+        if (predlogi.length === 0) {
+            seznamPredlogovOznaka.innerHTML = `
+                <tr>
+                    <td colspan="5" class="text-center py-4 text-muted mb-0">
+                        Trenutno še niste oddali nobenega predloga. Delite svoje ideje z nami!
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        seznamPredlogovOznaka.innerHTML = "";
+
+        predlogi.forEach((predlog) => {
+            const vrstica = document.createElement('tr');
+            vrstica.id = `predlog-row-${predlog.id_objava}`;
+            
+            let slikaUrl = predlog.fotografija || 'slike/zacetna.jpg';
+
+            // Kratka obrezava opisa, da ne raztegne vrstice preveč
+            const krajsiOpis = predlog.opis.length > 60 ? predlog.opis.substring(0, 60) + "..." : predlog.opis;
+
+            // Struktura vrstice je enaka adminovi: slika, naslov, opis namesto avtorja, všečki in gumb za brisanje
+            vrstica.innerHTML = `
+                <td>
+                    <img src="${slikaUrl}" 
+                         onerror="this.onerror=null; this.src='slike/zacetna.jpg';" 
+                         class="img-fluid rounded-3" 
+                         style="height: 60px; width: 80px; object-fit: cover;">
+                </td>
+                <td class="fw-bold text-uppercase" style="font-size: 14px;">${predlog.naslov}</td>
+                <td class="text-muted small">${krajsiOpis}</td>
+                <td>
+                    <span class="badge bg-success">
+                        <i class="fas fa-thumbs-up me-1"></i> ${predlog.st_vseckov || 0}
+                    </span>
+                </td>
+                <td>
+                    <button class="btn btn-sm btn-outline-danger w-100" onclick="izbrisiPredlog(${predlog.id_objava})">
+                        <i class="fas fa-trash-alt me-1"></i> Izbriši
+                    </button>
+                </td>
+            `;
+            seznamPredlogovOznaka.appendChild(vrstica);
+        });
+    } catch (napaka) {
+        console.error("Napaka pri nalaganju predlogov:", napaka);
+        seznamPredlogovOznaka.innerHTML = `<tr><td colspan="5" class="text-center text-danger small py-3">Napaka pri povezavi s strežnikom.</td></tr>`;
+    }
+}
+
+// Funkcija za brisanje predloga
+async function izbrisiPredlog(idObjave) {
+    if (!idObjave) {
+        alert("Napaka: Neveljaven ID predloga.");
+        return;
+    }
+
+    if (confirm("Ali ste prepričani, da želite trajno odstraniti ta predlog?")) {
+        try {
+            const odziv = await fetch(`/api/izbrisi-predlog/${idObjave}`, {
+                method: 'DELETE'
+            });
+            const data = await odziv.json();
+
+            if (odziv.ok && data.uspeh) {
+                alert("Predlog je bil uspešno izbrisan.");
+                naloziMojePredloge(); // Ponovno osvežimo profil
+            } else {
+                alert("Napaka pri brisanju predloga.");
+            }
+        } catch (napaka) {
+            console.error("Napaka pri brisanju:", napaka);
+            alert("Težava s povezavo do strežnika.");
+        }
+    }
+}
+
 
 // =================================================================
 // FUNKCIJA ZA ZNAČKE
@@ -104,6 +215,7 @@ function odjaviUporabnika() {
 
 async function naloziMojeZnacke() {
     const vsebnik = document.getElementById("seznamZnack");
+    const stevilkaZnacke = document.getElementById("stevilkaZnack");
     if (!vsebnik) return;
 
     const email = localStorage.getItem("prijavljenEmail"); 
@@ -112,6 +224,10 @@ async function naloziMojeZnacke() {
     try {
         const odziv = await fetch(`/api/moje-znacke/${email}`);
         const znacke = await odziv.json();
+
+        if (stevilkaZnacke) {
+            stevilkaZnacke.textContent = `(${znacke.length})`;
+        }
 
         if (znacke.length === 0) {
             vsebnik.innerHTML = `
@@ -125,13 +241,16 @@ async function naloziMojeZnacke() {
         vsebnik.innerHTML = ""; 
         
         znacke.forEach(znacka => {
-            let ikona = "fa-award";
-            if (znacka.naziv.toLowerCase().includes("iniciator")) ikona = "fa-seedling";
-            if (znacka.naziv.toLowerCase().includes("aktiven")) ikona = "fa-fire";
-            if (znacka.naziv.toLowerCase().includes("debatni")) ikona = "fa-comments";
+            let ikona = "fa-award"; 
+            const nazivMali = znacka.naziv.toLowerCase();
+
+            if (nazivMali.includes("vodja")) ikona = "fa-crown";
+            if (nazivMali.includes("glas")) ikona = "fa-shield-alt";
+            if (nazivMali.includes("občan")) ikona = "fa-comments";
+            if (nazivMali.includes("steber")) ikona = "fa-lightbulb";
 
             vsebnik.innerHTML += `
-                <div class="col-6 col-sm-4">
+                <div class="col-6 col-sm-4 mb-3">
                   <div class="znacka-kartica shadow-sm p-3 text-center rounded bg-white h-100" style="border: 2px solid #ffd700; transition: transform 0.2s;">
                     <div class="znacka-ikona mb-2" style="font-size: 26px; color: #ffd700;"><i class="fas ${ikona}"></i></div>
                     <h6 class="fw-bold mb-1" style="font-size: 14px; color: #000;">${znacka.naziv}</h6>
@@ -145,8 +264,6 @@ async function naloziMojeZnacke() {
         vsebnik.innerHTML = `<div class="col-12 text-center text-danger small py-3">Napaka pri povezavi s strežnikom.</div>`;
     }
 }
-
-
 
 // =================================================================
 // UPRAVLJANJE UPORABNIKOV ZA ADMINA
@@ -259,10 +376,8 @@ function naloziPredlogeZaAdmina() {
                 vrstica.id = `predlog-row-${predlog.id_objava}`;
                 const sID = parseInt(predlog.tk_status_pobudid_status_pobud) || 1; 
                 
-                // Če v bazi ni emaila (ker npr. ni avtorja), izpišemo 'Neznano'
                 const izpisanEmail = predlog.avtor_email || "Neznano";
 
-                // Dodan onerror mehanizem za sliko in zamenjan id avtorja z avtor_email (Točka 1 in 2)
                 vrstica.innerHTML = `
                     <td>
                         <img src="${predlog.fotografija || 'slike/zacetna.jpg'}" 

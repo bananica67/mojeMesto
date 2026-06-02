@@ -88,12 +88,12 @@
   <ul class="nav nav-tabs mb-4" id="profileTabs" role="tablist">
     <li class="nav-item" role="presentation">
       <button class="nav-link active" id="predlogi-tab" data-bs-toggle="tab" data-bs-target="#predlogi" type="button" role="tab">
-      <i class="fas fa-lightbulb me-2"></i>Moji Predlogi (2)
+      <i class="fas fa-lightbulb me-2"></i>Moji Predlogi <span id="stevilkaPredlogov">(...)</span>
       </button>
     </li>
     <li class="nav-item" role="presentation">
       <button class="nav-link" id="znacke-tab" data-bs-toggle="tab" data-bs-target="#znacke" type="button" role="tab">
-      <i class="fas fa-award me-2"></i>Značke (3)
+      <i class="fas fa-award me-2"></i>Značke <span id="stevilkaZnack">(...)</span>
       </button>
     </li>
   </ul>
@@ -103,55 +103,39 @@
             
   <!-- ZAVIHEK 1: PREDLOGI -->
   <div class="tab-pane fade show active" id="predlogi" role="tabpanel">
-  <div class="row g-3">
-                
-  <div class="col-md-6">
-    <div class="card predlog-card shadow-sm h-100">
-    <img src="slike/zacetna.jpg" class="card-img-top predlog-img" alt="Poplava" onerror="this.src='https://images.unsplash.com/photo-1541888946425-d81bb19240f5?q=80&w=500&auto=format&fit=cover'">
-    <div class="card-body">
-      <h5 class="text-uppercase fw-bold mb-2" style="color: #000; font-size: 16px;">Poplava na Smetanovi</h5>
-      <p class="text-muted small text-truncate">Vsakič, ko malo bolj dežuje, se na Smetanovi pri FERI-ju naredi pravo jezero...</p>
-      <div class="d-flex justify-content-between align-items-center mt-3">
-        <span class="badge bg-success"><i class="fas fa-thumbs-up me-1"></i> 42</span>
-        <span class="text-muted small">Status: V obravnavi</span>
-      </div>
-    </div>
-    </div>
-  </div>
-
-  <div class="col-md-6">
-    <div class="card predlog-card shadow-sm h-100">
-    <img src="slike/zacetna.jpg" class="card-img-top predlog-img" alt="Cesta" onerror="this.src='https://images.unsplash.com/photo-1515162305285-0293e4767cc2?q=80&w=500&auto=format&fit=cover'">
-    <div class="card-body">
-      <h5 class="text-uppercase fw-bold mb-2" style="color: #000; font-size: 16px;">Obupna cesta v Melju</h5>
-      <p class="text-muted small text-truncate">A ste videli te luknje v Melju? Vsak dan se vozim tam v službo in samo čakam...</p>
-      <div class="d-flex justify-content-between align-items-center mt-3">
-        <span class="badge bg-success"><i class="fas fa-thumbs-up me-1"></i> 18</span>
-        <span class="text-muted small">Status: Oddano</span>
-      </div>
-    </div>
-    </div>
-  </div>
-
+  <div class="table-responsive" id="tabelaPredlogovKontejner">
+    
+  <table class="table table-hover align-middle">
+  <thead class="table-light">   
+    <tr>
+      <th style="width: 12%;">Slika</th>
+      <th style="width: 30%;">Naslov</th>
+      <th style="width: 25%;">Opis</th> 
+      <th style="width: 15%;">Glasovi</th>
+      <th style="width: 20%;">Izbriši</th>
+    </tr>
+  </thead>
+  <tbody id="seznamPredlogov">
+    <tr>
+      <td colspan="5" class="text-center py-4">
+      <span class="text-muted small">Nalaganje vaših predlogov...</span>
+      </td>
+     </tr>
+  </tbody>
+  </table>
+  
   </div>
   </div>
 
   <!-- ZAVIHEK 2: ZNAČKE -->
   <div class="tab-pane fade" id="znacke" role="tabpanel">
-  <div class="row g-3" id="seznamZnack">
-                
-  <div class="col-12 text-center py-4">
+    <div class="row g-3" id="seznamZnack">
+                  
+    <div class="col-12 text-center py-4">
     <span class="text-muted small">Nalaganje vaših značk...</span>
-  </div>
+    </div>
 
-  </div>
-  </div>
-
-  </div>
-  </div>
-
-  </div>
-  </div>
+    </div>
   </div>
 
 </div>
@@ -176,6 +160,10 @@
       </div>
     </div>
   </div>
+</div>
+
+</div>
+</div>
 </div>
 
 <footer class="glavna-noga">

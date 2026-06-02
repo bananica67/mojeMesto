@@ -3,8 +3,6 @@ const express = require("express");
 const { Pool } = require("pg");
 const app = express();
 
-
-
 // =================================================================
 // POVEZAVA Z BAZO
 // =================================================================
@@ -22,8 +20,6 @@ app.use(express.json({ limit: '50mb' }));
 
 app.use(express.static(path.resolve(__dirname, '../frontend')));
 
-
-
 // =================================================================
 // REGISTRACIJA
 // =================================================================
@@ -33,7 +29,6 @@ app.post('/registracija', async (req, res) => {
     const vnosTelefon = telefon ? telefon : null;
 
     try {
-        // KOMENTAR: Vsi ključi in tabele so v malih črkah (tk_tip_uporabnikaid_tip_uporabnika)
         const queryText = `
             INSERT INTO uporabnik (ime, priimek, geslo, telefon, email, datum_registracije, tk_tip_uporabnikaid_tip_uporabnika)
             VALUES ($1, $2, $3, $4, $5, CURRENT_DATE, 2)
@@ -53,8 +48,6 @@ app.post('/registracija', async (req, res) => {
     }
 });
 
-
-
 // =================================================================
 // PRIJAVA
 // =================================================================
@@ -63,7 +56,6 @@ app.post('/prijava', async (req, res) => {
     const { email, geslo } = req.body;
 
     try {
-        // KOMENTAR: Preverjanje uporabnika z malimi črkami tabel
         const userCheck = await pool.query('SELECT * FROM uporabnik WHERE email = $1', [email]);
         if (userCheck.rows.length === 0) {
             return res.json({ uspeh: false, sporocilo: 'Uporabnik s tem e-mailom ne obstaja!' });
@@ -89,8 +81,6 @@ app.post('/prijava', async (req, res) => {
     }
 });
 
-
-
 // =================================================================
 // SEZNAM VSEH UPORABNIKOV ZA ADMINA
 // =================================================================
@@ -104,8 +94,6 @@ app.get('/api/vsi-uporabniki', async (req, res) => {
         return res.status(500).json({ sporocilo: 'Napaka na strežniku.' });
     }
 });
-
-
 
 // =================================================================
 // SPREMINJANJE VLOGE UPORABNIKA
@@ -125,15 +113,12 @@ app.post('/api/posodobi-vlogo', async (req, res) => {
     }
 });
 
-
-
 // =================================================================
 // SEZNAM VSEH PREDLOGOV ZA ADMINA
 // =================================================================
 
 app.get('/api/vsi-predlogi', async (req, res) => {
     try {
-        //Dodan LEFT JOIN z uporabnikom, da admin dobi mail avtorja
         const vsiPredlogi = await pool.query(`
             SELECT o.*, u.email AS avtor_email 
             FROM objava o
@@ -146,8 +131,6 @@ app.get('/api/vsi-predlogi', async (req, res) => {
         return res.status(500).json({ sporocilo: 'Napaka na strežniku.' });
     }
 });
-
-
 
 // =================================================================
 // POSODABLJANJE STATUSA PREDLOGA
@@ -167,15 +150,12 @@ app.post('/api/posodobi-status', async (req, res) => {
     }
 });
 
-
-
 // =================================================================
 // PRIDOBIVANJE PREDLOGOV
 // =================================================================
 
 app.get('/api/vsi-predlogi-uporabnikov', async (req, res) => {
     try {
-        // Potegnemo še ime in priimek avtorja ter tk_status_pobudid_status_pobud
         const objaveRez = await pool.query(`
             SELECT o.id_objava, o.naslov, o.opis, o.fotografija, o.st_vseckov, 
                    o.tk_uporabnikid_uporabnik, o.tk_status_pobudid_status_pobud,
@@ -204,8 +184,6 @@ app.get('/api/vsi-predlogi-uporabnikov', async (req, res) => {
     }
 });
 
-
-
 // =================================================================
 // DODAJANJE NOVEGA KOMENTARJA
 // =================================================================
@@ -231,12 +209,9 @@ app.post('/api/dodaj-komentar', async (req, res) => {
     }
 });
 
-
-
 // =================================================================
-// ODDAJA NOVEGA PREDLOGA
+// ODDAJA NOVEGA PREDLOGA (Z OKREPLJENIM SISTEMOM ZNAČK)
 // =================================================================
-
 app.post('/api/dodaj-predlog', async (req, res) => {
     const { naslov, opis, email, fotografija } = req.body;
 
@@ -251,14 +226,15 @@ app.post('/api/dodaj-predlog', async (req, res) => {
         }
         const idUporabnika = userCheck.rows[0].id_uporabnik;
 
-        // KOMENTAR: Če objavlja admin (Občina Maribor, ID=1), dobi status "V obravnavi" (ID=2), sicer pa "Oddano" (ID=1)
         let statusId = 1; 
         if (parseInt(idUporabnika) === 1) {
             statusId = 2; // V obravnavi
         }
 
-        const odlocanjeRes = await pool.query("SELECT id_tip_odlocanja FROM tip_odlocanja WHERE naziv = 'Prijava težav v lokalnem okolju' LIMIT 1");
-        const odlocanjeId = odlocanjeRes.rows[0].id_tip_odlocanja;
+        // POPRAVEK: Izognemo se napačnemu imenu stolpca tako, da vzamemo vse stolpce s '*'
+        const odlocanjeRes = await pool.query("SELECT * FROM tip_odlocanja WHERE naziv = 'Prijava težav v lokalnem okolju' LIMIT 1");
+        // Ker ne vemo točnega imena stolpca, dinamično preberemo prvo lastnost vrstice
+        const odlocanjeId = Object.values(odlocanjeRes.rows[0])[0];
 
         const vnosObjaveQuery = `
             INSERT INTO objava (
@@ -277,7 +253,9 @@ app.post('/api/dodaj-predlog', async (req, res) => {
             statusId
         ]);
 
-        // Vrnemo informacijo, ali je objavila občina, da frontend ve kam preusmeriti
+        // Pokličemo varno funkcijo za preštevanje in podelitev pravih značk!
+        await preveriInPodeliZnacko(email);
+
         return res.json({
             uspeh: true,
             jeObcina: parseInt(idUporabnika) === 1,
@@ -285,12 +263,10 @@ app.post('/api/dodaj-predlog', async (req, res) => {
         });
 
     } catch (err) {
-        console.error(err);
+        console.error("Napaka na strežniku pri oddaji predloga:", err);
         return res.status(500).json({ uspeh: false, sporocilo: "Napaka na strežniku: " + err.message });
     }
 });
-
-
 
 // =================================================================
 // VŠEČKI
@@ -299,13 +275,12 @@ app.post('/api/dodaj-predlog', async (req, res) => {
 app.post('/api/posodobi-vsecke', async (req, res) => {
     const { id_objava } = req.body;
     try {
-        // Posodobimo število všečkov v bazi za določeno objavo
-        const rezultat = await pool.query(
+        const resultado = await pool.query(
             'UPDATE objava SET st_vseckov = COALESCE(st_vseckov, 0) + 1 WHERE id_objava = $1 RETURNING st_vseckov',
             [parseInt(id_objava)]
         );
         
-        return res.json({ uspeh: true, novi_vsecki: rezultat.rows[0].st_vseckov });
+        return res.json({ uspeh: true, novi_vsecki: resultado.rows[0].st_vseckov });
     } catch (err) {
         console.error("Napaka pri posodabljanju všečkov na strežniku:", err);
         return res.status(500).json({ uspeh: false });
@@ -315,30 +290,127 @@ app.post('/api/posodobi-vsecke', async (req, res) => {
 
 
 // =================================================================
-// ZNAČKE
+// PREDLOGI ZA UPORABNIKA
 // =================================================================
 
-app.get('/api/moje-znacke/:email', async (req, res) => {
+app.get('/api/moji-predlogi/:email', async (req, res) => {
     const { email } = req.params;
     try {
-        const userCheck = await pool.query('SELECT id_uporabnik FROM uporabnik WHERE email = $1', [email]);
-        if (userCheck.rows.length === 0) return res.status(404).json({ sporocilo: 'Uporabnik ne obstaja.' });
-        const idUporabnik = userCheck.rows[0].id_uporabnik;
+        // Poiščemo samo objave tipa 'Predlog', ki pripadajo uporabniku s tem emailom
+        const uporabnikoviPredlogi = await pool.query(`
+            SELECT o.id_objava, o.naslov, o.opis, o.fotografija, o.st_vseckov, 
+                   s.naziv AS status
+            FROM objava o
+            JOIN uporabnik u ON o.tk_uporabnikid_uporabnik = u.id_uporabnik
+            LEFT JOIN status_pobud s ON o.tk_status_pobudid_status_pobud = s.id_status_pobud
+            WHERE u.email = $1 AND o.tip_objave = 'Predlog'
+            ORDER BY o.id_objava DESC
+        `, [email]);
 
-        const znackeQuery = `
-            SELECT z.naziv, z.opis
-            FROM značka z
-            JOIN uporabnik_znacka uz ON z.id_znacka = uz.tk_značkaid_znacka
-            WHERE uz.tk_uporabnikid_član = $1
-        `;
-        const rezZnacke = await pool.query(znackeQuery, [idUporabnik]);
-        return res.json(rezZnacke.rows);
+        return res.json(uporabnikoviPredlogi.rows);
     } catch (err) {
+        console.error("Napaka pri pridobivanju uporabnikovih predlogov:", err);
         return res.status(500).json({ sporocilo: 'Napaka na strežniku.' });
     }
 });
 
+// =================================================================
+// BRISANJE PREDLOGA ZA UPORABNIKA
+// =================================================================
 
+app.delete('/api/izbrisi-predlog/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        // Najprej izbrišemo komentarje, vezane na to objavo, da ne kršimo tujih ključev (Foreign Key)
+        await pool.query('DELETE FROM komentar WHERE tk_objavaid_objava = $1', [parseInt(id)]);
+        
+        // Nato izbrišemo še samo objavo
+        const rezultat = await pool.query('DELETE FROM objava WHERE id_objava = $1', [parseInt(id)]);
+
+        if (rezultat.rowCount > 0) {
+            return res.json({ uspeh: true });
+        } else {
+            return res.status(404).json({ uspeh: false, sporocilo: 'Predlog ne obstaja.' });
+        }
+    } catch (err) {
+        console.error("Napaka pri brisanju predloga:", err);
+        return res.status(500).json({ uspeh: false, sporocilo: 'Napaka na strežniku.' });
+    }
+});
+
+
+
+// =================================================================
+// PRIDOBIVANJE ZNAČK ZA PROFIL
+// =================================================================
+
+app.get('/api/moje-znacke/:email', async (req, res) => {
+    const { email } = req.params;
+
+    try {
+        const userCheck = await pool.query('SELECT id_uporabnik FROM uporabnik WHERE email = $1', [email]);
+        
+        if (userCheck.rows.length === 0) {
+            return res.json([]); 
+        }
+        
+        const idUporabnika = userCheck.rows[0].id_uporabnik;
+
+        const znackeQuery = `
+            SELECT z.naziv, z.opis 
+            FROM uporabnik_znacka uz
+            JOIN značka z ON uz.tk_značkaid_znacka = z.id_znacka
+            WHERE uz.tk_uporabnikid_član = $1
+            ORDER BY uz.datum_prejetja DESC
+        `;
+        
+        const rez = await pool.query(znackeQuery, [idUporabnika]);
+        return res.json(rez.rows);
+
+    } catch (err) {
+        console.error("Napaka pri branju značk iz baze:", err);
+        return res.status(500).json({ napaka: "Napaka na strežniku." });
+    }
+});
+
+// =================================================================
+// LOGIKA ZA DINAMIČNO PODELJEVANJE ZNAČK
+// =================================================================
+
+async function preveriInPodeliZnacko(email) {
+    try {
+        if (!email) return;
+
+        const userCheck = await pool.query('SELECT id_uporabnik FROM uporabnik WHERE email = $1', [email]);
+        if (userCheck.rows.length === 0) return;
+        const idUporabnika = userCheck.rows[0].id_uporabnik;
+
+        const stetjePredlogov = await pool.query(
+            "SELECT COUNT(*) FROM objava WHERE tk_uporabnikid_uporabnik = $1 AND tip_objave = 'Predlog'",
+            [idUporabnika]
+        );
+        const skupnoPredlogov = parseInt(stetjePredlogov.rows[0].count);
+
+        const znackeMap = { 1: 1, 5: 2, 10: 3, 20: 4 };
+        const idZnackeZaPodelitev = znackeMap[skupnoPredlogov];
+
+        if (idZnackeZaPodelitev) {
+            const imaZnacko = await pool.query(
+                "SELECT 1 FROM uporabnik_znacka WHERE tk_uporabnikid_član = $1 AND tk_značkaid_znacka = $2",
+                [idUporabnika, idZnackeZaPodelitev]
+            );
+            
+            if (imaZnacko.rows.length === 0) {
+                await pool.query(
+                    "INSERT INTO uporabnik_znacka (datum_prejetja, tk_uporabnikid_član, tk_značkaid_znacka) VALUES (CURRENT_DATE, $1, $2)",
+                    [idUporabnika, idZnackeZaPodelitev]
+                );
+            }
+        }
+    } catch (err) {
+        console.error("Napaka v funkciji za značke:", err);
+    }
+}
 
 app.listen(3000, () => {
   console.log("Strežnik deluje na http://localhost:3000");
