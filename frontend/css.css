@@ -6,7 +6,9 @@ body{
   font-size:15px; 
 }
 
-/*header */
+
+
+/* HEADER */
 .glava-strani{
   width:100%;
   background:#8c1212;
@@ -18,7 +20,9 @@ body{
   margin:auto;
 }
 
-/*navigacija */
+
+
+/* NAVIGACIJA */
 .glavna-navigacija{
   min-height:70px;
 }
@@ -31,7 +35,9 @@ body{
   letter-spacing:3px;
 }
 
-/*meni */
+
+
+/* MENI */
 .gumb-meni {
   background-color: #d5d5d5;
   border: #570303 solid 2px!important;
@@ -49,7 +55,9 @@ body{
   color: #c4c4c4 !important;
 }
 
-/*uvodna slika */
+
+
+/* UVODNA SLIKA */
 .uvodna-slika{
   width:100%;
   height:600px;
@@ -87,7 +95,7 @@ body{
   padding: 10px;
 }
 
-/*main */
+/* MAIN */
 main{
   padding:30px;
   margin: 25px auto;
@@ -122,7 +130,9 @@ h4{
   font-size: 16px;
 }
 
-/*informacije */
+
+
+/* INFORMACIJE - INDEX */
 .info-platforma{
   background:#e8e8e8;
   margin-bottom:30px;
@@ -145,7 +155,9 @@ h4{
   background: #e8e8e8;
 }
 
-/*informacije - dva */
+
+
+/* INFORMACIJE PODROBNO - INDEX */
 .info {
   display: flex;
   align-items: center;
@@ -172,7 +184,9 @@ h4{
   padding: 20px;
 }
 
-/*informacije - prijava */
+
+
+/* INFORMACIJE PRIJAVA - INDEX */
 .info-prijava{
   background:#e0dfdf;
   margin-bottom:30px;
@@ -190,7 +204,9 @@ h4{
   padding: 20px;
 }
 
-/*gumb_pod_informacijami */
+
+
+/* GUMB PRIJAVA - INDEX */
 .gumb-prijava {
   display: inline-block;
   padding: 10px 25px;
@@ -216,19 +232,16 @@ h4{
   margin-top: 20px;
 }
 
-/*registracija in prijava */
-.form-check-input:checked {
-  background-color: #cb2121;
-  border-color: #cb2121;
+
+
+/* REGISTRACIJA IN PRIJAVA */
+#gumb-registriraj {
+  margin-top: 40px;
 }
 
-.form-check-input:focus, .form-control:focus, .form-select:focus {
-  border-color: #cb2121;
-  box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
-}
 
-/*profil uporabnika*/
-/* Prilagojeni dodatki */
+
+/* PROFIL UPORABNIKA */
 .avatar-prikaz {
   width: 120px;
   height: 120px;
@@ -309,7 +322,9 @@ h4{
   color: #ffffff;
 }
 
-/*profil obcine*/
+
+
+/* PROFIL OBČINE */
 .admin-avatar {
   width: 120px;
   height: 120px;
@@ -366,118 +381,183 @@ h4{
   color: #ffffff;
 }
 
-/*zasebni klepet*/
+
+
+/* ZASEBNI KLEPET */
 .klepet-okno {
-  height: 600px;
-  background-color: #ffffff;
-  border-radius: 15px;
-  overflow: hidden;
+  background: white;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  margin: 20px;
+  max-height: 600px;
 }
-    
-/* Seznam aktivnih klepetov */
+
 .seznam-uporabnikov {
-  background-color: #f8f9fa;
-  border-right: 2px solid #e0dfdf;
-  height: 100%;
+  width: 280px;
+  border-right: 1px solid #e0e0e0;
+  background: white;
   overflow-y: auto;
 }
-    
-.uporabnik-kartica {
-  padding: 15px;
-  border-bottom: 1px solid #e0dfdf;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-    
-.uporabnik-kartica:hover {
-  background-color: #f1f3f5;
-}
-    
-.uporabnik-kartica.aktivna {
-  background-color: #f4f1f1;
-  border-left: 4px solid #8c1212;
-}
 
-.mini-avatar {
-  width: 45px;
-  height: 45px;
-  border-radius: 50%;
-  background-color: #cb2121;
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  font-size: 16px;
-}
-
-/* območje za sporočila */
 .prikaz-sporocil {
-  height: 470px;
-  overflow-y: auto;
-  background-color: #f4f1f1;
-  padding: 20px;
-}
-
-/* Mehurčki za sporočila */
-.sporocilo {
-  margin-bottom: 15px;
-  max-width: 75%;
+  flex: 1;
   display: flex;
+  flex-direction: column;
+  background: white;
 }
 
-/* poslana sporočila */
+.del-glava {
+  background: #f9f9f9;
+  border-bottom: 1px solid #e0e0e0;
+  padding: 1rem;
+}
+
+.del-glava h5 {
+  margin: 0;
+  color: #333;
+  font-weight: 600;
+}
+
+#chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.sporocilo {
+  display: flex;
+  margin-bottom: 0.5rem;
+  animation: slideIn 0.3s ease-in-out;
+}
+  
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 .sporocilo.poslano {
-  margin-left: auto;
   justify-content: flex-end;
+}
+
+.sporocilo.prejeto {
+  justify-content: flex-start;
+}
+
+.vsebina-mehurcka {
+  max-width: 70%;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  word-wrap: break-word;
+  font-size: 14px;
+  line-height: 1.4;
 }
 
 .sporocilo.poslano .vsebina-mehurcka {
   background-color: #8c1212;
   color: white;
-  border-radius: 15px 15px 0px 15px;
-}
-
-/* Prejeta sporočila */
-.sporocilo.prejeto {
-  margin-right: auto;
-  justify-content: flex-start;
+  border-bottom-right-radius: 0;
 }
 
 .sporocilo.prejeto .vsebina-mehurcka {
-  background-color: #ffffff;
-  color: #000000;
-  border: 1px solid #e0dfdf;
-  border-radius: 15px 15px 15px 0px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-}
-
-.vsebina-mehurcka {
-  padding: 10px 15px;
-  font-size: 14px;
+  background-color: #f0f0f0;
+  color: #333;
+  border-bottom-left-radius: 0;
+  border: 1px solid #ddd;
 }
 
 .cas-sporocila {
-  font-size: 10px;
   display: block;
-  margin-top: 5px;
-  text-align: right;
-  opacity: 0.8;
+  font-size: 11px;
+  margin-top: 0.3rem;
+  opacity: 0.7;
 }
 
-/* Spodnji del za vnos teksta */
+.sporocilo.poslano .cas-sporocila {
+  color: rgba(255,255,255,0.7);
+}
+
+.sporocilo.prejeto .cas-sporocila {
+  color: #999;
+}
+
 .vnos-sporocila-vsebnik {
-  background-color: #ffffff;
-  padding: 15px;
-  border-top: 2px solid #e0dfdf;
+  border-top: 1px solid #e0e0e0;
+  background: #fafafa;
+  padding: 1rem;
 }
 
-.vnos-polje:focus {
-  border-color: #cb2121;
-  box-shadow: 0 0 0 0.25rem rgba(203, 33, 33, 0.25);
+.vnos-sporocila-vsebnik .d-flex {
+  gap: 0.5rem;
 }
 
-/*obcina in uporabnik info*/
+#chat-input {
+  flex: 1;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: 0.5rem;
+  font-size: 14px;
+}
+
+#chat-input:focus {
+  border-color: #8c1212;
+  box-shadow: 0 0 0 0.2rem rgba(140, 18, 18, 0.25);
+}
+
+#chat-send-btn {
+  background-color: #8c1212;
+  border: none;
+  color: white;
+  padding: 0.5rem 1.5rem;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.2s;
+}
+
+#chat-send-btn:hover {
+  background-color: #6b0d0d;
+  color: white;
+}
+
+.uporabnik-kartica {
+  cursor: pointer;
+  border: none;
+  transition: background-color 0.2s;
+  padding: 1rem;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.uporabnik-kartica:hover {
+  background-color: #f9f9f9;
+}
+
+.uporabnik-kartica.aktivna {
+  background-color: #f0f0f0;
+}
+
+.mini-avatar {
+  flex-shrink: 0;
+}
+    
+.obvestilo-tekst {
+  font-size: 13px;
+}
+
+.nenastavljen-klepet {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #999;
+  font-size: 16px;
+  text-align: center;
+}
+
+
+
+/* OBČINA IN UPORABNIK - ZAČETNE INFORMACIJE */
 .info-predlogi{
   width: 85%;
   background:#e0dfdf;
@@ -520,7 +600,9 @@ a.gumb-dodaj:hover{
   margin-top: 30px;
 }
 
-/*admin dodajanje predlogov */
+
+
+/* DODAJANJE PREDLOGOV - ADMIN */
 .admin-panel{
   margin-top: 20px;
 }
@@ -531,73 +613,9 @@ a.gumb-dodaj:hover{
   background-color: #f9f9f9;
 }
 
-/*footer */
-footer {
-  background-color: #f8f8f8;
-  padding: 10px;
-  border-top:#8b0000 2px solid;
-}
-
-footer h5 {
-  color: #bf1919;
-  text-transform: uppercase;
-  font-weight: normal;
-  border-bottom: 2px solid #941010;
-  display: inline-block;
-  padding-bottom: 5px;
-  margin-bottom: 20px;
-}
-
-footer p, footer a, footer span, footer i {
-  color: #000000 !important;
-  text-decoration: none;
-  font-size: 15px;
-}
-
-/* media - telefon (KAJA) */
-@media (max-width: 768px) {
-  .glava-strani {grid-area: 1 / span 6;}
-  .info-besedilo {grid-area: 2 / span 1;}
-  .content {grid-area: 2 / span 4;}
-  .info-platforma, .info {
-  flex-direction: column;
-  align-items: stretch;
-}
-  .info-platforma img{
-    width: 80%;
-    object-fit: cover;
-    max-height: 250px;
-  }
-  .info img{
-    width: 350px;
-    padding: 20px;
-  }
-
-  .info-besedilo, .besedilo{
-    width: 100%;
-    padding: 20px;
-  }
-  .uvodna-slika{
-    height: 250px;
-  }
-  .gumb-prijava{
-    margin-top: 10px;
-  }  .footer {grid-area: 3 / span 6;}
-  .uvodna-slika {
-    height: 250px;
-  }
-  .uvodna-vsebina h1 {
-    font-size: 36px;
-  }
-  .uvodna-vsebina p {
-    font-size: 14px;
-  }}
 
 
-
-
-
-/*css za kartice predlogov */
+/* PREDLOGI - KARTICE */
 .predlog-card{
   border: none;
   border-radius: 20px;
@@ -642,11 +660,12 @@ footer p, footer a, footer span, footer i {
   text-decoration: none;
 }
 
-/* FILTERI */
 
+
+/* FILTRIRANJE */
 .filter-vsebnik{
   width: 85%;
-  margin: 20px auto 0 auto;
+  margin: 30px auto 0 auto;
 
   display: flex;
   justify-content: flex-end;
@@ -673,124 +692,84 @@ footer p, footer a, footer span, footer i {
   border-color: #8c1212;
 }
 
-/*ZA WS*/
-/*zasebni klepet*/
-.klepet-okno {
-  height: 600px;
-  background-color: #ffffff;
-  border-radius: 15px;
-  overflow: hidden;
-  display: flex; /* Zagotovi, da se stolpci obnašajo kot flex elementi */
-}
-    
-/* Seznam aktivnih klepetov */
-.seznam-uporabnikov {
-  background-color: #f8f9fa;
-  border-right: 2px solid #e0dfdf;
-  height: 100%;
-  overflow-y: auto;
-}
-    
-.uporabnik-kartica {
-  padding: 15px;
-  border-bottom: 1px solid #e0dfdf;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-    
-.uporabnik-kartica:hover {
-  background-color: #f1f3f5;
-}
-    
-.uporabnik-kartica.aktivna {
-  background-color: #f4f1f1;
-  border-left: 4px solid #8c1212;
+
+
+/* FOOTER */
+footer {
+  background-color: #f8f8f8;
+  padding: 10px;
+  border-top:#8b0000 2px solid;
 }
 
-.mini-avatar {
-  width: 45px;
-  height: 45px;
-  border-radius: 50%;
-  background-color: #cb2121;
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  font-size: 16px;
-  flex-shrink: 0; /* Prepreči, da bi se avatar stisnil ob dolgem tekstu */
+footer h5 {
+  color: #bf1919;
+  text-transform: uppercase;
+  font-weight: normal;
+  border-bottom: 2px solid #941010;
+  display: inline-block;
+  padding-bottom: 5px;
+  margin-bottom: 20px;
 }
 
-/* Natančna določitev celotne desne strani */
-.desni-del-klepeta {
-  height: 100%;
+footer p, footer a, footer span, footer i {
+  color: #000000 !important;
+  text-decoration: none;
+  font-size: 15px;
 }
 
-.del-glava {
-  height: 75px; /* Fiksna višina glave pogovora */
-  flex-shrink: 0;
-}
 
-/* Območje za sporočila - popravljena višina */
-.prikaz-sporocil {
-  height: calc(600px - 75px - 80px); /* Od celotne višine odštejemo glavo in vnosno polje */
-  overflow-y: auto;
-  background-color: #f4f1f1;
-  padding: 20px;
-}
 
-/* Mehurčki za sporočila */
-.sporocilo {
-  margin-bottom: 15px;
-  max-width: 75%;
-  display: flex;
+/* MEDIA - TELEFON */
+@media (max-width: 768px) {
+  .glava-strani {grid-area: 1 / span 6;}
+  .info-besedilo {grid-area: 2 / span 1;}
+  .content {grid-area: 2 / span 4;}
+  .info-platforma, .info {
+  flex-direction: column;
+  align-items: stretch;
 }
+  .info-platforma img{
+    width: 80%;
+    object-fit: cover;
+    max-height: 250px;
+  }
+  .info img{
+    width: 350px;
+    padding: 20px;
+  }
 
-/* poslana sporočila */
-.sporocilo.poslano {
-  margin-left: auto;
-  justify-content: flex-end;
-}
+  .info-besedilo, .besedilo{
+    width: 100%;
+    padding: 20px;
+  }
+  .uvodna-slika{
+    height: 250px;
+  }
+  .gumb-prijava{
+    margin-top: 10px;
+  }  .footer {grid-area: 3 / span 6;}
+  .uvodna-slika {
+    height: 250px;
+  }
+  .uvodna-vsebina h1 {
+    font-size: 36px;
+  }
+  .uvodna-vsebina p {
+    font-size: 14px;
+  }}
 
-.sporocilo.poslano .vsebina-mehurcka {
-  background-color: #8c1212;
-  color: white;
-  border-radius: 15px 15px 0px 15px;
-}
 
-/* Prejeta sporočila */
-.sporocilo.prejeto {
-  margin-right: auto;
-  justify-content: flex-start;
-}
 
-.sporocilo.prejeto .vsebina-mehurcka {
-  background-color: #ffffff;
-  color: #000000;
-  border: 1px solid #e0dfdf;
-  border-radius: 15px 15px 15px 0px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-}
-
-.vsebina-mehurcka {
-  padding: 10px 15px;
-  font-size: 14px;
-  position: relative;
-}
-
-.cas-sporocila {
-  font-size: 10px;
-  display: block;
-  margin-top: 5px;
-  text-align: right;
-  opacity: 0.8;
-}
-
-/* Spodnji del za vnos teksta */
-.vnos-sporocila-vsebnik {
-  background-color: #ffffff;
-  padding: 15px;
-  border-top: 2px solid #e0dfdf;
-  height: 80px; /* Fiksna višina spodnjega dela */
-  flex-shrink: 0;
+/* MEDIA - live chat */
+@media (max-width: 768px) {
+  .seznam-uporabnikov {
+    width: 200px;
+  }
+  .vsebina-mehurcka {
+    max-width: 90%;
+  }
+  .klepet-okno {
+    margin: 10px;
+    max-height: calc(100vh - 80px);
+  }
 }

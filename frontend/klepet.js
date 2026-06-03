@@ -9,7 +9,7 @@ const chatSendBtn = document.getElementById('chat-send-btn');
 // Pridobivanje podatkov prijavljenega uporabnika iz localStorage
 const profilnoIme = localStorage.getItem('profilnoIme') || 'Uporabnik Mesta';
 const celotnoImeUporabnika = profilnoIme;
-const mojEmail = (localStorage.getItem('profilniEmail') || '').toLowerCase().trim();
+const mojEmail = (localStorage.getItem('prijavljenEmail') || '').toLowerCase().trim();
 
 console.log("=== POVEZAN UPORABNIK ===");
 console.log("Ime in priimek:", celotnoImeUporabnika);
