@@ -694,6 +694,50 @@ a.gumb-dodaj:hover{
 
 
 
+/* STATUS */
+.main-status {
+  width: 90%;
+  margin: 0 auto;
+}
+
+/* Sidebar */
+#obdelava, #zakljuceno {
+  height: 500px;
+  overflow-y: auto;
+}
+
+.kartica-predloga {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.slika-predloga {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 4px;
+  margin-right: 15px;
+}
+
+.vsebina-besedila {
+  flex-grow: 1;
+  overflow: hidden; /* Prepreči raztezanje */
+}
+
+.glasovanje-predloga {
+  text-align: center;
+  cursor: pointer;
+  margin-left: 10px;
+}
+
+.glasovanje-predloga i {
+  color: #28a745;
+}
+
+
+
 /* FOOTER */
 footer {
   background-color: #f8f8f8;

@@ -21,3 +21,60 @@ function odjaviUporabnika() {
     alert('Odjava uspešna.');
     window.location.href = 'prijava.html';
 }
+
+
+
+// =================================================================
+// NALAGANJE PREDLOGOV
+// =================================================================
+
+const vsebnikObdelava = document.getElementById('obdelava');
+const vsebnikZakljuceno = document.getElementById('zakljuceno');
+
+if (vsebnikObdelava || vsebnikZakljuceno) {
+  fetch('/api/vsi-predlogi-uporabnikov')
+    .then(res => res.json())
+    .then(predlogi => {
+
+      // Filtriranje: Status 2 v obdelavo, Status 3 v zaključeno
+      const obdelava = predlogi.filter(p => parseInt(p.tk_status_pobudid_status_pobud) === 2);
+      const zakljuceno = predlogi.filter(p => parseInt(p.tk_status_pobudid_status_pobud) === 3);
+
+      // Izpis v "obdelava"
+      if (vsebnikObdelava) {
+        vsebnikObdelava.innerHTML = obdelava.length > 0 
+          ? obdelava.map(p => generirajKarticoHTML(p, p.st_vseckov || 0)).join('') 
+          : '<p>Ni predlogov v obdelavi.</p>';
+      }
+
+      // Izpis v "zakljuceno"
+      if (vsebnikZakljuceno) {
+        vsebnikZakljuceno.innerHTML = zakljuceno.length > 0 
+          ? zakljuceno.map(p => generirajKarticoHTML(p, p.st_vseckov || 0)).join('') 
+          : '<p>Ni zaključenih predlogov.</p>';
+      }
+    })
+    .catch(err => console.error("Napaka pri nalaganju predlogov:", err));
+}
+
+function generirajKarticoHTML(predlog, vsecki) {
+  let avtor = (parseInt(predlog.tk_uporabnikid_uporabnik) === 1) 
+              ? "Mestna občina Maribor" 
+              : `${predlog.avtor_ime || ''} ${predlog.avtor_priimek || ''}`.trim();
+
+  return `
+    <div class="kartica-predloga">
+      <img src="${predlog.fotografija || 'slike/zacetna.jpg'}" class="slika-predloga">
+      
+      <div class="vsebina-besedila">
+        <h6 class="fw-bold mb-0">${predlog.naslov}</h6>
+        <small class="text-muted">Avtor: ${avtor}</small>
+      </div>
+      
+      <div class="glasovanje-predloga" onclick="glasuj(${predlog.id_objava})">
+        <i class="fas fa-thumbs-up"></i>
+        <div class="small fw-bold">${vsecki}</div>
+      </div>
+    </div>
+  `;
+}
