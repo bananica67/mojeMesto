@@ -111,7 +111,7 @@
     </table>
     </div>
 
-    //nagrada
+    
 
     <div id="praznoObvestiloPredlogi" class="text-center py-5 d-none">
       <i class="fas fa-folder-open text-muted mb-3" style="font-size: 48px;"></i>
@@ -179,6 +179,19 @@
   </div>
   </div>
 </footer>
+//gumb
+<div class="modal fade" id="potrditveniModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title">Potrditev</h5></div>
+      <div class="modal-body">Ste prepričani, da želite tega uporabnika izbrati za zmagovalca?</div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Prekliči</button>
+        <button type="button" class="btn btn-success" onclick="potrdiZmagovalca()">Da, izberi</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="prijava.js"></script>

@@ -126,6 +126,34 @@ async function naloziMojePredloge() {
         const odziv = await fetch(`/api/moji-predlogi/${email}`);
         const predlogi = await odziv.json();
 
+        const obstojeceObvestilo = document.querySelector('.alert-success');
+        if (obstojeceObvestilo) obstojeceObvestilo.remove();
+
+        // Preverimo, ali obstaja zmagovalen predlog
+        const zmagovalniPredlog = predlogi.find(p => p.je_zmagovalec === true);
+        // Poišči zmagovalca
+const prostorZaObvestilo = document.getElementById("obvestiloZmagovalec");
+
+if (zmagovalniPredlog && prostorZaObvestilo) {
+    prostorZaObvestilo.innerHTML = `
+        <div class="text-center p-4 shadow-lg rounded" style="background-color: #fff8e1; border: 2px solid #ffd700;">
+            <i class="fas fa-trophy fa-3x" style="color: #ffd700;"></i>
+            <h2 class="mt-2" style="color: #b8860b;">Čestitamo!</h2>
+            <p class="fs-5">Vaš predlog <strong>"${zmagovalniPredlog.naslov}"</strong> je bil izbran za zmagovalca!</p>
+            <p class="mb-0 fw-bold" style="color: #d35400;">🎁 Prejeli ste eno leto brezplačne uporabe sistema MBajk!</p>
+        </div>
+    `;
+}
+
+
+        /*if (zmagovalniPredlog) {
+            seznamPredlogovOznaka.insertAdjacentHTML('beforebegin', `
+                <div class="alert alert-success text-center mb-4 w-100">
+                   <i class="fas fa-trophy"></i> <strong>Čestitamo!</strong> Vaš predlog <em>"${zmagovalniPredlog.naslov}"</em> je bil izbran za zmagovalca!
+                </div>
+            `);
+        }*/
+
         if (stevilkaPredlogov) {
             stevilkaPredlogov.textContent = `(${predlogi.length})`;
         }
@@ -345,6 +373,8 @@ function spremeniVlogoUporabnika(idUporabnik, novVlogaId) {
 // PREDLOGI ZA ADMINA
 // =================================================================
 
+
+
 function naloziPredlogeZaAdmina() {
     const seznamPredlogovOznaka = document.getElementById('seznamPredlogov');
     const stetjePredlogovOznaka = document.getElementById('stetjePredlogov');
@@ -399,12 +429,21 @@ function naloziPredlogeZaAdmina() {
                             <option value="3" ${sID === 3 ? 'selected' : ''}>Zaključeno</option>
                         </select>
                     </td>
+                    <td>
+        <button class="btn btn-warning btn-sm" 
+        data-id="${predlog.id_objava}" 
+        onclick="odpriModalZmagovalec(${predlog.id_objava})" 
+        ${predlog.je_zmagovalec ? 'disabled' : ''}>
+            <i class="fas fa-trophy"></i>
+        </button>
+    </td>
                 `;
                 seznamPredlogovOznaka.appendChild(vrstica);
             });
         })
         .catch(error => console.error('Napaka pri pridobivanju predlogov:', error));
 }
+//disable gumb za predloge !
 
 function osveziStatus(idObjava, novStatusId) {
     fetch('/api/posodobi-status', {
@@ -427,4 +466,40 @@ function osveziStatus(idObjava, novStatusId) {
 }
 
 //nagrada
+let trenutniIdZaZmagovalca = null;
+
+window.odpriModalZmagovalec = function(idObjava) {
+    trenutniIdZaZmagovalca = idObjava;
+    //vmesna proba
+    if (typeof bootstrap === 'undefined') {
+        alert("Napaka: Bootstrap ni naložen!");
+        return;
+    }
+    const modal = new bootstrap.Modal(document.getElementById('potrditveniModal'));
+    modal.show();
+};
+
+window.potrdiZmagovalca = function() {
+    const modalElement = document.getElementById('potrditveniModal');
+    const modal = bootstrap.Modal.getInstance(modalElement);
+    if (modal) modal.hide();
+
+    
+    fetch('/api/izberi-zmagovalca', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id_objava: trenutniIdZaZmagovalca })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.uspeh) {
+            naloziPredlogeZaAdmina(); 
+        } else {
+            alert('Napaka pri shranjevanju.');
+        }
+    })
+    .catch(err => console.error(err));
+};
+
+
 

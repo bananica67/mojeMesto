@@ -739,7 +739,7 @@ app.get('/api/moji-predlogi/:email', async (req, res) => {
 
         const uporabnikoviPredlogi = await pool.query(`
 
-            SELECT o.id_objava, o.naslov, o.opis, o.fotografija, o.st_vseckov, 
+            SELECT o.id_objava, o.naslov, o.opis, o.fotografija, o.st_vseckov, o.je_zmagovalec,
 
                    s.naziv AS status
 
@@ -988,6 +988,21 @@ app.get('/api/vsi-predlogi-uporabnikov', async (req, res) => {
 });
 
 //nagrade
+app.post('/api/izberi-zmagovalca', async (req, res) => {
+    const { id_objava } = req.body;
+    try {
+        // Najprej vsem odstrani oznako zmagovalca
+        //await pool.query('UPDATE objava SET je_zmagovalec = false');
+        
+        // Nato jo nastavi samo tistemu, ki ga je admin izbral
+        await pool.query('UPDATE objava SET je_zmagovalec = true WHERE id_objava = $1', [id_objava]);
+        
+        return res.json({ uspeh: true });
+    } catch (err) {
+        console.error("Napaka:", err);
+        return res.status(500).json({ uspeh: false });
+    }
+});
 
 
 
