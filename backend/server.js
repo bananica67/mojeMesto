@@ -1004,6 +1004,63 @@ app.post('/api/izberi-zmagovalca', async (req, res) => {
     }
 });
 
+//proba
+app.get('/api/statistika-statusov', (req, res) => {
+    const sql = `
+        SELECT status_pobud.naziv as status, COUNT(objava.tk_status_pobudid_status_pobud) as stetje 
+        FROM status_pobud 
+        LEFT JOIN objava ON status_pobud.id_status_pobud = objava.tk_status_pobudid_status_pobud 
+        GROUP BY status_pobud.naziv`;
+    
+    // Uporabimo 'pool', ker tako se imenuje tvoja baza!
+    pool.query(sql, (err, result) => {
+        if (err) {
+            console.error("Napaka pri branju statistike:", err);
+            return res.status(500).json({ error: err.message });
+        }
+        // Pri pg knjižnici so podatki v result.rows
+        res.json(result.rows);
+    });
+});
+
+// API za krožni graf (statusi)
+app.get('/api/statistika-statusov', (req, res) => {
+    const sql = `
+        SELECT status_pobud.naziv as status, COUNT(objava.tk_status_pobudid_status_pobud) as stetje 
+        FROM status_pobud 
+        LEFT JOIN objava ON status_pobud.id_status_pobud = objava.tk_status_pobudid_status_pobud 
+        GROUP BY status_pobud.naziv`;
+    
+    pool.query(sql, (err, result) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(result.rows);
+    });
+});
+
+// API za Top 3 predloge
+app.get('/api/top-predlogi', (req, res) => {
+    const sql = `SELECT naslov, st_vseckov FROM objava ORDER BY st_vseckov DESC LIMIT 3`;
+    
+    pool.query(sql, (err, result) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(result.rows);
+    });
+});
+
+app.get('/api/statistika-novosti', (req, res) => {
+    // Uporabiva bolj preprosto primerjavo datumov
+    const sql = `SELECT COUNT(*) as stetje FROM objava WHERE datum_objave >= CURRENT_DATE - INTERVAL '30 days'`;
+    
+    pool.query(sql, (err, result) => {
+        if (err) {
+            console.error("Napaka:", err);
+            return res.status(500).json({ error: err.message });
+        }
+        res.json(result.rows[0]);
+    });
+});
+
+
 
 
 
