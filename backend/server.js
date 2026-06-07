@@ -234,11 +234,11 @@ app.post('/api/posodobi-status', async (req, res) => {
 app.get('/api/vsi-predlogi-uporabnikov', async (req, res) => {
   try {
     const objaveRez = await pool.query(`
-    SELECT 
+    SELECT
         o.id_objava, o.naslov, o.opis, o.lokacija, o.fotografija, o.st_vseckov, o.koordinate, o.tip_objave,
         COALESCE(o.tk_uporabnikid_uporabnik, 0) AS tk_uporabnikid_uporabnik, TO_CHAR(o.datum_objave, 'YYYY-MM-DD') AS datum_objave,
         COALESCE(o.tk_status_pobudid_status_pobud, 1) AS tk_status_pobudid_status_pobud,
-        u.ime AS avtor_ime, u.priimek AS avtor_priimek
+        u.ime AS avtor_ime, u.priimek AS avtor_priimek, u.tk_tip_uporabnikaid_tip_uporabnika AS avtor_tip
     FROM objava o
     LEFT JOIN uporabnik u ON o.tk_uporabnikid_uporabnik = u.id_uporabnik
     WHERE o.tip_objave = 'Predlog'
