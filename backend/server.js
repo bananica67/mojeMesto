@@ -1,11 +1,11 @@
 const path = require("path");
 const express = require("express");
-const http = require("http"); // Dodano za WebSocket podporo
-const { WebSocketServer } = require("ws"); // Dodano za livechat
+const http = require("http"); // Uvoženo samo enkrat
+const WebSocket = require('ws'); // Za preverjanje WebSocket.OPEN stanja pozneje v kodi
+const { WebSocketServer } = require("ws"); // Za kreiranje strežnika
 const { Pool } = require("pg");
+
 const app = express();
-const WebSocket = require('ws');
-const http = require('http');
 
 // Ustvarimo HTTP strežnik iz dotedanje Express aplikacije
 const server = http.createServer(app);
@@ -25,90 +25,8 @@ const pool = new Pool({
   port: 5432,
 });
 
-<<<<<<< HEAD
-// Ustvarimo HTTP strežnik in WebSocket server na istem portu
-const server = http.createServer(app);
-const wss = new WebSocket.Server({ server });
-
-// Spremljanje povezanih uporabnikov: Map<email, WebSocket>
-const connectedUsers = new Map();
-
-wss.on('connection', (ws) => {
-  console.log('Nov uporabnik se je povezal v klepet.');
-
-  ws.userEmail = null;
-
-  ws.on('message', async (message) => {
-    try {
-      const podatek = JSON.parse(message.toString());
-      console.log('Prejeto sporočilo:', podatek);
-
-      // Shranimo pošiljateljev email za kasnejšo identifikacijo
-      if (!ws.userEmail) {
-        ws.userEmail = podatek.odKogaEmail;
-        connectedUsers.set(podatek.odKogaEmail, ws);
-      }
-
-      // 1. Shranimo sporočilo v bazo
-      const insertQuery = `
-        INSERT INTO Sporocilo (posiljatelj_email, prejemnik_email, vsebina)
-        VALUES ($1, $2, $3)
-      `;
-      await pool.query(insertQuery, [podatek.odKogaEmail, podatek.komuEmail, podatek.tekst]);
-
-      // 2. Posredujemo sporočilo SAMO pošiljatelju in prejemniku (zasebno sporočilo)
-      const response = JSON.stringify(podatek);
-
-      // Pošlji pošiljatelju
-      if (ws.readyState === WebSocket.OPEN) {
-        ws.send(response);
-      }
-
-      // Pošlji prejemniku, če je povezan
-      const recipientWs = connectedUsers.get(podatek.komuEmail);
-      if (recipientWs && recipientWs.readyState === WebSocket.OPEN) {
-        recipientWs.send(response);
-      }
-
-    } catch (err) {
-      console.error("Napaka pri obdelavi WebSocket sporočila:", err);
-    }
-  });
-
-  ws.on('close', () => {
-    if (ws.userEmail) {
-      connectedUsers.delete(ws.userEmail);
-      console.log(`Uporabnik ${ws.userEmail} je zapustil klepet.`);
-    }
-  });
-});
-
-// --- POT ZA PRIKAZ ZGODOVINE KLEPETA ---
-app.get('/api/zgodovina-klepeta', async (req, res) => {
-    const { mojEmail, prejemnikEmail } = req.query;
-
-    try {
-        const queryText = `
-            SELECT posiljatelj_email, prejemnik_email, vsebina, datum_vnos
-            FROM Sporocilo
-            WHERE (posiljatelj_email = $1 AND prejemnik_email = $2)
-               OR (posiljatelj_email = $2 AND prejemnik_email = $1)
-            ORDER BY datum_vnos ASC
-        `;
-        const rez = await pool.query(queryText, [mojEmail, prejemnikEmail]);
-        return res.json(rez.rows);
-    } catch (err) {
-        console.error("Napaka pri pridobivanju zgodovine klepeta:", err);
-        return res.status(500).json({ sporocilo: 'Napaka na strežniku.' });
-    }
-});
-
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
-=======
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(express.json({ limit: '50mb' }));
->>>>>>> d47c8f8b7072e87a5aaeb8832a840019ae2462fc
 
 app.use(express.static(path.resolve(__dirname, '../frontend')));
 
@@ -255,13 +173,6 @@ app.get('/api/vsi-uporabniki', async (req, res) => {
     }
 });
 
-<<<<<<< HEAD
-// Zagon strežnika je čisto na koncu datoteke
-server.listen(3000, () => {
-  console.log("Strežnik deluje na http://localhost:3000");
-  console.log("WebSocket server deluje na ws://localhost:3000");
-});
-=======
 // =================================================================
 // SPREMINJANJE VLOGE UPORABNIKA
 // =================================================================
@@ -318,37 +229,41 @@ app.post('/api/posodobi-status', async (req, res) => {
 });
 
 // =================================================================
-// PRIDOBIVANJE PREDLOGOV
+// PRIDOBIVANJE PREDLOGOV ZA ZEMLJEVID IN SEZNAM
 // =================================================================
-
 app.get('/api/vsi-predlogi-uporabnikov', async (req, res) => {
-    try {
-        const objaveRez = await pool.query(`
-            SELECT o.id_objava, o.naslov, o.opis, o.fotografija, o.st_vseckov, 
-                   o.tk_uporabnikid_uporabnik, o.tk_status_pobudid_status_pobud,
-                   u.ime AS avtor_ime, u.priimek AS avtor_priimek
-            FROM objava o
-            LEFT JOIN uporabnik u ON o.tk_uporabnikid_uporabnik = u.id_uporabnik
-            WHERE o.tip_objave = 'Predlog'
-            ORDER BY o.id_objava DESC
-        `);
-        const predlogi = objaveRez.rows;
+  try {
+    const objaveRez = await pool.query(`
+    SELECT 
+        o.id_objava, o.naslov, o.opis, o.lokacija, o.fotografija, o.st_vseckov, o.koordinate, o.tip_objave,
+        COALESCE(o.tk_uporabnikid_uporabnik, 0) AS tk_uporabnikid_uporabnik, TO_CHAR(o.datum_objave, 'YYYY-MM-DD') AS datum_objave,
+        COALESCE(o.tk_status_pobudid_status_pobud, 1) AS tk_status_pobudid_status_pobud,
+        u.ime AS avtor_ime, u.priimek AS avtor_priimek
+    FROM objava o
+    LEFT JOIN uporabnik u ON o.tk_uporabnikid_uporabnik = u.id_uporabnik
+    WHERE o.tip_objave = 'Predlog'
+    ORDER BY o.id_objava DESC
+    `);
+        
+    const predlogi = objaveRez.rows;
 
-        for (let predlog of predlogi) {
-            const komRez = await pool.query(`
-                SELECT u.ime AS avtor, k.vsebina AS besedilo
-                FROM komentar k
-                JOIN uporabnik u ON k.tk_uporabnikid_uporabnik = u.id_uporabnik
-                WHERE k.tk_objavaid_objava = $1
-                ORDER BY k.id_komentar ASC
-            `, [predlog.id_objava]);
-            predlog.komentarji = komRez.rows;
-        }
-        return res.json(predlogi);
-    } catch (err) {
-        console.error("Napaka pri branju predlogov iz baze:", err);
-        return res.status(500).json([]);
+    // Pridobivanje komentarjev za vsak predlog
+    for (let predlog of predlogi) {
+      const komRez = await pool.query(`
+        SELECT u.ime AS avtor, k.vsebina AS besedilo
+        FROM komentar k
+        JOIN uporabnik u ON k.tk_uporabnikid_uporabnik = u.id_uporabnik
+        WHERE k.tk_objavaid_objava = $1
+        ORDER BY k.id_komentar ASC
+      `, [predlog.id_objava]);
+      predlog.komentarji = komRez.rows;
     }
+
+    return res.json(predlogi);
+  } catch (err) {
+    console.error("Napaka pri branju predlogov iz baze:", err);
+    return res.status(500).json([]);
+  }
 });
 
 // =================================================================
@@ -380,7 +295,7 @@ app.post('/api/dodaj-komentar', async (req, res) => {
 // ODDAJA NOVEGA PREDLOGA
 // =================================================================
 app.post('/api/dodaj-predlog', async (req, res) => {
-    const { naslov, opis, email, fotografija } = req.body;
+    const { naslov, opis, email, fotografija, koordinate } = req.body;
 
     if (!naslov || !opis || !email) {
         return res.json({ uspeh: false, sporocilo: "Manjkajoči podatki!" });
@@ -393,28 +308,31 @@ app.post('/api/dodaj-predlog', async (req, res) => {
         }
         const idUporabnika = userCheck.rows[0].id_uporabnik;
 
-        let statusId = 1; 
+        let statusId = 1; // Oddano
         if (parseInt(idUporabnika) === 1) {
-            statusId = 2; // V obravnavi
+            statusId = 2; // V obravnavi, če oddaja admin/občina
         }
 
-        const odlocanjeRes = await pool.query("SELECT * FROM tip_odlocanja WHERE naziv = 'Prijava težav v lokalnem okolju' LIMIT 1");
-        const odlocanjeId = Object.values(odlocanjeRes.rows[0])[0];
+        const odlocanjeRes = await pool.query("SELECT id_tip_odlocanja FROM tip_odlocanja WHERE naziv = 'Prijava težav v lokalnem okolju' LIMIT 1");
+        const odlocanjeId = odlocanjeRes.rows.length > 0 ? odlocanjeRes.rows[0].id_tip_odlocanja : 1;
+
+        const lokacija = koordinate || '46.5547, 15.6459';
 
         const vnosObjaveQuery = `
             INSERT INTO objava (
-                naslov, opis, lokacija, fotografija, datum_objave, tip_objave, st_vseckov, 
+                naslov, opis, lokacija, fotografija, datum_objave, tip_objave, st_vseckov,
                 tk_uporabnikid_uporabnik, tk_tip_odlocanjaid_tip_odlocanja, tk_status_pobudid_status_pobud
             )
-            VALUES ($1, $2, '46.5547, 15.6459', $3, CURRENT_DATE, 'Predlog', 0, $4, $5, $6)
+            VALUES ($1, $2, $3, $4, CURRENT_DATE, 'Predlog', 0, $5, $6, $7)
         `;
-        
+
         await pool.query(vnosObjaveQuery, [
-            naslov, 
-            opis, 
-            fotografija || 'slike/zacetna.jpg', 
-            idUporabnika, 
-            odlocanjeId, 
+            naslov,
+            opis,
+            lokacija,
+            fotografija || 'slike/zacetna.jpg',
+            idUporabnika,
+            odlocanjeId,
             statusId
         ]);
 
@@ -572,4 +490,3 @@ async function preveriInPodeliZnacko(email) {
 server.listen(3000, () => {
   console.log("Strežnik deluje na http://localhost:3000");
 });
->>>>>>> d47c8f8b7072e87a5aaeb8832a840019ae2462fc

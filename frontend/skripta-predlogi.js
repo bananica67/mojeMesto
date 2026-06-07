@@ -7,41 +7,62 @@ const vsebnikObcina = document.getElementById('predlogi-obcina');
 
 if (vsebnikPredlogov || vsebnikObcina) {
   fetch('/api/vsi-predlogi-uporabnikov')
-    .then(res => res.json())
+    .then(res => {
+      if (!res.ok) throw new Error("Napaka pri pridobivanju podatkov s strežnika");
+      return res.json();
+    })
     .then(predlogi => {
+      console.log("Prejeti predlogi na frontendu:", predlogi); // Preverba v konzoli (F12)
 
-      // Razdelimo predloge glede na to ali je avtor Občina (ID=1) ali navaden občan
-      const filtriraniUporabniki = predlogi.filter(p => 
-      parseInt(p.tk_uporabnikid_uporabnik) !== 1 && parseInt(p.tk_status_pobudid_status_pobud) === 1
-      );
+      if (!predlogi || !Array.isArray(predlogi)) {
+        console.error("Podatki niso v pravilnem formatu (tabela).");
+        return;
+      }
 
-      const filtriranaObcina = predlogi.filter(p => 
-      parseInt(p.tk_uporabnikid_uporabnik) === 1 && parseInt(p.tk_status_pobudid_status_pobud) === 1
-      );
+      // Varno filtriranje brez strogih pogojev za status, če ta ponagaja
+      const filtriraniUporabniki = predlogi.filter(p => {
+        // Preprečimo null napako - če ni id-ja, nastavimo na 0 (kar pomeni navaden uporabnik)
+        const avtorId = p.tk_uporabnikid_uporabnik ? parseInt(p.tk_uporabnikid_uporabnik) : 0;
+        return avtorId !== 1;
+      });
+
+      const filtriranaObcina = predlogi.filter(p => {
+        const avtorId = p.tk_uporabnikid_uporabnik ? parseInt(p.tk_uporabnikid_uporabnik) : 0;
+        return avtorId === 1;
+      });
+
+      console.log("Filtrirani uporabniki:", filtriraniUporabniki);
+      console.log("Filtrirana občina:", filtriranaObcina);
 
       sessionStorage.setItem("vsiPredlogi", JSON.stringify(filtriraniUporabniki));
       sessionStorage.setItem("vsiPredlogiObcine", JSON.stringify(filtriranaObcina));
 
       // Izpis za stran s predlogi uporabnikov (predlogi.html)
       if (vsebnikPredlogov) {
-        vsebnikPredlogov.innerHTML = '';
-        filtriraniUporabniki.forEach(predlog => {
-          const trenutniVsecki = predlog.st_vseckov || 0; 
-          vsebnikPredlogov.innerHTML += generirajKarticoHTML(predlog, trenutniVsecki);
-        });
+        vsebnikPredlogov.innerHTML = ""; // Počistimo vsebnik pred izrisom
+        if (filtriraniUporabniki.length === 0) {
+          vsebnikPredlogov.innerHTML = `<div class="col-12 text-center text-muted my-4"><h5>Trenutno ni nobenih predlogov občanov.</h5></div>`;
+        } else {
+          prikaziPredloge(filtriraniUporabniki, vsebnikPredlogov, false);
+        }
       }
 
-      // Izpis za stran obcina.html (predlogi občine)
+      // Izpis za stran občine
       if (vsebnikObcina) {
-        vsebnikObcina.innerHTML = '';
-        filtriranaObcina.forEach(predlog => {
-          const trenutniVseckiObcina = predlog.st_vseckov || 0;
-          vsebnikObcina.innerHTML += generirajKarticoHTML(predlog, trenutniVseckiObcina);
-        });
+        vsebnikObcina.innerHTML = ""; // Počistimo vsebnik pred izrisom
+        if (filtriranaObcina.length === 0) {
+          vsebnikObcina.innerHTML = `<div class="col-12 text-center text-muted my-4"><h5>Trenutno ni nobenih predlogov občine.</h5></div>`;
+        } else {
+          prikaziPredloge(filtriranaObcina, vsebnikObcina, true);
+        }
       }
-
     })
-    .catch(err => console.error("Napaka pri nalaganju predlogov:", err));
+    .catch(err => {
+      console.error("Kritična napaka v fetch koraku:", err);
+      if (vsebnikPredlogov) {
+        vsebnikPredlogov.innerHTML = `<div class="col-12 text-center text-danger my-4"><h5>Napaka pri nalaganju predlogov. Poskusite znova.</h5></div>`;
+      }
+    });
 }
 
 function generirajKarticoHTML(predlog, vsecki) {
@@ -177,14 +198,15 @@ if (gumbObjavi) {
           naslov: naslov,
           opis: opis,
           email: emailPrijavljenega,
-          fotografija: slikaBase64
+          fotografija: slikaBase64,
+          koordinate: izbraneKoordinate ? `${izbraneKoordinate.lat},${izbraneKoordinate.lng}` : null
         })
       })
       .then(res => res.json())
       .then(podatki => {
         if (podatki.uspeh) {
           alert(podatki.sporocilo);
-          
+
           // Če je objavila občina jo vrže na obcina.html
           if (podatki.jeObcina) {
              window.location.href = "obcina.html";

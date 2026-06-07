@@ -10,18 +10,11 @@
     <link rel="stylesheet" href="css.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
-
-    <style>
-      #map-predlog {
-        height: 400px;
-        width: 100%;
-        border-radius: 6px;
-        border: 1px solid #dee2e6;
-      }
-    </style>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
 </head>
 
-<body> <!-- KONČANO -->
+<body>
 
 <header class="glava-strani">
     <div class="container-fluid vsebnik-po-meri">
@@ -103,6 +96,16 @@
   </select>
 </div>
 
+<!-- MAP CONTAINER -->
+<div class="container-fluid mt-5">
+  <div class="row">
+    <div class="col-12">
+      <h4 class="mb-3">Zemljevid Predlogov Občine</h4>
+      <div id="map-obcine"></div>
+    </div>
+  </div>
+</div>
+
 <main class="container mb-5">
   <div class="row g-4" id="predlogi-obcina"></div>
 </main>
@@ -136,7 +139,9 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
 <script src="skripta-predlogi.js"></script>
+<script src="predlogi-mapa.js"></script>
 
 </body>
 </html>

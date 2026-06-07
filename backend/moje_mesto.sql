@@ -1,22 +1,30 @@
 DROP TABLE IF EXISTS Uporabnik_Znacka CASCADE;
-DROP TABLE IF EXISTS Sporocilo CASCADE;
 DROP TABLE IF EXISTS Značka CASCADE;
 DROP TABLE IF EXISTS Komentar CASCADE;
 DROP TABLE IF EXISTS Podpora CASCADE;
 DROP TABLE IF EXISTS Objava CASCADE;
 DROP TABLE IF EXISTS Status_pobud CASCADE;
 DROP TABLE IF EXISTS Tip_odlocanja CASCADE;
-DROP TABLE IF EXISTS Tip_objave CASCADE;
+DROP TABLE IF EXISTS Sporocilo CASCADE;
 DROP TABLE IF EXISTS Uporabnik CASCADE;
+DROP TABLE IF EXISTS Tip_uporabnika CASCADE;
+
+CREATE TABLE tip_uporabnika (
+    id_tip_uporabnika bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    naziv varchar(255) NOT NULL
+);
+
+INSERT INTO tip_uporabnika (naziv) VALUES ('Administrator'), ('Uporabnik');
 
 CREATE TABLE Uporabnik (
     id_uporabnik bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     ime varchar(255) NOT NULL,
     priimek varchar(255) NOT NULL,
     geslo varchar(255) NOT NULL,
-	telefon numeric(19,0) NOT NULL,
-	email varchar(255) NOT NULL UNIQUE,
-    datum_registracije date NOT NULL
+    telefon numeric(19,0) NOT NULL,
+    email varchar(255) NOT NULL UNIQUE,
+    datum_registracije date NOT NULL DEFAULT CURRENT_DATE,
+    tk_tip_uporabnikaid_tip_uporabnika integer NOT NULL DEFAULT 2 REFERENCES tip_uporabnika (id_tip_uporabnika)
 );
 
 CREATE TABLE Sporocilo (
@@ -27,20 +35,19 @@ CREATE TABLE Sporocilo (
     datum_vnos timestamp DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE Tip_objave (
-    id_tip_objave bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    naziv varchar(255) NOT NULL
-);
-
 CREATE TABLE Tip_odlocanja (
     id_tip_odlocanja bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     naziv varchar(255) NOT NULL
 );
 
+INSERT INTO tip_odlocanja (naziv) VALUES ('Prijava težav v lokalnem okolju');
+
 CREATE TABLE Status_pobud (
     id_status_pobud bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     naziv varchar(255) NOT NULL
 );
+
+INSERT INTO status_pobud (naziv) VALUES ('Oddano'), ('V obravnavi'), ('Zaključeno');
 
 CREATE TABLE Značka (
     id_znacka bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -48,90 +55,43 @@ CREATE TABLE Značka (
     opis varchar(255) NOT NULL
 );
 
+INSERT INTO značka (naziv, opis) VALUES 
+('Prvi korak', 'Oddali ste svoj prvi predlog!'),
+('Aktivni občan', 'Oddali ste vsaj 5 predlogov.');
+
 CREATE TABLE Objava (
     id_objava integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     naslov varchar(255) NOT NULL,
     opis varchar(255) NOT NULL,
     lokacija varchar(255) NOT NULL,
-    fotografija varchar(255),
-    datum_objave date NOT NULL,
-    TK_Uporabnikid_uporabnik integer NOT NULL REFERENCES Uporabnik (id_uporabnik),
-    TK_Tip_objaveid_tip_objave integer NOT NULL REFERENCES Tip_objave (id_tip_objave),
-    TK_Tip_odlocanjaid_tip_odlocanja integer NOT NULL REFERENCES Tip_odlocanja (id_tip_odlocanja),
-    TK_Status_pobudid_status_pobud integer NOT NULL REFERENCES Status_pobud (id_status_pobud)
+    fotografija text,
+    koordinate varchar(255),
+    datum_objave date NOT NULL DEFAULT CURRENT_DATE,
+    tip_objave varchar(255) NOT NULL,
+    st_vseckov integer DEFAULT 0 NOT NULL,
+    tk_uporabnikid_uporabnik integer NOT NULL REFERENCES Uporabnik (id_uporabnik),
+    tk_tip_odlocanjaid_tip_odlocanja integer NOT NULL REFERENCES Tip_odlocanja (id_tip_odlocanja),
+    tk_status_pobudid_status_pobud integer NOT NULL REFERENCES Status_pobud (id_status_pobud)
 );
 
 CREATE TABLE Komentar (
     id_komentar integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     vsebina varchar(255) NOT NULL,
-    datum_ure_oddaje date NOT NULL,
-    TK_Uporabnikid_uporabnik integer NOT NULL REFERENCES Uporabnik (id_uporabnik),
-    TK_Objavaid_objava integer NOT NULL REFERENCES Objava (id_objava)
+    datum_ure_oddaje date NOT NULL DEFAULT CURRENT_DATE,
+    tk_uporabnikid_uporabnik integer NOT NULL REFERENCES Uporabnik (id_uporabnik),
+    tk_objavaid_objava integer NOT NULL REFERENCES Objava (id_objava)
 );
 
 CREATE TABLE Podpora (
     id_podpora integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    datum_podpore date NOT NULL,
-    TK_Uporabnikid_uporabnik integer NOT NULL REFERENCES Uporabnik (id_uporabnik),
-    TK_Objavaid_objava integer NOT NULL REFERENCES Objava (id_objava)
+    datum_podpore date NOT NULL DEFAULT CURRENT_DATE,
+    tk_uporabnikid_uporabnik integer NOT NULL REFERENCES Uporabnik (id_uporabnik),
+    tk_objavaid_objava integer NOT NULL REFERENCES Objava (id_objava)
 );
 
 CREATE TABLE Uporabnik_Znacka (
     id_uporabnik_znacka integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    datum_prejetja date NOT NULL,
-    TK_Uporabnikid_član integer NOT NULL REFERENCES Uporabnik (id_uporabnik),
-    TK_Značkaid_znacka integer NOT NULL REFERENCES Značka (id_znacka)
+    datum_prejetja date NOT NULL DEFAULT CURRENT_DATE,
+    tk_uporabnikid_član integer NOT NULL REFERENCES Uporabnik (id_uporabnik),
+    tk_značkaid_znacka integer NOT NULL REFERENCES Značka (id_znacka)
 );
-
---- 1. ODVZEM VSEH PRAVIC NA BAZI IN SHEMI (Čiščenje)
-REVOKE ALL PRIVILEGES ON DATABASE moje_mesto FROM admin_vloga;
-REVOKE ALL PRIVILEGES ON DATABASE moje_mesto FROM uporabnik_vloga;
-
-REVOKE ALL PRIVILEGES ON ALL TABLES IN SCHEMA public FROM admin_vloga;
-REVOKE ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public FROM admin_vloga;
-REVOKE ALL PRIVILEGES ON SCHEMA public FROM admin_vloga;
-
-REVOKE ALL PRIVILEGES ON ALL TABLES IN SCHEMA public FROM uporabnik_vloga;
-REVOKE ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public FROM uporabnik_vloga;
-REVOKE ALL PRIVILEGES ON SCHEMA public FROM uporabnik_vloga;
-
---novi dodatek21.5 
-DO $$
-BEGIN
-    IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'admin_vloga') THEN
-        CREATE ROLE admin_vloga WITH LOGIN PASSWORD 'mesto_admin_9';
-    ELSE
-        ALTER ROLE admin_vloga WITH LOGIN PASSWORD 'mesto_admin_9';
-    END IF;
-
-    IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'uporabnik_vloga') THEN
-        CREATE ROLE uporabnik_vloga WITH LOGIN PASSWORD 'obcan_bralec_1';
-    ELSE
-        ALTER ROLE uporabnik_vloga WITH LOGIN PASSWORD 'obcan_bralec_1';
-    END IF;
-END
-$$;
-
---- 4. POVEZAVA NA BAZO
-GRANT CONNECT ON DATABASE moje_mesto TO admin_vloga;
-GRANT CONNECT ON DATABASE moje_mesto TO uporabnik_vloga;
-
-
-GRANT ALL PRIVILEGES ON SCHEMA public TO admin_vloga;
-GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO admin_vloga;
-GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO admin_vloga;
-
-
-GRANT USAGE ON SCHEMA public TO uporabnik_vloga;
-GRANT SELECT ON ALL TABLES IN SCHEMA public TO uporabnik_vloga;
-
-GRANT INSERT, UPDATE ON TABLE Objava TO uporabnik_vloga;
-GRANT INSERT, UPDATE ON TABLE Komentar TO uporabnik_vloga;
-GRANT INSERT, UPDATE ON TABLE Podpora TO uporabnik_vloga;
-GRANT INSERT, UPDATE ON TABLE Uporabnik TO uporabnik_vloga;
-GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO uporabnik_vloga;
-
-
-SELECT rolname AS uporabnik, rolcanlogin, rolsuper
-FROM pg_roles
-WHERE rolname IN ('admin_vloga', 'uporabnik_vloga');

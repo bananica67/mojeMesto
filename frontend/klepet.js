@@ -128,12 +128,16 @@ function izberiUporabnikaZaKlepet(prejemnikEmail, celotnoIme, karticaElement) {
     if (glavaIme) glavaIme.textContent = celotnoIme;
 
     // Pridobivanje zgodovine
-    fetch(`http://localhost:3000/api/zgodovina-klepeta?mojEmail=${mojEmail}&prejemnikEmail=${trenutniPrejemnikEmail}`)
+    fetch(`/api/zgodovina-klepeta?mojEmail=${encodeURIComponent(mojEmail)}&prejemnikEmail=${encodeURIComponent(trenutniPrejemnikEmail)}`)
         .then(res => {
-            if (!res.ok) throw new Error('Napaka pri pridobivanju zgodovine');
+            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
             return res.json();
         })
         .then(zgodovina => {
+            if (!Array.isArray(zgodovina)) {
+                console.error("Napaka: zgodovina ni tabela", zgodovina);
+                return;
+            }
             chatMessages.innerHTML = '';
             zgodovina.forEach(sp => {
                 const sporociloOkvir = document.createElement('div');
@@ -158,7 +162,10 @@ function izberiUporabnikaZaKlepet(prejemnikEmail, celotnoIme, karticaElement) {
             });
             chatMessages.scrollTop = chatMessages.scrollHeight;
         })
-        .catch(err => console.error("Napaka pri branju zgodovine:", err));
+        .catch(err => {
+            console.error("Napaka pri branju zgodovine:", err);
+            chatMessages.innerHTML = '<div style="padding: 10px; color: red;">Ni moč naložiti zgodovino.</div>';
+        });
 }
 
 function naloziUporabnikeZaKlepet() {
