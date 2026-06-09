@@ -1,4 +1,4 @@
-const ws = new WebSocket('ws://localhost:3000');
+const ws = new WebSocket('ws://localhost:5000');
 
 let trenutniPrejemnikEmail = null;
 
@@ -16,7 +16,7 @@ console.log("Ime in priimek:", celotnoImeUporabnika);
 console.log("Moj Email:", mojEmail);
 
 ws.onopen = () => {
-    console.log("Uspešno povezan v klepetnico na portu 3000.");
+    console.log("Uspešno povezan v klepetnico na portu 5000.");
 };
 
 ws.onmessage = (event) => {
@@ -128,7 +128,7 @@ function izberiUporabnikaZaKlepet(prejemnikEmail, celotnoIme, karticaElement) {
     if (glavaIme) glavaIme.textContent = celotnoIme;
 
     // Pridobivanje zgodovine
-    fetch(`http://localhost:3000/api/zgodovina-klepeta?mojEmail=${mojEmail}&prejemnikEmail=${trenutniPrejemnikEmail}`)
+    fetch(`http://localhost:5000/api/zgodovina-klepeta?mojEmail=${mojEmail}&prejemnikEmail=${trenutniPrejemnikEmail}`)
         .then(res => {
             if (!res.ok) throw new Error('Napaka pri pridobivanju zgodovine');
             return res.json();
@@ -165,7 +165,7 @@ function naloziUporabnikeZaKlepet() {
     const seznamOznaka = document.querySelector('.seznam-uporabnikov');
     if (!seznamOznaka) return;
 
-    fetch('http://localhost:3000/api/vsi-uporabniki')
+    fetch('http://localhost:5000/api/vsi-uporabniki')
         .then(response => {
             if (!response.ok) throw new Error('Napaka pri pridobivanju uporabnikov');
             return response.json();
