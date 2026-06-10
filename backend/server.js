@@ -225,6 +225,7 @@ app.post('/registracija', async (req, res) => {
 
         await pool.query(queryText, [ime, priimek, geslo, vnosTelefon, email]);
 
+    
 
 
         res.send(`

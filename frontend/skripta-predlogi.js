@@ -186,7 +186,7 @@ if (gumbObjavi) {
       .then(res => res.json())
       .then(podatki => {
         if (podatki.uspeh) {
-          alert(podatki.sporocilo);
+          /*alert(podatki.sporocilo);
           
           // Če je objavila občina jo vrže na obcina.html
           if (podatki.jeObcina) {
@@ -199,6 +199,21 @@ if (gumbObjavi) {
         }
       })
       .catch(err => alert("Prišlo je do napake na strežniku."));
+    }*/
+   prikaziObvestilo("Uspeh", podatki.sporocilo);
+          
+          setTimeout(() => {
+              if (podatki.jeObcina) {
+                 window.location.href = "obcina.html";
+              } else {
+                 window.location.href = "predlogi.html";
+              }
+          }, 2000);
+        } else {
+          prikaziObvestilo("Napaka", "Napaka: " + podatki.sporocilo);
+        }
+      })
+      .catch(err => prikaziObvestilo("Napaka", "Prišlo je do napake na strežniku."));
     }
 
     if (slikaInput && slikaInput.files && slikaInput.files.length > 0) {
@@ -279,6 +294,15 @@ window.objaviKomentar = async function(idObjave) {
     console.error("Napaka pri pošiljanju komentarja:", err);
   }
 };
+
+
+
+function prikaziObvestilo(naslov, sporocilo) {
+    document.getElementById('modalNaslov').innerText = naslov;
+    document.getElementById('modalSporocilo').innerText = sporocilo;
+    var modal = new bootstrap.Modal(document.getElementById('univerzalniModal'));
+    modal.show();
+}
 
 
 
