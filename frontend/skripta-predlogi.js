@@ -54,6 +54,9 @@ function generirajKarticoHTML(predlog, vsecki) {
     izpisAvtorja = `${predlog.avtor_ime || 'Neznani'} ${predlog.avtor_priimek || 'Uporabnik'}`;
   }
 
+  const prikazPoz = vsecki > 0 ? vsecki : '';
+  const prikazNeg = vsecki < 0 ? vsecki : '';
+
   return `
     <div class="col-lg-6">
       <div class="card shadow predlog-card">
@@ -65,12 +68,29 @@ function generirajKarticoHTML(predlog, vsecki) {
           <p class="small fw-bold mb-3">Avtor: ${izpisAvtorja}</p>
           <p class="text-muted">${predlog.opis}</p>
           
-          <div class="d-flex gap-3 my-4">
-            <button class="btn btn-success glas-btn" onclick="glasuj(${predlog.id_objava})">
-              <i class="fas fa-thumbs-up"></i> <span id="span_${predlog.id_objava}_vsecki">${vsecki}</span>
-            </button>
-          </div>
-          
+
+// V generirajKarticoHTML zamenjaj gumba z:
+<div class="d-flex gap-2 my-4">
+  <button 
+    id="btn-poz-${predlog.id_objava}"
+    class="btn gumb-vsecek"
+    style="background-color: white; color: #198754; border: 2px solid #198754; padding: 8px 18px; border-radius: 50px;"
+    onclick="spremeniVsecke(${predlog.id_objava}, 1, this)">
+    <i class="fas fa-thumbs-up"></i>
+    <span id="span_poz_${predlog.id_objava}">${prikazPoz}</span>
+  </button>
+
+  <button 
+    id="btn-neg-${predlog.id_objava}"
+    class="btn gumb-vsecek"
+    style="background-color: white; color: #dc3545; border: 2px solid #dc3545; padding: 8px 18px; border-radius: 50px;"
+    onclick="spremeniVsecke(${predlog.id_objava}, -1, this)">
+    <i class="fas fa-thumbs-down"></i>
+    <span id="span_neg_${predlog.id_objava}">${prikazNeg}</span>
+  </button>
+</div>
+        
+
           <hr>
           <h5 class="fw-bold mb-3">Komentarji</h5>
           <div class="mb-3">
@@ -121,22 +141,51 @@ if (mapElement) {
 // VŠEČKANJE
 // =================================================================
 
-window.glasuj = function(id) {
-    fetch('/api/posodobi-vsecke', {
+window.spremeniVsecke = function(id, sprememba, element) {
+    const email = localStorage.getItem('prijavljenEmail');
+    if (!email) {
+        alert('Za glasovanje se moraš prijaviti.');
+        return;
+    }
+
+    fetch('/api/glasuj', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id_objava: id })
+        body: JSON.stringify({ id_objava: id, sprememba: sprememba, email: email })
     })
     .then(res => res.json())
     .then(data => {
-        if (data.uspeh) {
-            const span = document.getElementById(`span_${id}_vsecki`);
-            if (span) span.textContent = data.novi_vsecki;
-        } else {
-            alert("Napaka pri oddaji glasu.");
+        if (!data.uspeh) return;
+
+        const noviVsecki = data.novi_vsecki;
+
+        const btnPoz = document.getElementById(`btn-poz-${id}`);
+        const btnNeg = document.getElementById(`btn-neg-${id}`);
+        const spanPoz = document.getElementById(`span_poz_${id}`);
+        const spanNeg = document.getElementById(`span_neg_${id}`);
+
+        // Ponastavi oba gumba na privzet izgled
+        btnPoz.style.backgroundColor = 'white';
+        btnPoz.style.color = '#198754';
+        btnNeg.style.backgroundColor = 'white';
+        btnNeg.style.color = '#dc3545';
+
+        if (!data.razveljavljen) {
+            // Invertaj kliknjenega
+            if (sprememba === 1) {
+                btnPoz.style.backgroundColor = '#198754';
+                btnPoz.style.color = 'white';
+            } else {
+                btnNeg.style.backgroundColor = '#dc3545';
+                btnNeg.style.color = 'white';
+            }
         }
+
+        // Posodobi števce — pozitivno ob thumbs-up, negativno ob thumbs-down
+        spanPoz.textContent = noviVsecki > 0 ? noviVsecki : '';
+        spanNeg.textContent = noviVsecki < 0 ? noviVsecki : '';
     })
-    .catch(err => console.error(err));
+    .catch(err => console.error("Napaka pri glasovanju:", err));
 };
 
 
@@ -156,6 +205,7 @@ if (gumbObjavi) {
     const slikaInput = document.getElementById('slika-predlog');
     const emailPrijavljenega = localStorage.getItem('prijavljenEmail');
 
+    // Preverjanje prijave
     if (!emailPrijavljenega) {
       alert("Za oddajo predloga morate biti prijavljeni!");
       return;
@@ -172,6 +222,12 @@ if (gumbObjavi) {
      // to je za objavo na stran predlogi.html
 // to je za objavo na stran predlogi.html
 
+    // Tukaj definiramo koordinate preden jih pošljemo
+    // izbraneKoordinate so tiste, ki si jih zajela s klikom na zemljevid
+    const koordinateString = izbraneKoordinate 
+        ? `${izbraneKoordinate.lat.toFixed(6)}, ${izbraneKoordinate.lng.toFixed(6)}` 
+        : "46.5547, 15.6459"; // Default, če uporabnik ni kliknil na mapo
+
     function posljiNaStrezenik(slikaBase64) {
       fetch('/api/dodaj-predlog', {
         method: 'POST',
@@ -180,7 +236,8 @@ if (gumbObjavi) {
           naslov: naslov,
           opis: opis,
           email: emailPrijavljenega,
-          fotografija: slikaBase64
+          fotografija: slikaBase64,
+          lokacija: koordinateString // Zdaj je to definirano!
         })
       })
       .then(res => res.json())
@@ -188,7 +245,6 @@ if (gumbObjavi) {
         if (podatki.uspeh) {
           /*alert(podatki.sporocilo);
           
-          // Če je objavila občina jo vrže na obcina.html
           if (podatki.jeObcina) {
              window.location.href = "obcina.html";
           } else {
@@ -216,6 +272,7 @@ if (gumbObjavi) {
       .catch(err => prikaziObvestilo("Napaka", "Prišlo je do napake na strežniku."));
     }
 
+    // Obdelava slike
     if (slikaInput && slikaInput.files && slikaInput.files.length > 0) {
       const reader = new FileReader();
       reader.onloadend = function() { 
@@ -223,7 +280,6 @@ if (gumbObjavi) {
       };
       reader.readAsDataURL(slikaInput.files[0]);
     } else {
-      // Če uporabnik sploh ni kliknil ali izbral datoteke, pošljemo privzeto sliko
       posljiNaStrezenik("slike/zacetna.jpg");
     }
   }); 
@@ -309,3 +365,48 @@ function prikaziObvestilo(naslov, sporocilo) {
 
 
 
+// =================================================================
+// FILTRIRANJE
+// =================================================================
+
+const filterUporabnik = document.getElementById('filter-uporabnik');
+const filterObcina = document.getElementById('filter-obcina');
+
+// Skupna funkcija za obdelavo filtriranja
+// Globalna spremenljivka, da ne beremo vedno iz storage-a
+let trenutniPredlogiCache = [];
+
+function nastaviFiltriranje(element, kljucSessionStorage, idVsebnika) {
+  if (!element) return;
+
+  element.addEventListener('change', function() {
+    // 1. Pridobi podatke
+    const podatki = JSON.parse(sessionStorage.getItem(kljucSessionStorage) || "[]");
+    let sortirani = [...podatki];
+
+    // 2. Sortiraj
+    if (this.value === 'maxvseckov') {
+      sortirani.sort((a, b) => (parseInt(b.st_vseckov) || 0) - (parseInt(a.st_vseckov) || 0));
+    } else if (this.value === 'minvseckov') {
+      sortirani.sort((a, b) => (parseInt(a.st_vseckov) || 0) - (parseInt(b.st_vseckov) || 0));
+    }
+
+    // 3. Osveži izris
+    const vsebnik = document.getElementById(idVsebnika);
+    if (vsebnik) {
+      vsebnik.innerHTML = '';
+      sortirani.forEach(predlog => {
+        // VŠČEČKI: Zagotovimo, da pošljemo pravilno številko v funkcijo
+        const vsecki = predlog.st_vseckov || 0;
+        vsebnik.innerHTML += generirajKarticoHTML(predlog, vsecki);
+      });
+    }
+  });
+}
+
+// Inicializacija za obe strani
+// Za navadne uporabnike (predlogi.html)
+nastaviFiltriranje(filterUporabnik, "vsiPredlogi", "predlog-uporabnik");
+
+// Za občinske predloge (obcina.html)
+nastaviFiltriranje(filterObcina, "vsiPredlogiObcine", "predlogi-obcina");

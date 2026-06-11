@@ -1,28 +1,72 @@
 // =================================================================
-// SKRIPT ZA ZEMLJEVID IN SPLOŠNE FUNKCIJE STRANI
+// ZEMLJEVID
 // =================================================================
 
-const mapElement = document.getElementById('map');
+document.addEventListener('DOMContentLoaded', function() {
+  const mapElement = document.getElementById('map');
+  if (!mapElement) return;
 
-if (mapElement) {
+  if (mapElement._leaflet_id) mapElement._leaflet_id = null;
+
   const map = L.map('map').setView([46.5547, 15.6459], 13);
-  //to je da je nastavleno na maribor
 
-  //to je da se tiles naložijo not
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19,
-    attribution: '&copy; OpenStreetMap contributors'
+    maxZoom: 19
   }).addTo(map);
-}
 
-//za odjavo, potem zbriše id ven iz local storaga, das elahko drugi prijavi
-function odjaviUporabnika() {
-    localStorage.clear();
-    alert('Odjava uspešna.');
-    window.location.href = 'prijava.html';
-}
+  function getMarkerIcon(statusId) {
+    const barve = { 1: 'blue', 2: 'orange', 3: 'green' };
+    return L.icon({
+      iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-${barve[statusId] || 'blue'}.png`,
+      shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      popupAnchor: [1, -34],
+      shadowSize: [41, 41]
+    });
+  }
 
+  // ← SAMO TO JE NOVO
+  const markerCluster = L.markerClusterGroup();
 
+  fetch('/api/vsi-predlogi-uporabnikov?t=' + new Date().getTime())
+    .then(res => res.json())
+    .then(predlogi => {
+      predlogi.forEach(p => {
+        if (!p.lokacija) return;
+
+        const [lat, lng] = p.lokacija.split(',').map(c => parseFloat(c.trim()));
+        if (isNaN(lat) || isNaN(lng)) return;
+
+        const statusId = parseInt(p.tk_status_pobudid_status_pobud) || 1;
+        const statusIme = { 1: "Oddano", 2: "V obdelavi", 3: "Zaključeno" }[statusId] || "Oddano";
+
+        // ← .addTo(map) ZAMENJANO z .addLayer
+        const marker = L.marker([lat, lng], { icon: getMarkerIcon(statusId) });
+
+        marker.bindPopup(`
+          <div style="width: 260px; padding: 5px;">
+            <img src="${p.fotografija || 'slike/zacetna.jpg'}" 
+                 style="width: 100%; height: 140px; object-fit: cover; border-radius: 12px; margin-bottom: 10px;">
+            <h5 style="font-weight:bold; margin: 0 0 5px 0;">${p.naslov}</h5>
+            <p style="margin: 3px 0; font-size: 13px;">Status: <b>${statusIme}</b></p>
+            <p style="margin: 3px 0; font-size: 13px;">Avtor: ${p.avtor_ime || ''} ${p.avtor_priimek || ''}</p>
+            <div style="color: green; font-weight: bold; margin-top: 8px; font-size: 14px;">
+              <i class="fas fa-thumbs-up"></i> ${p.st_vseckov || 0} podpore
+            </div>
+          </div>
+        `);
+
+        marker.on('mouseover', function() { this.openPopup(); });
+        marker.on('mouseout', function() { this.closePopup(); });
+
+        markerCluster.addLayer(marker); // ← NOVO
+      });
+
+      map.addLayer(markerCluster); // ← NOVO
+    })
+    .catch(err => console.error("Napaka pri nalaganju predlogov:", err));
+});
 
 // =================================================================
 // NALAGANJE PREDLOGOV

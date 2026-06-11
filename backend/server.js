@@ -1,4 +1,5 @@
 
+
 const path = require("path");
 
 const express = require("express");
@@ -93,10 +94,6 @@ wss.on('connection', (ws) => {
 
       }
 
-
-
-      // POPRAVEK: Tukaj spremeni podatek.besedilo v podatek.tekst
-
       await pool.query(
 
         `INSERT INTO Sporocilo (posiljatelj_email, prejemnik_email, vsebina, datum_vnos) 
@@ -188,12 +185,6 @@ app.get('/api/zgodovina-klepeta', async (req, res) => {
     }
 
 });
-
-
-
-
-
-
 
 // =================================================================
 
@@ -457,9 +448,7 @@ app.post('/api/posodobi-status', async (req, res) => {
 
 
 // =================================================================
-
-// PRIDOBIVANJE PREDLOGOV
-
+// PRIDOBIVANJE PREDLOGOV (POSODOPLJENO)
 // =================================================================
 
 
@@ -957,35 +946,38 @@ async function preveriInPodeliZnacko(email) {
 }
 
 app.get('/api/vsi-predlogi-uporabnikov', async (req, res) => {
-    try {
-        // 1. Preberemo vse objave, ki so tipa 'Predlog'
-        const objaveRez = await pool.query(`
-            SELECT id_objava AS id, naslov, opis, slika, stevilo_podpor 
-            FROM Objava 
-            WHERE tip_objave = 'Predlog'
-            ORDER BY id_objava DESC
-        `);
+  try {
+    const objaveRez = await pool.query(`
+      SELECT
+        o.id_objava, o.naslov, o.opis, o.lokacija, o.fotografija, o.st_vseckov, o.tip_objave,
+        COALESCE(o.tk_uporabnikid_uporabnik, 0) AS tk_uporabnikid_uporabnik, 
+        TO_CHAR(o.datum_objave, 'YYYY-MM-DD') AS datum_objave,
+        COALESCE(o.tk_status_pobudid_status_pobud, 1) AS tk_status_pobudid_status_pobud,
+        u.ime AS avtor_ime, u.priimek AS avtor_priimek
+      FROM objava o
+      LEFT JOIN uporabnik u ON o.tk_uporabnikid_uporabnik = u.id_uporabnik
+      WHERE o.tip_objave = 'Predlog'
+      ORDER BY o.id_objava DESC
+    `);
+        
+    const predlogi = objaveRez.rows;
 
-        const predlogi = objaveRez.rows;
-
-        // 2. Za vsak predlog poiščemo še pripadajoče komentarje
-        for (let predlog of predlogi) {
-            const komRez = await pool.query(`
-                SELECT u.ime AS avtor, k.vsebina AS besedilo 
-                FROM Komentar k
-                JOIN Uporabnik u ON k.tk_uporabnikid_uporabnik = u.id_uporabnik
-                WHERE k.tk_objavaid_objava = $1
-                ORDER BY k.id_komentar ASC
-            `, [predlog.id]);
-            
-            predlog.komentarji = komRez.rows;
-        }
-
-        return res.json(predlogi);
-    } catch (err) {
-        console.error("Napaka pri branju predlogov iz baze:", err);
-        return res.status(500).json([]);
+    for (let predlog of predlogi) {
+      const komRez = await pool.query(`
+        SELECT u.ime AS avtor, k.vsebina AS besedilo
+        FROM komentar k
+        JOIN uporabnik u ON k.tk_uporabnikid_uporabnik = u.id_uporabnik
+        WHERE k.tk_objavaid_objava = $1
+        ORDER BY k.id_komentar ASC
+      `, [predlog.id_objava]);
+      predlog.komentarji = komRez.rows;
     }
+
+    return res.json(predlogi);
+  } catch (err) {
+    console.error("Napaka pri branju predlogov:", err);
+    return res.status(500).json([]);
+  }
 });
 
 //nagrade
@@ -1001,27 +993,183 @@ app.post('/api/izberi-zmagovalca', async (req, res) => {
         return res.json({ uspeh: true });
     } catch (err) {
         console.error("Napaka:", err);
+    } // <--- TUKAJ SI IMELA NAPAKO (manjkal je ta oklepaj)
+});
+// =================================================================
+// DODAJANJE NOVEGA KOMENTARJA
+// =================================================================
+
+app.post('/api/dodaj-komentar', async (req, res) => {
+    const { vsebina, idObjaves, email } = req.body;
+    const idZaObjavo = idObjaves || req.body.idObjave;
+
+    try {
+        const userCheck = await pool.query('SELECT id_uporabnik FROM uporabnik WHERE email = $1', [email]);
+        if (userCheck.rows.length === 0) return res.json({ uspeh: false, sporocilo: 'Uporabnik ne obstaja.' });
+        const idUporabnika = userCheck.rows[0].id_uporabnik;
+
+        const vnosKomentarjaQuery = `
+            INSERT INTO komentar (vsebina, datum_ure_oddaje, tk_uporabnikid_uporabnik, tk_objavaid_objava)
+            VALUES ($1, CURRENT_DATE, $2, $3)
+        `;
+        await pool.query(vnosKomentarjaQuery, [vsebina, idUporabnika, idZaObjavo]);
+        return res.json({ uspeh: true, sporocilo: 'Komentar uspešno dodan!' });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ uspeh: false, sporocilo: 'Napaka na strežniku.' });
+    }
+});
+
+// =================================================================
+// ODDAJA NOVEGA PREDLOGA
+// =================================================================
+
+app.post('/api/dodaj-predlog', async (req, res) => {
+    const { naslov, opis, email, fotografija, lokacija } = req.body;
+
+    if (!naslov || !opis || !email) {
+        return res.json({ uspeh: false, sporocilo: "Manjkajoči podatki!" });
+    }
+
+    try {
+        const userCheck = await pool.query('SELECT id_uporabnik FROM uporabnik WHERE email = $1', [email]);
+        if (userCheck.rows.length === 0) {
+            return res.json({ uspeh: false, sporocilo: `Uporabnik ne obstaja.` });
+        }
+        const idUporabnika = userCheck.rows[0].id_uporabnik;
+
+        let statusId = 1; 
+        if (parseInt(idUporabnika) === 1) {
+            statusId = 2; 
+        }
+
+        const odlocanjeRes = await pool.query("SELECT * FROM tip_odlocanja WHERE naziv = 'Prijava težav v lokalnem okolju' LIMIT 1");
+        const odlocanjeId = odlocanjeRes.rows[0].id_tip_odlocanja;
+
+        const vnosObjaveQuery = `
+            INSERT INTO objava (
+                naslov, opis, lokacija, fotografija, datum_objave, tip_objave, st_vseckov, 
+                tk_uporabnikid_uporabnik, tk_tip_odlocanjaid_tip_odlocanja, tk_status_pobudid_status_pobud
+            )
+            VALUES ($1, $2, $3, $4, CURRENT_DATE, 'Predlog', 0, $5, $6, $7)
+        `;
+        
+        await pool.query(vnosObjaveQuery, [
+            naslov, 
+            opis, 
+            lokacija || '46.5547, 15.6459',
+            fotografija || 'slike/zacetna.jpg', 
+            idUporabnika, 
+            odlocanjeId, 
+            statusId
+        ]);
+
+        await preveriInPodeliZnacko(email);
+
+        return res.json({
+            uspeh: true,
+            jeObcina: parseInt(idUporabnika) === 1,
+            sporocilo: "Predlog je bil uspešno oddan!"
+        });
+
+    } catch (err) {
+        console.error("Napaka pri oddaji:", err);
+        return res.status(500).json({ uspeh: false, sporocilo: "Napaka: " + err.message });
+    }
+});
+
+// =================================================================
+// VŠEČKI
+// =================================================================
+
+app.post('/api/glasuj', async (req, res) => {
+    const { id_objava, sprememba, email } = req.body;
+
+    try {
+        // Poišči uporabnika po emailu
+        const uporabnikResult = await pool.query(
+            'SELECT id_uporabnik FROM uporabnik WHERE email = $1',
+            [email]
+        );
+        if (uporabnikResult.rows.length === 0) {
+            return res.status(401).json({ uspeh: false, napaka: 'Uporabnik ni najden.' });
+        }
+        const id_uporabnik = uporabnikResult.rows[0].id_uporabnik;
+
+        const vrednost = parseInt(sprememba) === -1 ? -1 : 1;
+
+        // Preveri, ali je uporabnik že glasoval
+        const obstojeceGlasovanje = await pool.query(
+            'SELECT id_glasovanje, ze_vseckano FROM glasovanje WHERE tk_uporabnikid_uporabnik = $1 AND tk_objavaid_objava = $2',
+            [id_uporabnik, parseInt(id_objava)]
+        );
+
+        if (obstojeceGlasovanje.rows.length > 0) {
+            // Že glasoval — razveljavi glas (odstrani glasovanje in povrni vrednost)
+            const stariGlas = obstojeceGlasovanje.rows[0].ze_vseckano ? 1 : -1;
+
+            await pool.query(
+                'DELETE FROM glasovanje WHERE tk_uporabnikid_uporabnik = $1 AND tk_objavaid_objava = $2',
+                [id_uporabnik, parseInt(id_objava)]
+            );
+
+            const rezultat = await pool.query(
+                'UPDATE objava SET st_vseckov = COALESCE(st_vseckov, 0) - $1 WHERE id_objava = $2 RETURNING st_vseckov',
+                [stariGlas, parseInt(id_objava)]
+            );
+
+            return res.json({
+                uspeh: true,
+                novi_vsecki: rezultat.rows[0].st_vseckov,
+                razveljavljen: true
+            });
+        }
+
+        // Nov glas — vstavi v glasovanje in posodobi st_vseckov
+        await pool.query(
+            'INSERT INTO glasovanje (ze_vseckano, tk_uporabnikid_uporabnik, tk_objavaid_objava) VALUES ($1, $2, $3)',
+            [vrednost === 1, id_uporabnik, parseInt(id_objava)]
+        );
+
+        const rezultat = await pool.query(
+            'UPDATE objava SET st_vseckov = COALESCE(st_vseckov, 0) + $1 WHERE id_objava = $2 RETURNING st_vseckov',
+            [vrednost, parseInt(id_objava)]
+        );
+
+        return res.json({
+            uspeh: true,
+            novi_vsecki: rezultat.rows[0].st_vseckov,
+            razveljavljen: false
+        });
+
+    } catch (err) {
+        console.error("Napaka pri glasovanju:", err);
         return res.status(500).json({ uspeh: false });
     }
 });
 
-//proba
-app.get('/api/statistika-statusov', (req, res) => {
-    const sql = `
-        SELECT status_pobud.naziv as status, COUNT(objava.tk_status_pobudid_status_pobud) as stetje 
-        FROM status_pobud 
-        LEFT JOIN objava ON status_pobud.id_status_pobud = objava.tk_status_pobudid_status_pobud 
-        GROUP BY status_pobud.naziv`;
-    
-    // Uporabimo 'pool', ker tako se imenuje tvoja baza!
-    pool.query(sql, (err, result) => {
-        if (err) {
-            console.error("Napaka pri branju statistike:", err);
-            return res.status(500).json({ error: err.message });
-        }
-        // Pri pg knjižnici so podatki v result.rows
-        res.json(result.rows);
-    });
+// =================================================================
+// PREDLOGI ZA UPORABNIKA
+// =================================================================
+
+app.get('/api/moji-predlogi/:email', async (req, res) => {
+    const { email } = req.params;
+    try {
+        const uporabnikoviPredlogi = await pool.query(`
+            SELECT o.id_objava, o.naslov, o.opis, o.fotografija, o.st_vseckov, o.je_zmagovalec,
+                   s.naziv AS status
+            FROM objava o
+            JOIN uporabnik u ON o.tk_uporabnikid_uporabnik = u.id_uporabnik
+            LEFT JOIN status_pobud s ON o.tk_status_pobudid_status_pobud = s.id_status_pobud
+            WHERE u.email = $1 AND o.tip_objave = 'Predlog'
+            ORDER BY o.id_objava DESC
+        `, [email]);
+
+        return res.json(uporabnikoviPredlogi.rows);
+    } catch (err) {
+        console.error("Napaka pri pridobivanju uporabnikovih predlogov:", err);
+        return res.status(500).json({ sporocilo: 'Napaka na strežniku.' });
+    }
 });
 
 // API za krožni graf (statusi)
@@ -1064,6 +1212,61 @@ app.get('/api/statistika-novosti', (req, res) => {
 
 
 
+// =================================================================
+// NAGRADE / ZMAGOVALEC
+// =================================================================
+
+app.post('/api/izberi-zmagovalca', async (req, res) => {
+    const { id_objava } = req.body;
+    try {
+        await pool.query('UPDATE objava SET je_zmagovalec = true WHERE id_objava = $1', [parseInt(id_objava)]);
+        return res.json({ uspeh: true });
+    } catch (err) {
+        console.error("Napaka pri izbiri zmagovalca:", err);
+        return res.status(500).json({ uspeh: false });
+    }
+});
+
+// =================================================================
+// STATISTIKA (DODANO)
+// =================================================================
+
+app.get('/api/statistika-statusov', (req, res) => {
+    const sql = `
+        SELECT status_pobud.naziv as status, COUNT(objava.tk_status_pobudid_status_pobud) as stetje 
+        FROM status_pobud 
+        LEFT JOIN objava ON status_pobud.id_status_pobud = objava.tk_status_pobudid_status_pobud 
+        GROUP BY status_pobud.naziv`;
+    
+    pool.query(sql, (err, result) => {
+        if (err) {
+            console.error("Napaka pri branju statistike:", err);
+            return res.status(500).json({ error: err.message });
+        }
+        res.json(result.rows);
+    });
+});
+
+app.get('/api/top-predlogi', (req, res) => {
+    const sql = `SELECT naslov, st_vseckov FROM objava ORDER BY st_vseckov DESC LIMIT 3`;
+    
+    pool.query(sql, (err, result) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(result.rows);
+    });
+});
+
+app.get('/api/statistika-novosti', (req, res) => {
+    const sql = `SELECT COUNT(*) as stetje FROM objava WHERE datum_objave >= CURRENT_DATE - INTERVAL '30 days'`;
+    
+    pool.query(sql, (err, result) => {
+        if (err) {
+            console.error("Napaka:", err);
+            return res.status(500).json({ error: err.message });
+        }
+        res.json(result.rows[0]);
+    });
+});
 
 server.listen(3000, () => {
 

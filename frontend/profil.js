@@ -13,9 +13,13 @@ document.addEventListener("DOMContentLoaded", () => {
         // Zaženemo samo, če smo na admin strani, na profilu se nalaga dinamično spodaj
         naloziPredlogeZaAdmina();
     }
+
+    // Povezava na gumb za statistiko
+    const statTab = document.querySelector('[data-bs-target="#zavihek-statistika"]');
+    if (statTab) {
+        statTab.addEventListener('click', prikaziGraf);
+    }
 });
-
-
 
 // =================================================================
 // UPRAVLJANJE PROFILA UPORABNIKA
@@ -83,7 +87,6 @@ function prikaziPodatke() {
         });
     }
 
-    // Poslušalci dogodkov za klik na zavihke (za osveževanje podatkov)
     const znackeTab = document.getElementById("znacke-tab");
     if (znackeTab) {
         znackeTab.addEventListener("click", naloziMojeZnacke);
@@ -94,7 +97,6 @@ function prikaziPodatke() {
         predlogiTab.addEventListener("click", naloziMojePredloge);
     }
     
-    // Začetni prenos vseh podatkov ob nalaganju strani
     naloziMojePredloge();
     naloziMojeZnacke();
 }
@@ -105,9 +107,8 @@ function odjaviUporabnika() {
     window.location.href = 'prijava.html'; 
 }
 
-
 // =================================================================
-// FUNKCIJA ZA PREDLOGE
+// FUNKCIJE ZA PREDLOGE
 // =================================================================
 
 async function naloziMojePredloge() {
@@ -176,11 +177,8 @@ if (zmagovalniPredlog && prostorZaObvestilo) {
             vrstica.id = `predlog-row-${predlog.id_objava}`;
             
             let slikaUrl = predlog.fotografija || 'slike/zacetna.jpg';
-
-            // Kratka obrezava opisa, da ne raztegne vrstice preveč
             const krajsiOpis = predlog.opis.length > 60 ? predlog.opis.substring(0, 60) + "..." : predlog.opis;
 
-            // Struktura vrstice je enaka adminovi: slika, naslov, opis namesto avtorja, všečki in gumb za brisanje
             vrstica.innerHTML = `
                 <td>
                     <img src="${slikaUrl}" 
@@ -196,46 +194,32 @@ if (zmagovalniPredlog && prostorZaObvestilo) {
                     </span>
                 </td>
                 <td>
-                    <button class="btn btn-sm btn-outline-danger w-100" onclick="izbrisiPredlog(${predlog.id_objava})">
+                <button class="btn btn-sm btn-outline-danger w-100" onclick="izbrisiPredlog(${predlog.id_objava})">
                         <i class="fas fa-trash-alt me-1"></i> Izbriši
                     </button>
+
                 </td>
             `;
             seznamPredlogovOznaka.appendChild(vrstica);
         });
     } catch (napaka) {
         console.error("Napaka pri nalaganju predlogov:", napaka);
-        seznamPredlogovOznaka.innerHTML = `<tr><td colspan="5" class="text-center text-danger small py-3">Napaka pri povezavi s strežnikom.</td></tr>`;
     }
 }
 
-// Funkcija za brisanje predloga
 async function izbrisiPredlog(idObjave) {
-    if (!idObjave) {
-        alert("Napaka: Neveljaven ID predloga.");
-        return;
-    }
-
+    if (!idObjave) return;
     if (confirm("Ali ste prepričani, da želite trajno odstraniti ta predlog?")) {
         try {
-            const odziv = await fetch(`/api/izbrisi-predlog/${idObjave}`, {
-                method: 'DELETE'
-            });
+            const odziv = await fetch(`/api/izbrisi-predlog/${idObjave}`, { method: 'DELETE' });
             const data = await odziv.json();
-
             if (odziv.ok && data.uspeh) {
-                alert("Predlog je bil uspešno izbrisan.");
-                naloziMojePredloge(); // Ponovno osvežimo profil
-            } else {
-                alert("Napaka pri brisanju predloga.");
+                alert("Predlog izbrisan.");
+                naloziMojePredloge();
             }
-        } catch (napaka) {
-            console.error("Napaka pri brisanju:", napaka);
-            alert("Težava s povezavo do strežnika.");
-        }
+        } catch (napaka) { console.error(napaka); }
     }
 }
-
 
 // =================================================================
 // FUNKCIJA ZA ZNAČKE
@@ -245,7 +229,6 @@ async function naloziMojeZnacke() {
     const vsebnik = document.getElementById("seznamZnack");
     const stevilkaZnacke = document.getElementById("stevilkaZnack");
     if (!vsebnik) return;
-
     const email = localStorage.getItem("prijavljenEmail"); 
     if (!email) return;
 
@@ -253,217 +236,153 @@ async function naloziMojeZnacke() {
         const odziv = await fetch(`/api/moje-znacke/${email}`);
         const znacke = await odziv.json();
 
-        if (stevilkaZnacke) {
-            stevilkaZnacke.textContent = `(${znacke.length})`;
-        }
+        if (stevilkaZnacke) stevilkaZnacke.textContent = `(${znacke.length})`;
 
         if (znacke.length === 0) {
-            vsebnik.innerHTML = `
-                <div class="col-12 text-center py-4">
-                    <p class="text-muted mb-0">Trenutno še nimate osvojenih značk. Bodite aktivni v skupnosti!</p>
-                </div>
-            `;
+            vsebnik.innerHTML = `<div class="col-12 text-center py-4"><p class="text-muted">Ni značk.</p></div>`;
             return;
         }
 
         vsebnik.innerHTML = ""; 
-        
         znacke.forEach(znacka => {
-            let ikona = "fa-award"; 
-            const nazivMali = znacka.naziv.toLowerCase();
-
-            if (nazivMali.includes("vodja")) ikona = "fa-crown";
-            if (nazivMali.includes("glas")) ikona = "fa-shield-alt";
-            if (nazivMali.includes("občan")) ikona = "fa-comments";
-            if (nazivMali.includes("steber")) ikona = "fa-lightbulb";
-
+            let ikona = "fa-award";
+            const n = znacka.naziv.toLowerCase();
+            if (n.includes("vodja")) ikona = "fa-crown";
+            else if (n.includes("glas")) ikona = "fa-shield-alt";
+            else if (n.includes("občan")) ikona = "fa-comments";
+            else if (n.includes("steber")) ikona = "fa-lightbulb";
+            
             vsebnik.innerHTML += `
                 <div class="col-6 col-sm-4 mb-3">
-                  <div class="znacka-kartica shadow-sm p-3 text-center rounded bg-white h-100" style="border: 2px solid #ffd700; transition: transform 0.2s;">
-                    <div class="znacka-ikona mb-2" style="font-size: 26px; color: #ffd700;"><i class="fas ${ikona}"></i></div>
-                    <h6 class="fw-bold mb-1" style="font-size: 14px; color: #000;">${znacka.naziv}</h6>
-                    <p class="text-muted small mb-0" style="font-size: 11px; line-height: 1.2;">${znacka.opis}</p>
+                  <div class="shadow-sm p-3 text-center rounded bg-white h-100" style="border: 2px solid #ffd700;">
+                    <div class="mb-2" style="font-size: 26px; color: #ffd700;"><i class="fas ${ikona}"></i></div>
+                    <h6 class="fw-bold">${znacka.naziv}</h6>
+                    <p class="text-muted small">${znacka.opis}</p>
                   </div>
-                </div>
-            `;
+                </div>`;
         });
-    } catch (napaka) {
-        console.error("Napaka pri nalaganju značk:", napaka);
-        vsebnik.innerHTML = `<div class="col-12 text-center text-danger small py-3">Napaka pri povezavi s strežnikom.</div>`;
-    }
+    } catch (e) { console.error(e); }
 }
 
 // =================================================================
-// UPRAVLJANJE UPORABNIKOV ZA ADMINA
+// UPRAVLJANJE UPORABNIKOV (ADMIN)
 // =================================================================
 
 function naloziUporabnikeZaAdmina() {
-    const seznamUporabnikovOznaka = document.getElementById('seznamUporabnikov');
-    const stetjeUporabnikovOznaka = document.getElementById('stetjeUporabnikov');
-    const praznoObvestilo = document.getElementById('praznoObvestiloUporabniki');
-    const tabelaKontejner = document.getElementById('tabelaUporabnikovKontejner');
-
-    if (!seznamUporabnikovOznaka) return;
+    const seznam = document.getElementById('seznamUporabnikov');
+    if (!seznam) return;
 
     fetch('/api/vsi-uporabniki')
-        .then(response => response.json())
-        .then(vsiUporabniki => {
-            if (stetjeUporabnikovOznaka) {
-                stetjeUporabnikovOznaka.textContent = `Skupno uporabnikov: ${vsiUporabniki.length}`;
-            }
-
-            if (vsiUporabniki.length === 0) {
-                if (praznoObvestilo) praznoObvestilo.classList.remove('d-none');
-                if (tabelaKontejner) tabelaKontejner.classList.add('d-none');
-                return;
-            }
-
-            if (praznoObvestilo) praznoObvestilo.classList.add('d-none');
-            if (tabelaKontejner) tabelaKontejner.classList.remove('d-none');
-            seznamUporabnikovOznaka.innerHTML = '';
-
-            vsiUporabniki.forEach((uporabnik) => {
-                const vrstica = document.createElement('tr');
-                vrstica.id = `uporabnik-row-${uporabnik.id_uporabnik}`;
-                const polnoIme = `${uporabnik.ime} ${uporabnik.priimek}`;
-                const uID = parseInt(uporabnik.tk_tip_uporabnikaid_tip_uporabnika) || 2;
-
-                vrstica.innerHTML = `
-                    <td class="fw-bold text-muted">#${uporabnik.id_uporabnik}</td>
-                    <td><span class="fw-bold">${polnoIme}</span></td>
-                    <td class="text-muted">${uporabnik.email}</td>
-                    <td>
-                        <select class="form-select form-select-sm status-select" onchange="spremeniVlogoUporabnika(${uporabnik.id_uporabnik}, this.value)">
-                          <option value="1" ${uID === 1 ? 'selected' : ''}>Administrator</option>
-                          <option value="2" ${uID === 2 ? 'selected' : ''}>Uporabnik</option>
-                        </select>
-                    </td>
-                `;
-                seznamUporabnikovOznaka.appendChild(vrstica);
+        .then(res => res.json())
+        .then(uporabniki => {
+            seznam.innerHTML = '';
+            uporabniki.forEach(u => {
+                const uID = parseInt(u.tk_tip_uporabnikaid_tip_uporabnika) || 2;
+                seznam.innerHTML += `
+                    <tr>
+                        <td>#${u.id_uporabnik}</td>
+                        <td>${u.ime} ${u.priimek}</td>
+                        <td>${u.email}</td>
+                        <td>
+                            <select class="form-select form-select-sm" onchange="spremeniVlogoUporabnika(${u.id_uporabnik}, this.value)">
+                                <option value="1" ${uID === 1 ? 'selected' : ''}>Admin</option>
+                                <option value="2" ${uID === 2 ? 'selected' : ''}>Uporabnik</option>
+                            </select>
+                        </td>
+                    </tr>`;
             });
-        })
-        .catch(error => console.error('Napaka pri pridobivanju uporabnikov:', error));
+        });
 }
 
-function spremeniVlogoUporabnika(idUporabnik, novVlogaId) {
+function spremeniVlogoUporabnika(id, vloga) {
     fetch('/api/posodobi-vlogo', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-            id_uporabnik: parseInt(idUporabnik), 
-            nov_vloga_id: parseInt(novVlogaId) 
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.uspeh) {
-            alert('Vloga uporabnika uspešno posodobljena!');
-        } else {
-            alert('Napaka pri posodabljanju vloge na strežniku.');
-        }
-    })
-    .catch(err => {
-        console.error('Napaka pri omrežni povezavi:', err);
-    });
+        body: JSON.stringify({ id_uporabnik: parseInt(id), nov_vloga_id: parseInt(vloga) })
+    }).then(res => res.json()).then(d => { if (d.uspeh) alert('Posodobljeno!'); });
+}
+
+// =================================================================
+// PREDLOGI ZA ADMINA (Z NAGRADO)
+// =================================================================
+function naloziPredlogeZaAdmina() {
+    const seznam = document.getElementById('seznamPredlogov');
+    if (!seznam) return;
+
+    fetch('/api/vsi-predlogi')
+        .then(res => res.json())
+        .then(predlogi => {
+            seznam.innerHTML = '';
+            predlogi.forEach(p => {
+                const sID = parseInt(p.tk_status_pobudid_status_pobud) || 1;
+                seznam.innerHTML += `
+                    <tr>
+                        <td><img src="${p.fotografija || 'slike/zacetna.jpg'}" class="img-fluid rounded-3" style="height: 60px; width: 80px; object-fit: cover;"></td>
+                        <td>${p.naslov}</td>
+                        <td>${p.avtor_email}</td>
+                        <td><span class="badge bg-success">${p.st_vseckov || 0}</span></td>
+                        <td>
+                            <select id="status-select-${p.id_objava}" class="form-select form-select-sm mb-2">
+                                <option value="1" ${sID === 1 ? 'selected' : ''}>Oddano</option>
+                                <option value="2" ${sID === 2 ? 'selected' : ''}>V obravnavi</option>
+                                <option value="3" ${sID === 3 ? 'selected' : ''}>Zaključeno</option>
+                            </select>
+                            <button class="btn btn-sm btn-outline-primary" onclick="odpriStatusModal(${p.id_objava})">
+                                Potrdi status
+                            </button>
+                        </td>
+                        <td>
+                            <button class="btn btn-warning btn-sm" onclick="odpriModalZmagovalec(${p.id_objava})" ${p.je_zmagovalec ? 'disabled' : ''}>
+                                <i class="fas fa-trophy"></i>
+                            </button>
+                        </td>
+                    </tr>`;
+            });
+        });
 }
 
 
-
-// =================================================================
-// PREDLOGI ZA ADMINA
-// =================================================================
-
-
-
-function naloziPredlogeZaAdmina() {
-    const seznamPredlogovOznaka = document.getElementById('seznamPredlogov');
-    const stetjePredlogovOznaka = document.getElementById('stetjePredlogov');
-    const praznoObvestiloPredlogi = document.getElementById('praznoObvestiloPredlogi');
-
-    if (!seznamPredlogovOznaka) return;
+/*function naloziPredlogeZaAdmina() {
+    const seznam = document.getElementById('seznamPredlogov');
+    if (!seznam) return;
 
     fetch('/api/vsi-predlogi')
-        .then(response => {
-            if (!response.ok) throw new Error("Strežnik je vrnil status " + response.status);
-            return response.json();
-        })
-        .then(vsiPredlogi => {
-            if (stetjePredlogovOznaka) {
-                stetjePredlogovOznaka.textContent = `Skupno predlogov: ${vsiPredlogi.length}`;
-            }
-
-            if (vsiPredlogi.length === 0) {
-                if (praznoObvestiloPredlogi) praznoObvestiloPredlogi.classList.remove('d-none');
-                seznamPredlogovOznaka.innerHTML = '';
-                return;
-            }
-
-            if (praznoObvestiloPredlogi) praznoObvestiloPredlogi.classList.add('d-none');
-            seznamPredlogovOznaka.innerHTML = '';
-
-            vsiPredlogi.forEach((predlog) => {
-                const vrstica = document.createElement('tr');
-                vrstica.id = `predlog-row-${predlog.id_objava}`;
-                const sID = parseInt(predlog.tk_status_pobudid_status_pobud) || 1; 
-                
-                const izpisanEmail = predlog.avtor_email || "Neznano";
-
-                vrstica.innerHTML = `
-                    <td>
-                        <img src="${predlog.fotografija || 'slike/zacetna.jpg'}" 
-                             onerror="this.onerror=null; this.src='slike/zacetna.jpg';" 
-                             class="img-fluid rounded-3" 
-                             style="height: 60px; width: 80px; object-fit: cover;">
-                    </td>
-                    <td class="fw-bold text-uppercase" style="font-size: 14px;">${predlog.naslov}</td>
-                    <td class="text-muted">${izpisanEmail}</td>
-                    <td>
-                        <span class="badge bg-success">
-                            <i class="fas fa-thumbs-up me-1"></i> ${predlog.st_vseckov || 0}
-                        </span>
-                    </td>
-                    <td>
-                        <select class="form-select form-select-sm status-select" onchange="osveziStatus(${predlog.id_objava}, this.value)">
-                            <option value="1" ${sID === 1 ? 'selected' : ''}>Oddano</option>
-                            <option value="2" ${sID === 2 ? 'selected' : ''}>V obravnavi</option>
-                            <option value="3" ${sID === 3 ? 'selected' : ''}>Zaključeno</option>
-                        </select>
-                    </td>
-                    <td>
-        <button class="btn btn-warning btn-sm" 
-        data-id="${predlog.id_objava}" 
-        onclick="odpriModalZmagovalec(${predlog.id_objava})" 
-        ${predlog.je_zmagovalec ? 'disabled' : ''}>
-            <i class="fas fa-trophy"></i>
-        </button>
-    </td>
-                `;
-                seznamPredlogovOznaka.appendChild(vrstica);
+        .then(res => res.json())
+        .then(predlogi => {
+            seznam.innerHTML = '';
+            predlogi.forEach(p => {
+                const sID = parseInt(p.tk_status_pobudid_status_pobud) || 1;
+                seznam.innerHTML += `
+                    <tr>
+                        <td><img src="${p.fotografija || 'slike/zacetna.jpg'}" class="img-fluid rounded-3" style="height: 60px; width: 80px; object-fit: cover;"></td>
+                        <td>${p.naslov}</td>
+                        <td>${p.avtor_email}</td>
+                        <td><span class="badge bg-success">${p.st_vseckov || 0}</span></td>
+                        <td>
+                            <select class="form-select form-select-sm" onchange="osveziStatus(${p.id_objava}, this.value)">
+                                <option value="1" ${sID === 1 ? 'selected' : ''}>Oddano</option>
+                                <option value="2" ${sID === 2 ? 'selected' : ''}>V obravnavi</option>
+                                <option value="3" ${sID === 3 ? 'selected' : ''}>Zaključeno</option>
+                            </select>
+                        </td>
+                        <td>
+                            <button class="btn btn-warning btn-sm" onclick="odpriModalZmagovalec(${p.id_objava})" ${p.je_zmagovalec ? 'disabled' : ''}>
+                                <i class="fas fa-trophy"></i>
+                            </button>
+                        </td>
+                    </tr>`;
             });
-        })
-        .catch(error => console.error('Napaka pri pridobivanju predlogov:', error));
+        });
 }
 //disable gumb za predloge !
 
-function osveziStatus(idObjava, novStatusId) {
+function osveziStatus(id, status) {
     fetch('/api/posodobi-status', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-            id_objava: parseInt(idObjava), 
-            nov_status_id: parseInt(novStatusId) 
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.uspeh) {
-            alert('Status uspešno posodobljen!');
-        } else {
-            alert('Napaka pri posodabljanju statusa.');
-        }
-    })
-    .catch(err => console.error('Napaka pri posodabljanju:', err));
-}
+        body: JSON.stringify({ id_objava: parseInt(id), nov_status_id: parseInt(status) })
+    }).then(res => res.json()).then(d => { if (d.uspeh) alert('Status posodobljen!'); });
+}*/
 
 //nagrada
 let trenutniIdZaZmagovalca = null;
@@ -489,20 +408,18 @@ window.potrdiZmagovalca = function() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id_objava: trenutniIdZaZmagovalca })
-    })
-    .then(res => res.json())
-    .then(data => {
+    }).then(res => res.json()).then(data => {
         if (data.uspeh) {
-            naloziPredlogeZaAdmina(); 
-        } else {
-            alert('Napaka pri shranjevanju.');
-        }
-    })
-    .catch(err => console.error(err));
+            bootstrap.Modal.getInstance(document.getElementById('potrditveniModal')).hide();
+            naloziPredlogeZaAdmina();
+        } else alert('Napaka!');
+    });
 };
 
+// =================================================================
+// STATISTIKA (GRAFI IN PODATKI)
+// =================================================================
 
-// 1. Funkcija za graf statusov (tvoja obstoječa)
 async function prikaziGraf() {
     try {
         const response = await fetch('/api/statistika-statusov');
@@ -563,6 +480,54 @@ document.addEventListener("DOMContentLoaded", () => {
     const statTab = document.querySelector('[data-bs-target="#zavihek-statistika"]');
     if (statTab) {
         statTab.addEventListener('click', prikaziGraf);
+    }
+});
+
+
+
+
+let trenutniIdZaStatus = null;
+
+window.odpriStatusModal = function(id) {
+    trenutniIdZaStatus = id;
+    new bootstrap.Modal(document.getElementById('statusModal')).show();
+};
+
+document.getElementById('btnPotrdiStatus').addEventListener('click', async () => {
+    // 1. Pridobimo select polje za točno to objavo
+    const select = document.getElementById(`status-select-${trenutniIdZaStatus}`);
+    const novStatus = select.value;
+
+    try {
+        const response = await fetch('/api/posodobi-status', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id_objava: trenutniIdZaStatus, nov_status_id: novStatus })
+        });
+        
+        const rez = await response.json();
+        
+        if (rez.uspeh) {
+            // 2. Zapremo modal
+            const modalEl = document.getElementById('statusModal');
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            modal.hide();
+
+            // 3. Vizualna potrditev brez alert-a
+            const gumb = document.querySelector(`button[onclick="odpriStatusModal(${trenutniIdZaStatus})"]`);
+            if (gumb) {
+                const originalnoBesedilo = gumb.innerHTML;
+                gumb.innerHTML = "✓ Uspešno";
+                gumb.classList.replace("btn-outline-primary", "btn-success");
+                
+                // 4. Počakamo 1 sekundo, da uporabnik vidi potrditev, nato osvežimo
+                setTimeout(() => {
+                    location.reload();
+                }, 1000);
+            }
+        }
+    } catch (err) {
+        console.error("Napaka pri komunikaciji:", err);
     }
 });
 
