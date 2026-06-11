@@ -65,11 +65,10 @@ function generirajKarticoHTML(predlog, vsecki) {
              class="card-img-top predlog-img" alt="slika">
         <div class="card-body p-4">
           <h3 class="fw-bold mb-1">${predlog.naslov}</h3>
-          <p class="small fw-bold mb-3">Avtor: ${izpisAvtorja}</p>
+          <p class="small fw-bold mb-3">${izpisAvtorja}</p>
           <p class="text-muted">${predlog.opis}</p>
           
 
-// V generirajKarticoHTML zamenjaj gumba z:
 <div class="d-flex gap-2 my-4">
   <button 
     id="btn-poz-${predlog.id_objava}"

@@ -49,8 +49,8 @@ document.addEventListener('DOMContentLoaded', function() {
             <img src="${p.fotografija || 'slike/zacetna.jpg'}" 
                  style="width: 100%; height: 140px; object-fit: cover; border-radius: 12px; margin-bottom: 10px;">
             <h5 style="font-weight:bold; margin: 0 0 5px 0;">${p.naslov}</h5>
+            <p style="margin: 3px 0; font-size: 13px;">${p.avtor_ime || ''} ${p.avtor_priimek || ''}</p>
             <p style="margin: 3px 0; font-size: 13px;">Status: <b>${statusIme}</b></p>
-            <p style="margin: 3px 0; font-size: 13px;">Avtor: ${p.avtor_ime || ''} ${p.avtor_priimek || ''}</p>
             <div style="color: green; font-weight: bold; margin-top: 8px; font-size: 14px;">
               <i class="fas fa-thumbs-up"></i> ${p.st_vseckov || 0} podpore
             </div>
@@ -112,7 +112,7 @@ function generirajKarticoHTML(predlog, vsecki) {
       
       <div class="vsebina-besedila">
         <h6 class="fw-bold mb-0">${predlog.naslov}</h6>
-        <small class="text-muted">Avtor: ${avtor}</small>
+        <small class="text-muted">${avtor}</small>
       </div>
       
       <div class="glasovanje-predloga" onclick="glasuj(${predlog.id_objava})">
