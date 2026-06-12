@@ -446,10 +446,9 @@ app.get('/api/moji-predlogi/:email', async (req, res) => {
 app.delete('/api/izbrisi-predlog/:id', async (req, res) => {
     const { id } = req.params;
     try {
-        await pool.query('DELETE FROM glasovanje WHERE tk_objavaid_objava = $1', [parseInt(id)]);
         await pool.query('DELETE FROM komentar WHERE tk_objavaid_objava = $1', [parseInt(id)]);
         const rezultat = await pool.query('DELETE FROM objava WHERE id_objava = $1', [parseInt(id)]);
- 
+
         if (rezultat.rowCount > 0) {
             return res.json({ uspeh: true });
         } else {
