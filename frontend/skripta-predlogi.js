@@ -160,8 +160,8 @@ window.spremeniVsecke = function(id, sprememba, element) {
 
         const btnPoz = document.getElementById(`btn-poz-${id}`);
         const btnNeg = document.getElementById(`btn-neg-${id}`);
-        const spanPoz = document.getElementById(`span_poz_${id}`);
-        const spanNeg = document.getElementById(`span_neg_${id}`);
+        const spanPoz = document.getElementById(`span_poz-${id}`);
+        const spanNeg = document.getElementById(`span_neg-${id}`);
 
         // Ponastavi oba gumba na privzet izgled
         btnPoz.style.backgroundColor = 'white';
@@ -239,17 +239,18 @@ if (gumbObjavi) {
       .then(res => res.json())
       .then(podatki => {
         if (podatki.uspeh) {
-          alert(podatki.sporocilo);
-          
-          if (podatki.jeObcina) {
-             window.location.href = "obcina.html";
-          } else {
-             window.location.href = "predlogi.html";
-          }
+          // TUKAJ POPRAVLJENO: Tretji parameter je FUNKCIJA!
+          showSuccess('Predlog objavljen!', 'Vaš predlog je bil uspešno oddan.', function() {
+                if (podatki.jeObcina) {
+                    window.location.href = "obcina.html";
+                } else {
+                    window.location.href = "predlogi.html";
+                }
+            });
         } else {
-          alert("Napaka: " + podatki.sporocilo);
+            showError('Napaka pri objavi', podatki.sporocilo);
         }
-      })
+    })
       .catch(err => {
           console.error(err);
           alert("Prišlo je do napake na strežniku.");

@@ -102,9 +102,10 @@ function prikaziPodatke() {
 }
 
 function odjaviUporabnika() {
-    localStorage.clear(); 
-    alert('Odjava uspešna.');
-    window.location.href = 'prijava.html'; 
+    showSuccess('Odjava uspešna', 'Varno ste se odjavili iz sistema.', function() {
+        localStorage.clear();
+        window.location.href = 'prijava.html'; 
+    });
 }
 
 // =================================================================
@@ -197,16 +198,29 @@ async function naloziMojePredloge() {
 
 async function izbrisiPredlog(idObjave) {
     if (!idObjave) return;
-    if (confirm("Ali ste prepričani, da želite trajno odstraniti ta predlog?")) {
-        try {
-            const odziv = await fetch(`/api/izbrisi-predlog/${idObjave}`, { method: 'DELETE' });
-            const data = await odziv.json();
-            if (odziv.ok && data.uspeh) {
-                alert("Predlog izbrisan.");
-                naloziMojePredloge();
+ 
+    // ZAMENJANO: confirm → showConfirmDelete s callbackom
+    showConfirmDelete(
+        'Izbriši predlog',
+        'Ali ste prepričani, da želite trajno odstraniti ta predlog? Tega dejanja ni mogoče razveljaviti.',
+        async function() {
+            try {
+                const odziv = await fetch(`/api/izbrisi-predlog/${idObjave}`, { method: 'DELETE' });
+                const data = await odziv.json();
+                if (odziv.ok && data.uspeh) {
+                    // ZAMENJANO: alert → showSuccess
+                    showSuccess('Predlog izbrisan', 'Vaš predlog je bil uspešno odstranjen.', function() {
+                        naloziMojePredloge();
+                    });
+                } else {
+                    showError('Napaka', 'Predloga ni bilo mogoče izbrisati. Prosimo, poskusite znova.');
+                }
+            } catch (napaka) {
+                console.error(napaka);
+                showError('Napaka', 'Prišlo je do napake na strežniku.');
             }
-        } catch (napaka) { console.error(napaka); }
-    }
+        }
+    );
 }
 
 // =================================================================
@@ -287,7 +301,7 @@ function spremeniVlogoUporabnika(id, vloga) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id_uporabnik: parseInt(id), nov_vloga_id: parseInt(vloga) })
-    }).then(res => res.json()).then(d => { if (d.uspeh) alert('Posodobljeno!'); });
+    }).then(res => res.json()).then(d => { if (d.uspeh) showSuccess('Vloga posodobljena', 'Vloga uporabnika je bila uspešno spremenjena.'); });
 }
 
 // =================================================================
@@ -332,25 +346,26 @@ function osveziStatus(id, status) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id_objava: parseInt(id), nov_status_id: parseInt(status) })
-    }).then(res => res.json()).then(d => { if (d.uspeh) alert('Status posodobljen!'); });
+    }).then(res => res.json()).then(d => { if (d.uspeh) showSuccess('Status posodobljen', 'Status predloga je bil uspešno spremenjen.'); });
 }
 
 let trenutniIdZaZmagovalca = null;
 window.odpriModalZmagovalec = function(id) {
     trenutniIdZaZmagovalca = id;
-    new bootstrap.Modal(document.getElementById('potrditveniModal')).show();
-};
-
-window.potrdiZmagovalca = function() {
-    fetch('/api/izberi-zmagovalca', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id_objava: trenutniIdZaZmagovalca })
-    }).then(res => res.json()).then(data => {
-        if (data.uspeh) {
-            bootstrap.Modal.getInstance(document.getElementById('potrditveniModal')).hide();
-            naloziPredlogeZaAdmina();
-        } else alert('Napaka!');
+    showConfirmZmagovalec(function() {
+        fetch('/api/izberi-zmagovalca', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id_objava: trenutniIdZaZmagovalca })
+        }).then(res => res.json()).then(data => {
+            if (data.uspeh) {
+                showSuccess('Zmagovalec izbran! 🏆', 'Predlog je bil označen kot zmagovalec. Avtor bo prejel obvestilo.', function() {
+                    naloziPredlogeZaAdmina();
+                });
+            } else {
+                showError('Napaka', 'Prišlo je do napake pri izbiri zmagovalca.');
+            }
+        });
     });
 };
 

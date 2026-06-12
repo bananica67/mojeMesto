@@ -56,7 +56,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         window.location.href = "profil.html";
                     }
                 } else {
-                    alert(rezultat.sporocilo);
+                    showError('Napaka pri prijavi', rezultat.sporocilo);
                 }
             } catch (napaka) {
                 console.error("Napaka pri povezavi:", napaka);
